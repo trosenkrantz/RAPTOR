@@ -1,0 +1,22 @@
+{
+    "startState": "S1",
+    "states": {
+        "S1": [
+            {
+                "input": "\\x00l\n",
+                "nextState": "S2",
+                "output": "\\x00ok\n"
+            }
+        ],
+        "S2": [
+            {
+                "input": "\\x00get.*\n",
+                "output": "\\x00\\x02\n"
+            },
+            {
+                "input": "\\x00set.*\n",
+                "output": "\\x00ok\n"
+            }
+        ]
+    }
+}

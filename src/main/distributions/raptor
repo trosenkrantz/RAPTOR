@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Check if there is a JRE in the "java" directory
+if [[ -x "./java/bin/java" ]]; then
+    JAVA_EXEC="./java/bin/java"
+else
+    # Check if java is in the PATH
+    if ! command -v java &> /dev/null; then
+        echo "ERROR: Java Runtime Environment not found. Please install Java or place it in the 'java' directory."
+        exit 1
+    else
+        JAVA_EXEC="java"
+    fi
+fi
+
+if [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then # Windows
+    BASE_DIR=$(cygpath -w "$(dirname "$0")")
+else # Assume Unix-like
+    BASE_DIR=$(dirname "$0")
+fi
+
+# Run the Java application using the current directory as the classpath
+echo "$BASE_DIR/*;$BASE_DIR/libs/*"
+"$JAVA_EXEC" -cp "$BASE_DIR/*;$BASE_DIR/libs/*" com.github.trosenkrantz.raptor.Main "$@"
