@@ -46,6 +46,18 @@ tasks.assemble {
     dependsOn(tasks.jar, distributeScripts, distributeRuntime)
 }
 
+val zip = tasks.register<Zip>("zip") {
+    dependsOn(tasks.assemble)
+
+    from(distributionsDir)
+    destinationDirectory.set(layout.buildDirectory.dir("libs"))
+    archiveFileName.set("RAPTOR $version.zip")
+}
+
+tasks.build {
+    dependsOn(zip)
+}
+
 tasks.register<Exec>("run") {
     dependsOn(tasks.assemble)
     workingDir(distributionsDir)
@@ -76,8 +88,4 @@ tasks.register<Exec>("debug") {
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.build {
-    dependsOn(distributeScripts)
 }
