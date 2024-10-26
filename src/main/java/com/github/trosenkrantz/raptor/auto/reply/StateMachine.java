@@ -1,5 +1,6 @@
 package com.github.trosenkrantz.raptor.auto.reply;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
@@ -35,11 +36,35 @@ public class StateMachine {
             Matcher matcher = Pattern.compile(transition.input(), Pattern.DOTALL).matcher(buffer); // We expect arbitrary bytes, so we use dotall mode to treat line terminators bytes as any other bytes
 
             if (matcher.matches()) {
-                onOutput.accept(transition.output().getBytes());
-                currentState = transition.nextState();
+                onOutput.accept(hexStringToBytes(transition.output()));
+                if (transition.nextState() != null) {
+                    currentState = transition.nextState();
+                }
                 buffer = new StringBuilder();
                 break;
             }
         }
+    }
+
+    private static byte[] hexStringToBytes(String hexString) {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+
+        int length = hexString.length();
+        for (int i = 0; i < length; i++) {
+            char c = hexString.charAt(i);
+
+            if (c == '\\' && i + 3 < length && hexString.charAt(i + 1) == 'x' && isHex(hexString.charAt(i + 2)) && isHex(hexString.charAt(i + 3))) { // Match \xhh
+                byteStream.write(Integer.parseInt(hexString.substring(i + 2, i + 4), 16)); // Parse as hex to byte
+                i += 3; // Skip past hex
+            } else { // Regular character
+                byteStream.write((byte) c);
+            }
+        }
+
+        return byteStream.toByteArray();
+    }
+
+    private static boolean isHex(char c) {
+        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
     }
 }

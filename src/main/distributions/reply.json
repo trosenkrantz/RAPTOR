@@ -3,9 +3,9 @@
     "states": {
         "S1": [
             {
-                "input": "\\x00l\n",
-                "nextState": "S2",
-                "output": "\\x00ok\n"
+                "input": "\\x00login\n",
+                "output": "\\x00ok\n",
+                "nextState": "S2"
             }
         ],
         "S2": [
