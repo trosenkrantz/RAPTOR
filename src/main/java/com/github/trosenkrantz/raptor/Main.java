@@ -10,7 +10,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            LoggingConfigurator.run();
+            LoggingConfigurator.initialise();
 
             Collection<RaptorService> services = RaptorFactory.createServices();
             Configuration configuration = new Configuration(args);

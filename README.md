@@ -29,7 +29,7 @@ RAPTOR will then guide you how to set it up.
 ## Auto-Reply
 
 Example (remove comments before usage):
-```json lines
+```json5
 {
     "startState": "login",
     "states": {

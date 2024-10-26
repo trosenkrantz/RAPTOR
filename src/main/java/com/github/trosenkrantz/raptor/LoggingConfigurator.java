@@ -1,14 +1,18 @@
 package com.github.trosenkrantz.raptor;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.jar.JarFile;
 import java.util.logging.*;
 
 public class LoggingConfigurator {
-    public static void run() throws IOException {
+    private static final Logger LOGGER = Logger.getLogger(LoggingConfigurator.class.getName());
+
+    public static void initialise() throws IOException, URISyntaxException {
         Logger rootLogger = Logger.getLogger(""); // Get the root logger (global logger for all classes)
 
         rootLogger.getHandlers()[0].setLevel(Level.OFF); // Turn off the default console logger
@@ -16,6 +20,14 @@ public class LoggingConfigurator {
         rootLogger.addHandler(getConsoleHandler());
 
         rootLogger.setLevel(Level.ALL);
+
+        logVersion();
+    }
+
+    private static void logVersion() throws IOException, URISyntaxException {
+        try (JarFile jarFile = new JarFile(LoggingConfigurator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())) {
+            LOGGER.info("Starting RAPTOR version " + jarFile.getManifest().getMainAttributes().getValue("Implementation-Version"));
+        }
     }
 
     private static FileHandler getFileHandler() throws IOException {
