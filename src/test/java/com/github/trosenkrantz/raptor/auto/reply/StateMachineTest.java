@@ -67,6 +67,44 @@ class StateMachineTest {
     }
 
     @Test
+    void matchesInputWithDots() {
+        // Arrange
+        List<byte[]> capturedOutputs = new ArrayList<>();
+        StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
+                "S1",
+                Map.of("S1", List.of(new Transition("1.2.3.4", "ok", null)))
+        ), capturedOutputs::add);
+
+        // Act
+        stateMachine.onInput("1.2.3.".getBytes());
+        Assertions.assertTrue(capturedOutputs.isEmpty()); // Still no output
+        stateMachine.onInput("4".getBytes());
+
+        // Assert
+        Assertions.assertEquals(1, capturedOutputs.size());
+        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+    }
+
+    @Test
+    void matchesInputWithDotsRegex() {
+        // Arrange
+        List<byte[]> capturedOutputs = new ArrayList<>();
+        StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
+                "S1",
+                Map.of("S1", List.of(new Transition("1.2.3..+", "ok", null)))
+        ), capturedOutputs::add);
+
+        // Act
+        stateMachine.onInput("1.2.3.".getBytes());
+        Assertions.assertTrue(capturedOutputs.isEmpty()); // Still no output
+        stateMachine.onInput("4".getBytes());
+
+        // Assert
+        Assertions.assertEquals(1, capturedOutputs.size());
+        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+    }
+
+    @Test
     void formatsOutputEscapeCharacters() {
         // Arrange
         List<byte[]> capturedOutputs = new ArrayList<>();

@@ -1,5 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
+import java.io.IOException;
+
 public interface RaptorService {
     String getPromptValue();
 
@@ -9,5 +11,5 @@ public interface RaptorService {
 
     void configure(Configuration configuration);
 
-    void run(Configuration configuration);
+    void run(Configuration configuration) throws IOException, InterruptedException;
 }

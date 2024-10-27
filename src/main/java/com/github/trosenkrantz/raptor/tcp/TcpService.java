@@ -14,7 +14,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,10 +27,14 @@ import java.util.logging.Logger;
 public class TcpService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
 
-    public static final String DEFAULT_ADDRESS = "localhost";
-    public static final int DEFAULT_PORT = 50000;
-    public static final String PARAMETER_SEND_FILE = "send-file";
-    public static final String PARAMETER_SEND_STRATEGY = "send-strategy";
+    private static final String DEFAULT_HOST = "localhost";
+    private static final int DEFAULT_PORT = 50000;
+
+    private static final String PARAMETER_SEND_FILE = "send-file";
+    private static final String PARAMETER_SEND_STRATEGY = "send-strategy";
+    private static final String PARAMETER_HOST = "host";
+    private static final String PARAMETER_PORT = "port";
+
     private static boolean shutDown;
 
     @Override
@@ -51,22 +54,18 @@ public class TcpService implements RaptorService {
 
     @Override
     public void configure(Configuration configuration) {
-        TcpRole tcpRole = ConsoleIo.askFor(TcpRole.getPromptOptions());
-        configuration.setEnum(tcpRole);
+        Role role = ConsoleIo.askForOptions(Role.getPromptOptions());
+        configuration.setEnum(role);
 
-        Void ignore = switch (tcpRole) {
+        Void ignore = switch (role) {
             case CLIENT -> {
-                String address = ConsoleIo.askForString("IP address of server socket to connect to", DEFAULT_ADDRESS);
-                configuration.setString("address", address);
-
-                int port = ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT);
-                configuration.setString("port", String.valueOf(port));
+                configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
+                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT)));
 
                 yield null;
             }
             case SERVER -> {
-                int port = ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT);
-                configuration.setString("port", String.valueOf(port));
+                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
 
                 yield null;
             }
@@ -77,7 +76,7 @@ public class TcpService implements RaptorService {
 
     private static void configureWhatToSend(Configuration configuration) {
         ConsoleIo.write("What data to send to the remote system? ");
-        TcpSendFromOption whatToSendType = ConsoleIo.askFor(List.of(
+        TcpSendFromOption whatToSendType = ConsoleIo.askForOptions(List.of(
                 new PromptOption<>("n", "Do [n]ot send", TcpSendFromOption.NONE),
                 new PromptOption<>("u", "Prompt over console interactively, reading as [U]TF-8", TcpSendFromOption.CONSOLE_UTF_8),
                 new PromptOption<>("h", "Prompt over console interactively, reading as [h]ex", TcpSendFromOption.CONSOLE_HEX),
@@ -117,31 +116,25 @@ public class TcpService implements RaptorService {
     }
 
     @Override
-    public void run(Configuration configuration) {
+    public void run(Configuration configuration) throws IOException {
         TcpSendStrategy sendStrategy;
-        try {
-            sendStrategy = loadSendStrategy(configuration);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        sendStrategy = loadSendStrategy(configuration);
 
         try {
-            Void ignore = switch (configuration.requireEnum(TcpRole.class)) {
+            Void ignore = switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
-                    String address = configuration.requireString("address");
-                    int port = configuration.requireInt("port");
+                    String address = configuration.requireString(PARAMETER_HOST);
+                    int port = configuration.requireInt(PARAMETER_PORT);
 
                     LOGGER.info("Connecting to server at " + address + ":" + port + "...");
                     try (Socket socket = new Socket(address, port)) {
                         runWithSocket(socket, sendStrategy);
-                    } catch (UnknownHostException e) {
-                        throw new IllegalStateException("Server not found.", e);
                     }
 
                     yield null;
                 }
                 case SERVER -> {
-                    int port = configuration.requireInt("port");
+                    int port = configuration.requireInt(PARAMETER_PORT);
 
                     try (ServerSocket socket = new ServerSocket(port)) {
                         while (!shutDown) { // Open for new client when closed
@@ -152,9 +145,9 @@ public class TcpService implements RaptorService {
                             } catch (SocketException e) {
                                 if ("Socket closed".equals(e.getMessage())) {
                                     LOGGER.info("Socket closed normally.");
-                                    // Ignore exception
+                                    // Ignore exception and connect to new client
                                 } else {
-                                    throw new UncheckedIOException("I/O error.", e);
+                                    throw e;
                                 }
                             }
                         }
@@ -164,12 +157,12 @@ public class TcpService implements RaptorService {
                 }
             };
             LOGGER.info("Socket closed normally.");
-        } catch (IOException e) {
-            if (e instanceof SocketException && "Socket closed".equals(e.getMessage())) {
+        } catch (SocketException e) {
+            if ("Socket closed".equals(e.getMessage())) {
                 LOGGER.info("Socket closed normally.");
                 // Ignore exception
             } else {
-                throw new UncheckedIOException("I/O error.", e);
+                throw e;
             }
         }
     }

@@ -3,15 +3,20 @@
     "states": {
         "S1": [
             {
-                "input": "\\x00login\n",
-                "output": "\\x00ok\n",
+                "input": "1.2.3.4",
+                "output": "\\x04\\x03ok\n",
                 "nextState": "S2"
+            },
+            {
+                "input": "1.2.3.5",
+                "output": "\\x04\\x03QQQ",
+                "nextState": "S1"
             }
         ],
         "S2": [
             {
-                "input": "\\x00get.*\n",
-                "output": "\\x00\\x02\n"
+                "input": "1.2.3.4",
+                "output": "\\x02\\x01\\x2b"
             },
             {
                 "input": "\\x00set.*\n",

@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 public class ConsoleIo {
     private static final Console console = System.console();
 
+    private static boolean haveHadUserInteraction = false;
+
     public static void write(String message) {
         console.printf(message);
     }
@@ -30,12 +32,13 @@ public class ConsoleIo {
     }
 
     public static String readLine() {
+        haveHadUserInteraction = true;
         String result = console.readLine();
         writeLine();
         return result;
     }
 
-    public static <T> T askFor(List<PromptOption<T>> options) {
+    public static <T> T askForOptions(List<PromptOption<T>> options) {
         while (true) {
             writeLine(
                     "Choose between or (e) exit:" + System.lineSeparator() +
@@ -94,6 +97,13 @@ public class ConsoleIo {
             } else {
                 writeLine("Cannot find " + path + ".");
             }
+        }
+    }
+
+    public static void promptUserToExit() {
+        if (haveHadUserInteraction) { // Skip prompt if running as CLI
+            write(System.lineSeparator() + "Type enter to terminate...");
+            readLine();
         }
     }
 }

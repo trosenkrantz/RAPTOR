@@ -5,7 +5,7 @@ plugins {
 val distributionsDir = layout.buildDirectory.dir("distributions")
 
 group = "com.github.trosenkrantz"
-version = "1.0.0"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
@@ -13,16 +13,22 @@ repositories {
 
 configurations {
     create("runtime") {
-        isTransitive = false
+        isTransitive = false // Force explicit runtime dependencies to minimise runtime
     }
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0") // For JSON mapping
+    // For JSON mapping
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
     add("runtime", "com.fasterxml.jackson.core:jackson-databind:2.18.0")
     add("runtime", "com.fasterxml.jackson.core:jackson-core:2.18.0")
     add("runtime", "com.fasterxml.jackson.core:jackson-annotations:2.18.0")
 
+    // For SNMP
+    implementation("org.snmp4j:snmp4j:3.8.2")
+    add("runtime", "org.snmp4j:snmp4j:3.8.2")
+
+    // For testing
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
@@ -55,8 +61,17 @@ val distributeRuntime = tasks.register<Copy>("distributeRuntime") {
     into(layout.buildDirectory.dir("distributions/libs"))
 }
 
+val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
+    from(file("README.md"), file("LICENSE"))
+    into(distributionsDir)
+}
+
+val createJavaDir = tasks.register<Copy>("createJavaDir") {
+    layout.buildDirectory.dir("distributions/java").get().asFile.mkdirs()
+}
+
 tasks.assemble {
-    dependsOn(tasks.jar, distributeScripts, distributeRuntime)
+    dependsOn(tasks.jar, distributeScripts, distributeRuntime, distributeDocumentation, createJavaDir)
 }
 
 val zip = tasks.register<Zip>("zip") {

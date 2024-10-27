@@ -12,7 +12,7 @@ public class Main {
         try {
             LoggingConfigurator.initialise();
 
-            Collection<RaptorService> services = RaptorFactory.createServices();
+            Collection<RaptorService> services = RaptorServiceFactory.createServices();
             Configuration configuration = new Configuration(args);
 
             if (configuration.getString("service").isEmpty()) {
@@ -23,22 +23,17 @@ public class Main {
             String serviceKey = configuration.requireString("service");
             services.stream().filter(service -> service.getParameterKey().equals(serviceKey)).findAny().orElseThrow(() -> new IllegalArgumentException("Service " + serviceKey + " not found.")).run(configuration);
 
-            promptUserToExit();
+            ConsoleIo.promptUserToExit();
         } catch (AbortedException ignore) {
             // Exit immediately
         } catch (Throwable e) {
             ConsoleIo.writeException(e);
-            promptUserToExit();
+            ConsoleIo.promptUserToExit();
         }
     }
 
-    private static void promptUserToExit() {
-        ConsoleIo.write(System.lineSeparator() + "Type enter to terminate...");
-        ConsoleIo.readLine();
-    }
-
     private static void configure(Collection<RaptorService> services, Configuration configuration) {
-        RaptorService raptorService = ConsoleIo.askFor(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList());
+        RaptorService raptorService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList());
 
         configuration.setString("service", raptorService.getParameterKey());
         raptorService.configure(configuration);

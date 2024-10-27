@@ -40,10 +40,14 @@ public class StateMachine {
                 if (transition.nextState() != null) {
                     currentState = transition.nextState();
                 }
-                buffer = new StringBuilder();
+                resetInputBuffer();
                 break;
             }
         }
+    }
+
+    public void resetInputBuffer() {
+        buffer = new StringBuilder();
     }
 
     private static byte[] hexStringToBytes(String hexString) {
