@@ -30,70 +30,45 @@ RAPTOR will then guide you how to set it up.
 
 ## Auto-Reply
 
-For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a JSON file. Example (remove comments before usage):
+For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a JSON file. Example:
 ```json5
 {
     "startState": "login",
     "states": {
         "login": [
             {
-                "input": "login\n", // When RAPTOR receives this
-                "output": "ok\n", // it output this
+                "input": "login!", // When RAPTOR receives this
+                "output": "ok!", // It output this
                 "nextState": "active" // And move to this state
             }
         ],
         "active": [
             {
-                "input": "set: \\d+\n", // Use regex
-                "output": "\\x00ok\\xff" // Denote arbitrary bytes with \xhh hex
+                "input": "set: \\d+!", // Use regexes
+                "output": "\\x00\\xff" // Denote arbitrary bytes with \xhh hex
                 // Absent nextState means stay
             },
             {
-                "input": "\\x00(\\x01)*\\xff", // Include arbitrary bytes in regex
-                "output": "ok\n"
+                "input": "\\x00(\\x01)*!", // Include arbitrary bytes in regexes
+                "output": "\\x00ok\n" // Mix arbitrary bytes, printable characters, and control characters
             }
         ]
     }
 }
 ```
-
-RAPTOR checks for matching inputs in the order of appearance.
+RAPTOR checks for matching inputs in the order of appearance. It ignores simple line and block comments.
 
 ### SNMP
-For SNMP auto-replies, `input` is the OID in dot notation and `output` is a Basic Encoding Rules (BER) encoding of the response variable. Example (remove comments before usage):
-
-```json5
-{
-    "startState": "S1",
-    "states": {
-        "S1": [
-            {
-                "input": "1.2.3.4", // For requests with OID 1.2.3.4
-                "output": "\\x02\\x01\\x2a", // Type integer (\x02), length 1 byte, value 42 (\x2a)
-                "nextState": "S2"
-            },
-            {
-                "input": "1.2.3.5..+", // Use regex
-                "output": "\\x04\\x02ok", // Type octet string (\x04), length 2 bytes, value "ok"
-            }
-        ],
-        "S2": [
-            {
-                "input": "1.2.3.4",
-                "output": "\\x02\\x02\\x01\\x2c", // Integer 300
-                "nextState": "S1"
-            }
-        ]
-    }
-}
-```
+For SNMP auto-replies, `input` is the OID in dot notation and `output` is the Basic Encoding Rules (BER) encoding of the response variable.
 
 If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
 
-Scenario: RAPTOR is configured with above auto-reply, and an SNMP manager keeps requesting RAPTOR with OID 1.2.3.4. RAPTOR will respond alternating with 42 and 300.
+See `snmp-replies.json` for an example.
 
 ### TCP
-For TCP auto-replies, it passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of out data is buffered.
+For TCP auto-replies, it passes TCP input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
+
+See `tcp-replies.json` for an example.
 
 ## Licence
 

@@ -1,0 +1,51 @@
+{
+    "startState": "unauthenticated",
+    "states": {
+        "unauthenticated": [
+            {
+                "input": "AUTH user pass!", // When RAPTOR receives this
+                "output": "AUTH_OK!", // It outputs this, confirming authentication success
+                "nextState": "ready1" // And move to this state
+            },
+            {
+                "input": "AUTH .*!", // Utilising the order of transitions to capture invalid credentials
+                "output": "INVALID_CREDENTIALS!"
+                // Stay unauthenticated with missing nextState
+            },
+            {
+                "input": ".*!", // Capture everything else ending with !
+                "output": "UNKNOWN_COMMAND!"
+            }
+        ],
+        "ready1": [
+            {
+                "input": "STATUS!",
+                "output": "STATUS:OK!"
+            },
+            {
+                "input": "DATA!",
+                "output": "DATA:1234!",
+                "nextState": "ready2" // Alternate between two states to simulate variation
+            },
+            {
+                "input": ".*!",
+                "output": "UNKNOWN_COMMAND!"
+            }
+        ],
+        "ready2": [
+            {
+                "input": "STATUS!",
+                "output": "STATUS:OK!"
+            },
+            {
+                "input": "DATA!",
+                "output": "DATA:2345!",
+                "nextState": "ready1" // Alternate between two states to simulate variation
+            },
+            {
+                "input": ".*!",
+                "output": "UNKNOWN_COMMAND!"
+            }
+        ]
+    }
+}

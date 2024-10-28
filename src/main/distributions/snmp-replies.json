@@ -1,0 +1,24 @@
+{
+    "startState": "ready1",
+    "states": {
+        "ready1": [
+            {
+                "input": "1.2.3.4", // For OID 1.2.3.4
+                "output": "\\x02\\x01\\x2a", // Deliver type integer (\x02 in BER), length 1 byte, value 42 (\x2a in hex)
+                "nextState": "ready2" // Alternate between two states to simulate variation
+            },
+            {
+                "input": "1.2.3.5..+", // Use regex
+                "output": "\\x04\\x02ok" // Type octet string (\x04), length 2 bytes, value "ok"
+            }
+            // For SNMP, RAPTOR delivers Null if it finds no match
+        ],
+        "ready2": [
+            {
+                "input": "1.2.3.4",
+                "output": "\\x02\\x02\\x01\\x2c", // Integer 300
+                "nextState": "ready1" // Alternate between two states to simulate variation
+            }
+        ]
+    }
+}

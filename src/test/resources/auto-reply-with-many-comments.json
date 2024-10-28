@@ -1,0 +1,32 @@
+{
+    "startState": "login",
+    "states": {
+        "login": [
+            {
+                /* Standalone */
+                /* begining */ "input": /* Mid */ "login\n", /* Ending */ // When RAPTOR receives this
+                "output": "ok\n", // it output this
+                "nextState": "active" // And move to this state
+            }
+
+            /* Multi-line
+             comment */
+        ],
+        "active": [
+            /*{ // Commented JSON and line comments inside block comment
+                "input": "set: \\d+\n", // Use regex
+                "output": "\\x00ok\\xff" // Denote arbitrary bytes with \xhh hex
+                // Absent nextState means stay
+            },*/
+            {
+                "input": "set: \\d+\n", // Use regex
+                "output": "\\x00ok\\xff" // Denote arbitrary bytes with \xhh hex
+                // Absent nextState means stay
+            },
+            {
+                "input": "\\x00(\\x01)*\\xff", // Include arbitrary bytes in regex
+                "output": "ok\n"
+            }
+        ]
+    }
+}

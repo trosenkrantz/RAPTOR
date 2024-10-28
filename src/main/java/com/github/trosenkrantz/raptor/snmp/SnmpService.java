@@ -53,11 +53,11 @@ public class SnmpService implements RaptorService {
             case GET_RESPOND -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("local IP port to set up socket for and for managers to send requests to", DEFAULT_PORT)));
 
-                String path = ConsoleIo.askForFile("Absolute or relative path to the auto-reply file", "." + File.separator + "reply.json");
+                String path = ConsoleIo.askForFile("Absolute or relative path to the auto-reply file", "." + File.separator + "snmp-replies.json");
 
                 // Load state machine immediately to provide early feedback
                 try {
-                    StateMachineConfiguration stateMachine = new ObjectMapper().readValue(new File(path), StateMachineConfiguration.class);
+                    StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
                     ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
                 } catch (IOException e) {
                     ConsoleIo.writeLine("Failed reading file.");

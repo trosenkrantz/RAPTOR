@@ -25,7 +25,7 @@ public class SnmpGetResponder {
 
     public static void run(Configuration configuration) throws IOException, InterruptedException {
         // Read state machine immediately to provide early feedback
-        StateMachine stateMachine = new StateMachine(new ObjectMapper().readValue(new File(configuration.requireString(SnmpService.PARAMETER_SEND_FILE)), StateMachineConfiguration.class), out -> output = out);
+        StateMachine stateMachine = new StateMachine(StateMachineConfiguration.readFromFile(configuration.requireString(SnmpService.PARAMETER_SEND_FILE)), out -> output = out);
 
         UdpAddress address = new UdpAddress("0.0.0.0/" + configuration.requireString(SnmpService.PARAMETER_PORT));
         try (Snmp snmp = new Snmp(new DefaultUdpTransportMapping(address))) {

@@ -100,11 +100,11 @@ public class TcpService implements RaptorService {
         }
 
         if (whatToSendType.equals(TcpSendFromOption.AUTO_REPLY)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "reply.json");
+            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "tcp-replies.json");
 
             // Load state machine immediately to provide early feedback
             try {
-                StateMachineConfiguration stateMachine = new ObjectMapper().readValue(new File(path), StateMachineConfiguration.class);
+                StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
                 ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
             } catch (IOException e) {
                 ConsoleIo.writeLine("Failed reading file.");
@@ -219,7 +219,7 @@ public class TcpService implements RaptorService {
             case AUTO_REPLY -> {
                 // Read state machine immediately to provide early feedback
                 StateMachineConfiguration stateMachineConfiguration;
-                stateMachineConfiguration = new ObjectMapper().readValue(new File(configuration.requireString(PARAMETER_SEND_FILE)), StateMachineConfiguration.class);
+                stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(PARAMETER_SEND_FILE));
 
                 yield socket -> {
                     OutputStream out = socket.getOutputStream();

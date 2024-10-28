@@ -137,6 +137,7 @@ class StateMachineTest {
         Assertions.assertEquals(1, capturedOutputs.size());
         Assertions.assertArrayEquals(new byte[] {'o', 'k', 2}, capturedOutputs.getFirst());
     }
+
     @Test
     void switchesStates() {
         // Arrange
