@@ -9,8 +9,8 @@ import java.util.List;
 public class RaptorServiceFactory {
     public static Collection<RaptorService> createServices() {
         return List.of(
-                new TcpService(),
-                new SnmpService()
+                new SnmpService(),
+                new TcpService()
         );
     }
 }

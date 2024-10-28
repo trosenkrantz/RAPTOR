@@ -21,13 +21,7 @@ public class StateMachine {
     }
 
     public void onInput(byte[] input) {
-        for (byte b : input) {
-            onInput(b);
-        }
-    }
-
-    private void onInput(byte input) {
-        buffer.append(new String(new byte[]{input}, StandardCharsets.ISO_8859_1)); // Use ISO 8859-1 to be able to match on arbitrary bytes
+        buffer.append(new String(input, StandardCharsets.ISO_8859_1)); // Use ISO 8859-1 to be able to match on arbitrary bytes
 
         List<Transition> transitions = configuration.states().get(currentState);
         if (transitions == null) throw new IllegalStateException("Auto-reply state " + currentState + " not defined.");

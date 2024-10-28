@@ -60,7 +60,7 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
 RAPTOR checks for matching inputs in the order of appearance.
 
 ### SNMP
-For SNMP auto-replies, `input` is the OID in dot notation and `output` is a Basic Encoding Rules (BER) encoding. Example (remove comments before usage):
+For SNMP auto-replies, `input` is the OID in dot notation and `output` is a Basic Encoding Rules (BER) encoding of the response variable. Example (remove comments before usage):
 
 ```json5
 {
@@ -91,6 +91,9 @@ For SNMP auto-replies, `input` is the OID in dot notation and `output` is a Basi
 If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
 
 Scenario: RAPTOR is configured with above auto-reply, and an SNMP manager keeps requesting RAPTOR with OID 1.2.3.4. RAPTOR will respond alternating with 42 and 300.
+
+### TCP
+For TCP auto-replies, it passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of out data is buffered.
 
 ## Licence
 

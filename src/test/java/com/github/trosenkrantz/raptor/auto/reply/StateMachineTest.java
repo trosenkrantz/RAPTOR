@@ -137,4 +137,27 @@ class StateMachineTest {
         Assertions.assertEquals(1, capturedOutputs.size());
         Assertions.assertArrayEquals(new byte[] {'o', 'k', 2}, capturedOutputs.getFirst());
     }
+    @Test
+    void switchesStates() {
+        // Arrange
+        List<byte[]> capturedOutputs = new ArrayList<>();
+        StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
+                "S1",
+                Map.of(
+                        "S1", List.of(new Transition("S1 input", "S1 output", "S2")),
+                        "S2", List.of(new Transition("S2 input", "S2 output", "S1"))
+                )
+        ), capturedOutputs::add);
+
+        // Act and Assert
+        stateMachine.onInput("S1 input".getBytes());
+        Assertions.assertEquals(1, capturedOutputs.size());
+        Assertions.assertArrayEquals("S1 output".getBytes(), capturedOutputs.getFirst());
+        stateMachine.onInput("S2 input".getBytes());
+        Assertions.assertEquals(2, capturedOutputs.size());
+        Assertions.assertArrayEquals("S2 output".getBytes(), capturedOutputs.get(1));
+        stateMachine.onInput("S1 input".getBytes());
+        Assertions.assertEquals(3, capturedOutputs.size());
+        Assertions.assertArrayEquals("S1 output".getBytes(), capturedOutputs.get(2));
+    }
 }

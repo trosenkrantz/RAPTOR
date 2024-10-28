@@ -231,7 +231,11 @@ public class TcpService implements RaptorService {
                             throw new UncheckedIOException(e);
                         }
                     });
-                    return stateMachine::onInput;
+                    return input -> {
+                        for (byte b : input) {
+                            stateMachine.onInput(new byte[]{b}); // Pass on byte by byte
+                        }
+                    };
                 };
             }
         };
