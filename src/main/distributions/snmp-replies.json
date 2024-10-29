@@ -9,7 +9,7 @@
             },
             {
                 "input": "1.2.3.5..+", // Use regex
-                "output": "\\x04\\x02ok" // Type octet string (\x04), length 2 bytes, value "ok"
+                "output": "\\x04\\x05Hello" // Type octet string (\x04), length 5 bytes, value "Hello"
             }
             // For SNMP, RAPTOR delivers Null if it finds no match
         ],

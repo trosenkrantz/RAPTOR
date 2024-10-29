@@ -1,10 +1,7 @@
 package com.github.trosenkrantz.raptor.tcp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.trosenkrantz.raptor.AbortedException;
-import com.github.trosenkrantz.raptor.Configuration;
-import com.github.trosenkrantz.raptor.PromptOption;
-import com.github.trosenkrantz.raptor.RaptorService;
+import com.github.trosenkrantz.raptor.*;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
@@ -54,7 +51,7 @@ public class TcpService implements RaptorService {
 
     @Override
     public void configure(Configuration configuration) {
-        Role role = ConsoleIo.askForOptions(Role.getPromptOptions());
+        Role role = ConsoleIo.askForOptions(PromptEnum.getPromptOptions(Role.class));
         configuration.setEnum(role);
 
         Void ignore = switch (role) {
@@ -168,7 +165,7 @@ public class TcpService implements RaptorService {
     }
 
     private TcpSendStrategy loadSendStrategy(Configuration configuration) throws IOException {
-        TcpSendFromOption sendFrom = configuration.requireEnum(PARAMETER_SEND_STRATEGY, TcpSendFromOption.class);
+        TcpSendFromOption sendFrom = configuration.requireEnum(PARAMETER_SEND_STRATEGY, TcpSendFromOption.class); // TODO Use requireEnum with implement parameter key?
 
         return switch (sendFrom) {
             case NONE -> socket -> { // Nothing to send initially

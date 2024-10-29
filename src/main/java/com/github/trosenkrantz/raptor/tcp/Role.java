@@ -1,12 +1,8 @@
 package com.github.trosenkrantz.raptor.tcp;
 
-import com.github.trosenkrantz.raptor.PromptOption;
+import com.github.trosenkrantz.raptor.PromptEnum;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-public enum Role {
+public enum Role implements PromptEnum {
     CLIENT("c", "Client"),
     SERVER("s", "Server");
 
@@ -18,17 +14,13 @@ public enum Role {
         this.description = description;
     }
 
+    @Override
     public String getPromptValue() {
         return this.promptValue;
     }
 
+    @Override
     public String getDescription() {
         return this.description;
-    }
-
-    public static List<PromptOption<Role>> getPromptOptions() {
-        return Stream.of(Role.values())
-                .map(value -> new PromptOption<>(value.getPromptValue(), value.getDescription(), value))
-                .collect(Collectors.toList());
     }
 }
