@@ -22,7 +22,7 @@ Capabilities:
 ## How to use
 1. Download a release and unzip it.
 2. Either
-   - Download Java Runtime Environment 21 or newer, extracting it to the `java` dir, or
+   - Download Java Runtime Environment 21 or newer, extracting it to a `java` dir, or
    - Install Java 21 or newer on your machine.
 3. Run RAPTOR, either the `raptor` bash script or `raptor.cmd` script.
 

@@ -66,12 +66,8 @@ val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
     into(distributionsDir)
 }
 
-val createJavaDir = tasks.register<Copy>("createJavaDir") {
-    layout.buildDirectory.dir("distributions/java").get().asFile.mkdirs()
-}
-
 tasks.assemble {
-    dependsOn(tasks.jar, distributeScripts, distributeRuntime, distributeDocumentation, createJavaDir)
+    dependsOn(tasks.jar, distributeScripts, distributeRuntime, distributeDocumentation)
 }
 
 val zip = tasks.register<Zip>("zip") {
