@@ -1,15 +1,22 @@
 package com.github.trosenkrantz.raptor.io;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
+/**
+ * Terms:
+ * <ul>
+ *     <li>Hex escaped string: Printable characters and control characters are as-is (e.g., line feed is a single character), and arbitrary bytes are four characters (e.g., byte 0 is \, x, 0, and 0). Used for in-memory processing.</li>
+ *     <li>Fully escaped string: Printable characters are as-is, control characters are escaped (e.g., line feed is two characters, \ and n), and arbitrary bytes are five characters (e.g., byte 0 is \, \, x, 0, and 0). Used for I/O.</li>
+ *     <li>Fully escaped hex string: Is a fully escaped string, but all bytes are formatted as arbitrary bytes. Used for I/O where we think the bytes are arbitrary bytes.</li>
+ * </ul>
+ */
 public class BytesFormatter {
-    public static String format(byte[] input) {
+    public static String toFullyEscapedString(byte[] input) {
         if (isText(input)) {
-            return "text: " + new String(input, StandardCharsets.UTF_8);
+            return "text: " + bytesToFullyEscapedString(input);
         } else {
-            return "bytes: " + bytesToHex(input);
+            return "bytes: " + bytesToFullyEscapedHexString(input);
         }
     }
 
@@ -28,13 +35,57 @@ public class BytesFormatter {
         }
     }
 
-    // Method to convert byte array to hexadecimal representation
-    private static String bytesToHex(byte[] bytes) {
-        HexFormat format = HexFormat.ofDelimiter(" ");
-        return format.formatHex(bytes);
+    private static String bytesToFullyEscapedString(byte[] bytes) {
+        StringBuilder builder = new StringBuilder();
+        for (byte b : bytes) {
+            char c = (char) b;
+            builder.append(switch (c) {
+                case '\n' -> "\\n";
+                case '\r' -> "\\r";
+                case '\t' -> "\\t";
+                case '\"' -> "\\\"";
+                case '\\' -> "\\\\";
+                default -> String.valueOf(c);
+            });
+        }
+        return builder.toString();
     }
 
-    public static byte[] escapedHexStringToBytes(String hexString) {
+    private static String bytesToFullyEscapedHexString(byte[] bytes) {
+        return HexFormat.of().withPrefix("\\\\x").formatHex(bytes);
+    }
+
+    public static byte[] fullyEscapedStringToBytes(String input) {
+        return hexEscapedStringToBytes(fullyEscapedStringToHexEscapedString(input));
+    }
+
+    private static String fullyEscapedStringToHexEscapedString(String input) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int length = input.length();
+        for (int i = 0; i < length; i++) {
+            char currentChar = input.charAt(i);
+
+            if (currentChar == '\\' && i + 1 < length ) { // Match \.
+                char nextChar = input.charAt(i + 1);
+                stringBuilder.append(switch (nextChar) {
+                    case 'n' -> "\n";
+                    case 'r' -> "\r";
+                    case 't' -> "\t";
+                    case '\"' -> "\\\"";
+                    case '\\' -> "\\";
+                    default -> "\\" + nextChar;
+                });
+                i += 1; // Skip past nextChar
+            } else { // Regular character
+                stringBuilder.append(currentChar);
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    public static byte[] hexEscapedStringToBytes(String hexString) {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
         int length = hexString.length();

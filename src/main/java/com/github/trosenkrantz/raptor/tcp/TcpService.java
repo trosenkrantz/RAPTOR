@@ -1,6 +1,5 @@
 package com.github.trosenkrantz.raptor.tcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.trosenkrantz.raptor.*;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
@@ -11,12 +10,9 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HexFormat;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -28,7 +24,6 @@ public class TcpService implements RaptorService {
     private static final int DEFAULT_PORT = 50000;
 
     private static final String PARAMETER_SEND_FILE = "send-file";
-    private static final String PARAMETER_SEND_STRATEGY = "send-strategy";
     private static final String PARAMETER_HOST = "host";
     private static final String PARAMETER_PORT = "port";
 
@@ -73,20 +68,14 @@ public class TcpService implements RaptorService {
 
     private static void configureWhatToSend(Configuration configuration) {
         ConsoleIo.write("What data to send to the remote system? ");
-        TcpSendFromOption whatToSendType = ConsoleIo.askForOptions(List.of(
-                new PromptOption<>("n", "Do [n]ot send", TcpSendFromOption.NONE),
-                new PromptOption<>("u", "Prompt over console interactively, reading as [U]TF-8", TcpSendFromOption.CONSOLE_UTF_8),
-                new PromptOption<>("h", "Prompt over console interactively, reading as [h]ex", TcpSendFromOption.CONSOLE_HEX),
-                new PromptOption<>("f", "Send content of a [f]ile", TcpSendFromOption.FILE),
-                new PromptOption<>("a", "Configure an [a]uto-reply", TcpSendFromOption.AUTO_REPLY)
-        ));
-        configuration.setString(PARAMETER_SEND_STRATEGY, whatToSendType.toString());
+        SendStrategy sendStrategy = ConsoleIo.askForOptions(PromptEnum.getPromptOptions(SendStrategy.class));
+        configuration.setEnum(sendStrategy);
 
-        if (whatToSendType.equals(TcpSendFromOption.FILE)) {
+        if (sendStrategy.equals(SendStrategy.FILE)) {
             String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "out");
             // Read file immediately to provide early feedback
             try {
-                byte[] fileContent = Files.readAllBytes(Paths.get(configuration.requireString(PARAMETER_SEND_FILE)));
+                byte[] fileContent = Files.readAllBytes(Paths.get(path));
                 ConsoleIo.writeLine("Read file with " + fileContent.length + " bytes.");
             } catch (IOException e) {
                 ConsoleIo.writeLine("Failed reading file.");
@@ -96,7 +85,7 @@ public class TcpService implements RaptorService {
             configuration.setString(PARAMETER_SEND_FILE, path);
         }
 
-        if (whatToSendType.equals(TcpSendFromOption.AUTO_REPLY)) {
+        if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
             String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "tcp-replies.json");
 
             // Load state machine immediately to provide early feedback
@@ -165,50 +154,50 @@ public class TcpService implements RaptorService {
     }
 
     private TcpSendStrategy loadSendStrategy(Configuration configuration) throws IOException {
-        TcpSendFromOption sendFrom = configuration.requireEnum(PARAMETER_SEND_STRATEGY, TcpSendFromOption.class); // TODO Use requireEnum with implement parameter key?
+        SendStrategy sendFrom = configuration.requireEnum(SendStrategy.class);
 
         return switch (sendFrom) {
             case NONE -> socket -> { // Nothing to send initially
                 return input -> { // Nothing to send on inputs
                 };
             };
-            case CONSOLE_UTF_8 -> socket -> {
-                keepAskingUserWhatToSend(
-                        socket,
-                        () -> ConsoleIo.askForString("What to send", "Hello, World!")
-                                .getBytes(StandardCharsets.UTF_8)
+            case INTERACTIVE -> socket -> {
+                Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
+                Thread.ofVirtual().start(() -> {
+                            try {
+                                OutputStream out = socket.getOutputStream();
+                                byte[] whatToSends = supplier.get();
+                                while (!socket.isInputShutdown()) {
+                                    out.write(whatToSends);
+                                    LOGGER.info("Sent " + BytesFormatter.toFullyEscapedString(whatToSends));
+
+                                    whatToSends = supplier.get();
+                                }
+                            } catch (AbortedException ignore) {
+                                shutDown = true;
+                            } catch (Exception e) {
+                                ConsoleIo.writeException(e);
+                                shutDown = true;
+                            } finally {
+                                try {
+                                    socket.close();
+                                } catch (IOException e) {
+                                    ConsoleIo.writeException(e);
+                                    shutDown = true;
+                                }
+                            }
+                        }
                 );
                 return input -> { // Nothing to send on inputs
                 };
             };
-            case CONSOLE_HEX -> {
-                HexFormat hexFormat = HexFormat.of();
-                AtomicBoolean firstTime = new AtomicBoolean(true);
-                yield socket -> {
-                    keepAskingUserWhatToSend(
-                            socket,
-                            () -> {
-                                String whatToSend = "What to send";
-                                if (firstTime.get()) {
-                                    whatToSend += ", case insensitive, space delimiter optional";
-                                    firstTime.set(false);
-                                }
-                                return hexFormat.parseHex(
-                                        ConsoleIo.askForString(whatToSend, "48 69").toLowerCase()
-                                );
-                            }
-                    );
-                    return input -> { // Nothing to send on inputs
-                    };
-                };
-            }
             case FILE -> {
                 // Read file immediately to provide early feedback
                 byte[] fileContentToSend = Files.readAllBytes(Paths.get(configuration.requireString(PARAMETER_SEND_FILE)));
 
                 yield socket -> {
                     socket.getOutputStream().write(fileContentToSend);
-                    LOGGER.info("Sent " + BytesFormatter.format(fileContentToSend));
+                    LOGGER.info("Sent " + BytesFormatter.toFullyEscapedString(fileContentToSend));
                     return input -> { // Nothing to send on inputs
                     };
                 };
@@ -223,7 +212,7 @@ public class TcpService implements RaptorService {
                     StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
                         try {
                             out.write(output);
-                            LOGGER.info("Sent " + BytesFormatter.format(output));
+                            LOGGER.info("Sent " + BytesFormatter.toFullyEscapedString(output));
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
@@ -238,34 +227,6 @@ public class TcpService implements RaptorService {
         };
     }
 
-    private static void keepAskingUserWhatToSend(Socket socket, Supplier<byte[]> supplier) {
-        Thread.ofVirtual().start(() -> {
-                    try {
-                        OutputStream out = socket.getOutputStream();
-                        byte[] whatToSends = supplier.get();
-                        while (!socket.isInputShutdown()) {
-                            out.write(whatToSends);
-                            LOGGER.info("Sent " + BytesFormatter.format(whatToSends));
-
-                            whatToSends = supplier.get();
-                        }
-                    } catch (AbortedException ignore) {
-                        shutDown = true;
-                    } catch (Exception e) {
-                        ConsoleIo.writeException(e);
-                        shutDown = true;
-                    } finally {
-                        try {
-                            socket.close();
-                        } catch (IOException e) {
-                            ConsoleIo.writeException(e);
-                            shutDown = true;
-                        }
-                    }
-                }
-        );
-    }
-
     private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy) throws IOException {
         LOGGER.info("Local socket at " + socket.getLocalSocketAddress() + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
 
@@ -277,7 +238,7 @@ public class TcpService implements RaptorService {
         while ((readLength = in.read(buffer)) != -1) {
             byte[] bytesRead = new byte[readLength];
             System.arraycopy(buffer, 0, bytesRead, 0, readLength);
-            LOGGER.info("Received " + BytesFormatter.format(bytesRead));
+            LOGGER.info("Received " + BytesFormatter.toFullyEscapedString(bytesRead));
             onInput.accept(bytesRead);
         }
     }

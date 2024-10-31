@@ -21,15 +21,13 @@ import java.util.List;
 public class SnmpService implements RaptorService {
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_OID = "1.2.3.4";
-    private static final int DEFAULT_VERSION = 2;
-    private static final String DEFAULT_VARIABLE = "\\x04\\x05Hello";
+    private static final String DEFAULT_VARIABLE = "\\\\x04\\\\x05Hello";
 
     public static final String PARAMETER_HOST = "host";
     public static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_OID = "oid";
     public static final String PARAMETER_SEND_FILE = "send-file";
     public static final String PARAMETER_VARIABLE = "variable";
-    public static final String PARAMETER_VERSION = "version";
 
     @Override
     public String getPromptValue() {
@@ -114,16 +112,12 @@ public class SnmpService implements RaptorService {
                         configuration,
                         SNMP4JSettings.getDefaultRetries(),
                         SNMP4JSettings.getDefaultTimeoutMillis(),
-                        new PDU(PDU.GET,
-                                List.of(new VariableBinding(
-                                        new OID(configuration.requireString(PARAMETER_OID)),
-                                        toVariable(
-                                                BytesFormatter.escapedHexStringToBytes(
-                                                        configuration.requireString(PARAMETER_VARIABLE)
-                                                )
-                                        )
+                        new PDU(PDU.GET, List.of(new VariableBinding(
+                                new OID(configuration.requireString(PARAMETER_OID)),
+                                toVariable(BytesFormatter.fullyEscapedStringToBytes(
+                                        configuration.requireString(PARAMETER_VARIABLE)
                                 ))
-                        )
+                        )))
                 );
                 yield null;
             }

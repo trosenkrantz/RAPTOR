@@ -28,7 +28,18 @@ Capabilities:
 
 RAPTOR will then guide you how to set it up.
 
-## Auto-Reply
+### Encoding
+RAPTOR can handle arbitrary bytes, yet allows us to input printable ASCII characters as-is as well. To handle this, our input to RAPTOR must be either:
+- Printable characters (except `"` and `\`) as is, e.g., `abc`.
+- The escaped sequences `\n`, `\r`, `\t`, `\"`, and `\\`. 
+- Escaped hex strings `\\x00` through `\\xff` (any casing).
+- A mix of the above, e.g., `\\x00Hello\n` represents 7 bytes.
+
+See below JSON as an example.
+
+RAPTOR logs with this encoding as well, allowing for easy copy-paste.
+
+### Auto-Reply
 
 For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a JSON file. Example:
 ```json5

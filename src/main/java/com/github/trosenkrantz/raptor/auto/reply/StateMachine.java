@@ -31,7 +31,7 @@ public class StateMachine {
             Matcher matcher = Pattern.compile(transition.input(), Pattern.DOTALL).matcher(buffer); // We expect arbitrary bytes, so we use dotall mode to treat line terminators bytes as any other bytes
 
             if (matcher.matches()) {
-                onOutput.accept(BytesFormatter.escapedHexStringToBytes(transition.output()));
+                onOutput.accept(BytesFormatter.hexEscapedStringToBytes(transition.output()));
                 if (transition.nextState() != null) {
                     currentState = transition.nextState();
                 }

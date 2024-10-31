@@ -63,12 +63,7 @@ public class LoggingConfigurator {
     private static class ConsoleFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
-            return record.getMessage()
-                    .replaceAll("\t", " ")
-                    .replaceAll("\r\n", " ") // If Windows style CR LF, replace with a single space
-                    .replaceAll("\r", " ")
-                    .replaceAll("\n", " ")
-                    + System.lineSeparator();
+            return record.getMessage() + System.lineSeparator();
         }
     }
 }

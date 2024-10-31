@@ -20,5 +20,4 @@ else # Assume Unix-like
 fi
 
 # Run the Java application using the current directory as the classpath
-echo "$BASE_DIR/*;$BASE_DIR/libs/*"
 "$JAVA_EXEC" -cp "$BASE_DIR/*;$BASE_DIR/libs/*" com.github.trosenkrantz.raptor.Main "$@"
