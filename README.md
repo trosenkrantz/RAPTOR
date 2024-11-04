@@ -30,10 +30,10 @@ RAPTOR will then guide you how to set it up.
 
 ### Encoding
 RAPTOR can handle arbitrary bytes, yet allows us to input printable ASCII characters as-is as well. To handle this, our input to RAPTOR must be either:
-- Printable characters (except `"` and `\`) as is, e.g., `abc`.
+- Printable characters (except `"` and `\`) as-is, e.g., `abc`.
 - The escaped sequences `\n`, `\r`, `\t`, `\"`, and `\\`. 
 - Escaped hex strings `\\x00` through `\\xff` (any casing).
-- A mix of the above, e.g., `\\x00Hello\n` represents 7 bytes.
+- A mix of the above, e.g., `\\x00Hello\n` represents the 7 bytes with hex values `00`, `48`, `65`, `6c`, `6c`, `6f`, and `0a`.
 
 See below JSON as an example.
 
@@ -74,12 +74,12 @@ For SNMP auto-replies, `input` is the OID in dot notation and `output` is the Ba
 
 If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
 
-See `snmp-replies.json` for an example.
+See [snmp-replies.json](src/main/distributions/snmp-replies.json) for an example.
 
 ### TCP
 For TCP auto-replies, it passes TCP input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
 
-See `tcp-replies.json` for an example.
+See [tcp-replies.json](src/main/distributions/tcp-replies.json) for an example.
 
 ## Licence
 

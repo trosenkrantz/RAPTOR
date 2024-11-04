@@ -46,7 +46,7 @@ public class TcpService implements RaptorService {
 
     @Override
     public void configure(Configuration configuration) {
-        Role role = ConsoleIo.askForOptions(PromptEnum.getPromptOptions(Role.class));
+        Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
         Void ignore = switch (role) {
@@ -68,7 +68,7 @@ public class TcpService implements RaptorService {
 
     private static void configureWhatToSend(Configuration configuration) {
         ConsoleIo.write("What data to send to the remote system? ");
-        SendStrategy sendStrategy = ConsoleIo.askForOptions(PromptEnum.getPromptOptions(SendStrategy.class));
+        SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
         configuration.setEnum(sendStrategy);
 
         if (sendStrategy.equals(SendStrategy.FILE)) {

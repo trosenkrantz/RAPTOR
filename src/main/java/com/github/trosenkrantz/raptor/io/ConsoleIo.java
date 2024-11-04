@@ -1,14 +1,19 @@
 package com.github.trosenkrantz.raptor.io;
 
 import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
+import com.github.trosenkrantz.raptor.snmp.Role;
+import com.github.trosenkrantz.raptor.snmp.Version;
 
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConsoleIo {
     private static final Console console = System.console();
@@ -51,6 +56,36 @@ public class ConsoleIo {
             Optional<PromptOption<T>> result = options.stream().filter(option -> option.promptValue().equalsIgnoreCase(answer)).findAny();
             if (result.isPresent()) {
                 return result.get().value();
+            } else {
+                writeLine("Unrecognised answer.");
+            }
+        }
+    }
+
+    private static <T extends Enum<T> & PromptEnum> List<PromptOption<T>> getPromptOptions(Class<T> enumClass) {
+        return Stream.of(enumClass.getEnumConstants())
+                .map(value -> new PromptOption<>(value.getPromptValue(), value.getDescription(), value))
+                .collect(Collectors.toList());
+    }
+
+    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass) {
+        return askForOptions(getPromptOptions(enumClass));
+    }
+
+    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass, T defaultValue) {
+        while (true) {
+            writeLine(
+                    "Choose between (default " + defaultValue.getPromptValue() + ") or (e) exit:" + System.lineSeparator() +
+                            Arrays.stream(enumClass.getEnumConstants()).map(option -> option.getPromptValue() + " - " + option.getDescription()).collect(Collectors.joining(System.lineSeparator()))
+            );
+
+            String answer = readLine();
+            if (answer.isEmpty()) return defaultValue;
+            if (answer.equals("e")) throw new AbortedException();
+
+            Optional<T> result = Arrays.stream(enumClass.getEnumConstants()).filter(option -> option.getPromptValue().equalsIgnoreCase(answer)).findAny();
+            if (result.isPresent()) {
+                return result.get();
             } else {
                 writeLine("Unrecognised answer.");
             }
