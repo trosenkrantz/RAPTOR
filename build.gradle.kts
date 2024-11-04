@@ -29,8 +29,8 @@ dependencies {
     add("runtime", "org.snmp4j:snmp4j:3.8.2")
 
     // For testing
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {

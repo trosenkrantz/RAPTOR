@@ -3,8 +3,6 @@ package com.github.trosenkrantz.raptor.io;
 import com.github.trosenkrantz.raptor.AbortedException;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
-import com.github.trosenkrantz.raptor.snmp.Role;
-import com.github.trosenkrantz.raptor.snmp.Version;
 
 import java.io.Console;
 import java.nio.file.Files;

@@ -4,7 +4,7 @@
         "login": [
             {
                 /* Standalone */
-                /* begining */ "input": /* Mid */ "login\n", /* Ending */ // When RAPTOR receives this
+                /* beginning */ "input": /* Mid */ "login\n", /* Ending */ // When RAPTOR receives this
                 "output": "ok\n", // it output this
                 "nextState": "active" // And move to this state
             }
