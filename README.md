@@ -7,6 +7,7 @@ Capabilities:
 
 - TCP:
   - Client and server.
+  - TLS.
 - SNMP
   - GET requests and responses
 - Sending capabilities:
