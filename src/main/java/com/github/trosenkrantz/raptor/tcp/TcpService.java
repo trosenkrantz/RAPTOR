@@ -6,13 +6,19 @@ import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.TrustManager;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -26,6 +32,9 @@ public class TcpService implements RaptorService {
     private static final String PARAMETER_SEND_FILE = "send-file";
     private static final String PARAMETER_HOST = "host";
     private static final String PARAMETER_PORT = "port";
+    private static final String PARAMETER_KEY_STORE = "key-store";
+    private static final String PARAMETER_KEY_STORE_PASSWORD = "key-store-password";
+    private static final String PARAMETER_KEY_PASSWORD = "key-password";
 
     private static boolean shutDown;
 
@@ -45,7 +54,7 @@ public class TcpService implements RaptorService {
     }
 
     @Override
-    public void configure(Configuration configuration) {
+    public void configure(Configuration configuration) throws Exception {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
@@ -63,10 +72,91 @@ public class TcpService implements RaptorService {
             }
         };
 
+        configureTls(configuration);
+
         configureWhatToSend(configuration);
     }
 
-    private static void configureWhatToSend(Configuration configuration) {
+    private void configureTls(Configuration configuration) throws Exception {
+        TlsVersion tlsVersion = ConsoleIo.askForOptions(TlsVersion.class, TlsVersion.None);
+        configuration.setEnum(tlsVersion);
+        if (tlsVersion != TlsVersion.None) {
+            String keyStorePath = ConsoleIo.askForFile("Absolute or relate path to key store (PKCS #12 or JKS)", "." + File.separator + "KeyStore.p12");
+            configuration.setString(PARAMETER_KEY_STORE, keyStorePath);
+
+            String keyStorePassword = ConsoleIo.askForString("Password of key store", pw -> {
+                try {
+                    loadKeyStore(keyStorePath, pw); // Validate by trying to load
+                    return Optional.empty();
+                } catch (Exception e) {
+                    return Optional.of("Failed loading key store with password. " + e.getMessage());
+                }
+            });
+            configuration.setString(PARAMETER_KEY_STORE_PASSWORD, keyStorePassword);
+
+            configuration.setString(
+                    PARAMETER_KEY_PASSWORD,
+                    ConsoleIo.askForString("Password of key", keyStorePassword, pw -> {
+                        try {
+                            loadKey(keyStorePath, keyStorePassword, pw, false); // Validate by trying to load
+                            return Optional.empty();
+                        } catch (Exception e) {
+                            return Optional.of("Failed loading key with password. " + e.getMessage());
+                        }
+                    })
+            );
+        }
+    }
+
+    private static KeyStore loadKeyStore(String path, String password) throws Exception {
+        KeyStore keyStore = KeyStore.getInstance(determineKeyStoreType(path));
+        try (FileInputStream keyStoreStream = new FileInputStream(path)) {
+            keyStore.load(keyStoreStream, password.toCharArray());
+        }
+        return keyStore;
+    }
+
+    private static KeyManagerFactory loadKey(String path, String keyStorePassword, String keyPassword, boolean logCerts) throws Exception {
+        KeyStore keyStore = loadKeyStore(path, keyStorePassword);
+        if (logCerts) {
+            List<Certificate> certificates = Collections.list(keyStore.aliases()).stream().flatMap(alias -> {
+                try {
+                    return Arrays.stream(keyStore.getCertificateChain(alias));
+                } catch (KeyStoreException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+            LOGGER.info("Using " + certificates.size() + " certificates: " + certificates);
+        }
+
+        KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        factory.init(keyStore, keyPassword.toCharArray());
+        return factory;
+    }
+
+    private static SSLContext loadSslContext(Configuration configuration) throws Exception {
+        KeyManagerFactory factory = loadKey(
+                configuration.requireString(PARAMETER_KEY_STORE),
+                configuration.requireString(PARAMETER_KEY_STORE_PASSWORD),
+                configuration.requireString(PARAMETER_KEY_PASSWORD),
+                true
+        );
+
+        SSLContext sslContext = SSLContext.getInstance(configuration.requireEnum(TlsVersion.class).getId());
+        sslContext.init(factory.getKeyManagers(), new TrustManager[]{new AllTrustingTrustManager()}, new SecureRandom());
+
+        return sslContext;
+    }
+
+    private static String determineKeyStoreType(String keyStorePath) {
+        if (keyStorePath.toLowerCase().endsWith(".p12") || keyStorePath.toLowerCase().endsWith(".pfx")) {
+            return "PKCS12";
+        } else {
+            return "JKS";
+        }
+    }
+
+    private static void configureWhatToSend(Configuration configuration) throws IOException {
         ConsoleIo.write("What data to send to the remote system? ");
         SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
         configuration.setEnum(sendStrategy);
@@ -74,13 +164,7 @@ public class TcpService implements RaptorService {
         if (sendStrategy.equals(SendStrategy.FILE)) {
             String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "out");
             // Read file immediately to provide early feedback
-            try {
-                byte[] fileContent = Files.readAllBytes(Paths.get(path));
-                ConsoleIo.writeLine("Read file with " + fileContent.length + " bytes.");
-            } catch (IOException e) {
-                ConsoleIo.writeLine("Failed reading file.");
-                throw new UncheckedIOException(e);
-            }
+            ConsoleIo.writeLine("Read file with " + Files.readAllBytes(Paths.get(path)).length + " bytes.");
 
             configuration.setString(PARAMETER_SEND_FILE, path);
         }
@@ -89,31 +173,25 @@ public class TcpService implements RaptorService {
             String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "tcp-replies.json");
 
             // Load state machine immediately to provide early feedback
-            try {
-                StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-                ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
-            } catch (IOException e) {
-                ConsoleIo.writeLine("Failed reading file.");
-                throw new UncheckedIOException(e);
-            }
+            StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
+            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
 
             configuration.setString(PARAMETER_SEND_FILE, path);
         }
     }
 
     @Override
-    public void run(Configuration configuration) throws IOException {
-        TcpSendStrategy sendStrategy;
-        sendStrategy = loadSendStrategy(configuration);
+    public void run(Configuration configuration) throws Exception {
+        TcpSendStrategy sendStrategy = loadSendStrategy(configuration);
 
         try {
             Void ignore = switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
-                    String address = configuration.requireString(PARAMETER_HOST);
+                    String host = configuration.requireString(PARAMETER_HOST);
                     int port = configuration.requireInt(PARAMETER_PORT);
 
-                    LOGGER.info("Connecting to server at " + address + ":" + port + "...");
-                    try (Socket socket = new Socket(address, port)) {
+                    LOGGER.info("Connecting to server at " + host + ":" + port + "...");
+                    try (Socket socket = getClientSocket(host, port, configuration)) {
                         runWithSocket(socket, sendStrategy);
                     }
 
@@ -122,12 +200,11 @@ public class TcpService implements RaptorService {
                 case SERVER -> {
                     int port = configuration.requireInt(PARAMETER_PORT);
 
-                    try (ServerSocket socket = new ServerSocket(port)) {
+                    try (ServerSocket socket = getServerSocket(port, configuration)) {
                         while (!shutDown) { // Open for new client when closed
                             LOGGER.info("Waiting for client to connect to port " + port + "...");
                             try {
                                 runWithSocket(socket.accept(), sendStrategy);
-                                LOGGER.info("Socket closed normally.");
                             } catch (SocketException e) {
                                 if ("Socket closed".equals(e.getMessage())) {
                                     LOGGER.info("Socket closed normally.");
@@ -142,7 +219,6 @@ public class TcpService implements RaptorService {
                     yield null;
                 }
             };
-            LOGGER.info("Socket closed normally.");
         } catch (SocketException e) {
             if ("Socket closed".equals(e.getMessage())) {
                 LOGGER.info("Socket closed normally.");
@@ -150,6 +226,24 @@ public class TcpService implements RaptorService {
             } else {
                 throw e;
             }
+        }
+    }
+
+    private static Socket getClientSocket(String host, int port, Configuration configuration) throws Exception {
+        if (configuration.requireEnum(TlsVersion.class) == TlsVersion.None) {
+            return new Socket(host, port);
+        } else {
+            return loadSslContext(configuration).getSocketFactory().createSocket(host, port);
+        }
+    }
+
+    private static ServerSocket getServerSocket(int port, Configuration configuration) throws Exception {
+        if (configuration.requireEnum(TlsVersion.class) == TlsVersion.None) {
+            return new ServerSocket(port);
+        } else {
+            SSLServerSocket socket = (SSLServerSocket) loadSslContext(configuration).getServerSocketFactory().createServerSocket(port);
+            socket.setWantClientAuth(true);
+            return socket;
         }
     }
 
@@ -241,5 +335,7 @@ public class TcpService implements RaptorService {
             LOGGER.info("Received " + BytesFormatter.toFullyEscapedString(bytesRead));
             onInput.accept(bytesRead);
         }
+
+        LOGGER.info("Socket closed normally.");
     }
 }

@@ -7,9 +7,9 @@ import com.github.trosenkrantz.raptor.PromptOption;
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,15 +41,36 @@ public class ConsoleIo {
         return result;
     }
 
+    private static <T extends Enum<T> & PromptEnum> List<PromptOption<T>> getPromptOptions(Class<T> enumClass) {
+        return Stream.of(enumClass.getEnumConstants())
+                .map(value -> new PromptOption<>(value.getPromptValue(), value.getDescription(), value))
+                .collect(Collectors.toList());
+    }
+
+    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass) {
+        return askForOptions(getPromptOptions(enumClass), null);
+    }
+
+    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass, T defaultValue) {
+        return askForOptions(getPromptOptions(enumClass), new PromptOption<>(defaultValue.getPromptValue(), defaultValue.getDescription(), defaultValue));
+    }
+
     public static <T> T askForOptions(List<PromptOption<T>> options) {
+        return askForOptions(options, null);
+    }
+
+    public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue) {
         while (true) {
             writeLine(
-                    "Choose between or (e) exit:" + System.lineSeparator() +
+                    "Choose between" +
+                            (defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")") +
+                            " or (e) exit:" + System.lineSeparator() +
                             options.stream().map(option -> option.promptValue() + " - " + option.description()).collect(Collectors.joining(System.lineSeparator()))
             );
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
+            if (defaultValue != null && answer.isEmpty()) return defaultValue.value();
 
             Optional<PromptOption<T>> result = options.stream().filter(option -> option.promptValue().equalsIgnoreCase(answer)).findAny();
             if (result.isPresent()) {
@@ -60,39 +81,9 @@ public class ConsoleIo {
         }
     }
 
-    private static <T extends Enum<T> & PromptEnum> List<PromptOption<T>> getPromptOptions(Class<T> enumClass) {
-        return Stream.of(enumClass.getEnumConstants())
-                .map(value -> new PromptOption<>(value.getPromptValue(), value.getDescription(), value))
-                .collect(Collectors.toList());
-    }
-
-    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass) {
-        return askForOptions(getPromptOptions(enumClass));
-    }
-
-    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass, T defaultValue) {
-        while (true) {
-            writeLine(
-                    "Choose between (default " + defaultValue.getPromptValue() + ") or (e) exit:" + System.lineSeparator() +
-                            Arrays.stream(enumClass.getEnumConstants()).map(option -> option.getPromptValue() + " - " + option.getDescription()).collect(Collectors.joining(System.lineSeparator()))
-            );
-
-            String answer = readLine();
-            if (answer.isEmpty()) return defaultValue;
-            if (answer.equals("e")) throw new AbortedException();
-
-            Optional<T> result = Arrays.stream(enumClass.getEnumConstants()).filter(option -> option.getPromptValue().equalsIgnoreCase(answer)).findAny();
-            if (result.isPresent()) {
-                return result.get();
-            } else {
-                writeLine("Unrecognised answer.");
-            }
-        }
-    }
-
     public static int askForInt(String description, int defaultValue) {
         while (true) {
-            write(description + " (default " + defaultValue + ") or (e) exit:");
+            write(description + " (default " + defaultValue + ") or (e) exit: ");
 
             String answer = readLine();
             if (answer.isEmpty()) return defaultValue;
@@ -107,18 +98,33 @@ public class ConsoleIo {
     }
 
     public static String askForString(String description, String defaultValue) {
-        write(description + " (default " + defaultValue + ") or (e) exit:");
+        return askForString(description, defaultValue, s -> Optional.empty());
+    }
 
-        String answer = readLine();
-        if (answer.isEmpty()) return defaultValue;
-        if (answer.equals("e")) throw new AbortedException();
+    public static String askForString(String description, Function<String, Optional<String>> validator) {
+        return askForString(description, null, validator);
+    }
 
-        return answer;
+    public static String askForString(String description, String defaultValue, Function<String, Optional<String>> validator) {
+        while (true) {
+            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or (e) exit: ");
+
+            String answer = readLine();
+            if (answer.equals("e")) throw new AbortedException();
+            if (defaultValue != null && answer.isEmpty()) return defaultValue;
+
+            Optional<String> error = validator.apply(answer);
+            if (error.isEmpty()) {
+                return answer;
+            } else {
+                writeLine(error.get());
+            }
+        }
     }
 
     public static String askForFile(String description, String defaultPath) {
         while (true) {
-            write(description + " (default " + defaultPath + ") or (e) exit:");
+            write(description + " (default " + defaultPath + ") or (e) exit: ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();

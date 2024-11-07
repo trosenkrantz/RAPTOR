@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -32,7 +33,7 @@ public class Main {
         }
     }
 
-    private static void configure(Collection<RaptorService> services, Configuration configuration) {
+    private static void configure(Collection<RaptorService> services, Configuration configuration) throws Exception {
         RaptorService raptorService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList());
 
         configuration.setString("service", raptorService.getParameterKey());

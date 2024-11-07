@@ -19,7 +19,7 @@ public class LoggingConfigurator {
         rootLogger.addHandler(getFileHandler());
         rootLogger.addHandler(getConsoleHandler());
 
-        rootLogger.setLevel(Level.ALL);
+        rootLogger.setLevel(Level.INFO);
 
         logVersion();
     }
@@ -38,14 +38,14 @@ public class LoggingConfigurator {
         FileHandler fileHandler;
         fileHandler = new FileHandler(logFileName);
         fileHandler.setFormatter(new FileFormatter());
-        fileHandler.setLevel(Level.ALL);
+        fileHandler.setLevel(Level.INFO);
         return fileHandler;
     }
 
     private static Handler getConsoleHandler() {
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setFormatter(new ConsoleFormatter());
-        consoleHandler.setLevel(Level.ALL);
+        consoleHandler.setLevel(Level.INFO);
         return consoleHandler;
     }
 

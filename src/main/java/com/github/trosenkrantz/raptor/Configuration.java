@@ -64,12 +64,9 @@ public class Configuration {
         });
     }
 
-    public <E extends Enum<E>> E requireEnum(String parameter, Class<E> enumClass) {
-        return getEnum(parameter, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter --" + parameter + " not set."));
-    }
-
     public <E extends Enum<E>> E requireEnum(Class<E> enumClass) {
-        return requireEnum(extractParameterKeyFromEnumClass(enumClass), enumClass);
+        String parameter = extractParameterKeyFromEnumClass(enumClass);
+        return getEnum(parameter, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter --" + parameter + " not set."));
     }
 
     public <E extends Enum<E>> void setEnum(String parameter, E value) {

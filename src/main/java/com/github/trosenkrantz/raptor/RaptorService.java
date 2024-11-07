@@ -9,7 +9,7 @@ public interface RaptorService {
 
     String getDescription();
 
-    void configure(Configuration configuration);
+    void configure(Configuration configuration) throws Exception;
 
-    void run(Configuration configuration) throws IOException, InterruptedException;
+    void run(Configuration configuration) throws Exception;
 }
