@@ -1,7 +1,10 @@
 # RAPTOR
 Rapid Assessment and Protocol-based Testing of Operational Responders (RAPTOR) is a tool for analysing and testing systems that interface through low-level networking protocols.
 
-It runs as a console application, simulating a system, exchanging data with the system under test, either interactively or scripted with command line arguments
+It runs as a console application, exchanging data with the system under test, either interactively or scripted with command line arguments. This makes it useful for:
+
+- Experimenting with unfamiliar systems by using RAPTOR to interact with them.
+- Testing systems by configuring RAPTOR to simulate other systems you may not have easy access to.
 
 Capabilities:
 
@@ -9,7 +12,9 @@ Capabilities:
   - Client and server.
   - TLS.
 - SNMP
-  - GET requests and responses
+  - GET, SET, and TRAP operations.
+  - Listening and responding.
+  - Arbitrary data support trough Basic Encoding Rules (BER) encoding.
 - Sending capabilities:
   - Interactively send text or binary data.
   - Send files.
@@ -71,7 +76,7 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
 RAPTOR checks for matching inputs in the order of appearance. It ignores simple line and block comments.
 
 ### SNMP
-For SNMP auto-replies, `input` is the OID in dot notation and `output` is the Basic Encoding Rules (BER) encoding of the response variable.
+For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
 If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
 
