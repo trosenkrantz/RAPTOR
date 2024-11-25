@@ -77,7 +77,7 @@ public class GetCommandResponder implements CommandResponder {
             try {
                 return SnmpService.toVariable(output);
             } catch (IOException e) {
-                ConsoleIo.writeLine("Failed parsing " + BytesFormatter.toFullyEscapedString(output) + " as Basic Encoding Rules.");
+                ConsoleIo.writeLine("Failed parsing " + BytesFormatter.bytesToFullyEscapedStringWithType(output) + " as Basic Encoding Rules.");
                 ConsoleIo.writeException(e);
                 return new Null();
             }

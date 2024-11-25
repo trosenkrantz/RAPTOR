@@ -7,20 +7,21 @@ import java.util.HexFormat;
  * Terms:
  * <ul>
  *     <li>Hex escaped string: Printable characters and control characters are as-is (e.g., line feed is a single character), and arbitrary bytes are four characters (e.g., byte 0 is \, x, 0, and 0). Used for in-memory processing.</li>
- *     <li>Fully escaped string: Printable characters are as-is, control characters are escaped (e.g., line feed is two characters, \ and n), and arbitrary bytes are five characters (e.g., byte 0 is \, \, x, 0, and 0). Used for I/O.</li>
+ *     <li>Fully escaped string: Printable characters are as-is, control characters are escaped (e.g., line feed is two characters, \ and n), and arbitrary bytes are five characters (e.g., byte 0 is \, \, x, 0, and 0). Used for I/O and user prompts. From user's point of view, this is known as the RAPTOR encoding.</li>
+ *     <li>Fully escaped text string: A fully escaped string that is only printable characters and control characters. Used for I/O where we think the bytes are text.</li>
  *     <li>Fully escaped hex string: Is a fully escaped string, but all bytes are formatted as arbitrary bytes. Used for I/O where we think the bytes are arbitrary bytes.</li>
  * </ul>
  */
 public class BytesFormatter {
-    public static String toFullyEscapedString(byte[] input) {
+    public static String bytesToFullyEscapedStringWithType(byte[] input) {
         if (isText(input)) {
-            return "text: " + bytesToFullyEscapedString(input);
+            return "text: " + bytesToFullyEscapedTextString(input);
         } else {
             return "bytes: " + bytesToFullyEscapedHexString(input);
         }
     }
 
-    private static boolean isText(byte[] bytes) {
+    public static boolean isText(byte[] bytes) {
         for (byte b : bytes) {
             if (!isText(b)) return false;
         }
@@ -35,7 +36,7 @@ public class BytesFormatter {
         }
     }
 
-    private static String bytesToFullyEscapedString(byte[] bytes) {
+    public static String bytesToFullyEscapedTextString(byte[] bytes) {
         StringBuilder builder = new StringBuilder();
         for (byte b : bytes) {
             char c = (char) b;
@@ -51,7 +52,7 @@ public class BytesFormatter {
         return builder.toString();
     }
 
-    private static String bytesToFullyEscapedHexString(byte[] bytes) {
+    public static String bytesToFullyEscapedHexString(byte[] bytes) {
         return HexFormat.of().withPrefix("\\\\x").formatHex(bytes);
     }
 

@@ -88,8 +88,8 @@ public class SnmpService implements RaptorService {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of manager to send trap to", DEFAULT_HOST));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Manager IP port to send to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
-                configuration.setString(PARAMETER_OID, String.valueOf(ConsoleIo.askForString("OID of TRAP to send", DEFAULT_OID)));
-                configuration.setString(PARAMETER_VARIABLE, String.valueOf(ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE)));
+                configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of TRAP to send", DEFAULT_OID));
+                configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
 
                 yield null;
             }

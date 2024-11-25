@@ -26,15 +26,15 @@ import java.util.logging.Logger;
 public class TcpService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
 
-    private static final String DEFAULT_HOST = "localhost";
-    private static final int DEFAULT_PORT = 50000;
-
     private static final String PARAMETER_SEND_FILE = "send-file";
     private static final String PARAMETER_HOST = "host";
     private static final String PARAMETER_PORT = "port";
     private static final String PARAMETER_KEY_STORE = "key-store";
     private static final String PARAMETER_KEY_STORE_PASSWORD = "key-store-password";
     private static final String PARAMETER_KEY_PASSWORD = "key-password";
+
+    private static final String DEFAULT_HOST = "localhost";
+    private static final int DEFAULT_PORT = 50000;
 
     private static boolean shutDown;
 
@@ -263,7 +263,7 @@ public class TcpService implements RaptorService {
                                 byte[] whatToSends = supplier.get();
                                 while (!socket.isInputShutdown()) {
                                     out.write(whatToSends);
-                                    LOGGER.info("Sent " + BytesFormatter.toFullyEscapedString(whatToSends));
+                                    LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSends));
 
                                     whatToSends = supplier.get();
                                 }
@@ -291,22 +291,21 @@ public class TcpService implements RaptorService {
 
                 yield socket -> {
                     socket.getOutputStream().write(fileContentToSend);
-                    LOGGER.info("Sent " + BytesFormatter.toFullyEscapedString(fileContentToSend));
+                    LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(fileContentToSend));
                     return input -> { // Nothing to send on inputs
                     };
                 };
             }
             case AUTO_REPLY -> {
                 // Read state machine immediately to provide early feedback
-                StateMachineConfiguration stateMachineConfiguration;
-                stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(PARAMETER_SEND_FILE));
+                StateMachineConfiguration stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(PARAMETER_SEND_FILE));
 
                 yield socket -> {
                     OutputStream out = socket.getOutputStream();
                     StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
                         try {
                             out.write(output);
-                            LOGGER.info("Sent " + BytesFormatter.toFullyEscapedString(output));
+                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(output));
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
@@ -332,7 +331,7 @@ public class TcpService implements RaptorService {
         while ((readLength = in.read(buffer)) != -1) {
             byte[] bytesRead = new byte[readLength];
             System.arraycopy(buffer, 0, bytesRead, 0, readLength);
-            LOGGER.info("Received " + BytesFormatter.toFullyEscapedString(bytesRead));
+            LOGGER.info("Received " + BytesFormatter.bytesToFullyEscapedStringWithType(bytesRead));
             onInput.accept(bytesRead);
         }
 

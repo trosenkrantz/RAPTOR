@@ -5,7 +5,7 @@ plugins {
 val distributionsDir = layout.buildDirectory.dir("distributions")
 
 group = "com.github.trosenkrantz"
-version = "1.2.0"
+version = "1.3.0"
 
 repositories {
     mavenCentral()
@@ -27,6 +27,12 @@ dependencies {
     // For SNMP
     implementation("org.snmp4j:snmp4j:3.8.2")
     add("runtime", "org.snmp4j:snmp4j:3.8.2")
+
+    // For WebSocket
+    implementation("org.java-websocket:Java-WebSocket:1.5.7")
+    add("runtime", "org.java-websocket:Java-WebSocket:1.5.7")
+    add("runtime", "org.slf4j:slf4j-api:2.0.6") // Java-WebSocket use SLF4J
+    add("runtime", "org.slf4j:slf4j-jdk14:2.0.6") // Route SLF4J to java.util.logging
 
     // For testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
