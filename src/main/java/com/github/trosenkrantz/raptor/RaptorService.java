@@ -1,7 +1,5 @@
 package com.github.trosenkrantz.raptor;
 
-import java.io.IOException;
-
 public interface RaptorService {
     String getPromptValue();
 

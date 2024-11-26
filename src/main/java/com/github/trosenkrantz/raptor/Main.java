@@ -2,7 +2,6 @@ package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
 

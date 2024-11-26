@@ -53,7 +53,7 @@ public class SnmpService implements RaptorService {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
-                configuration.setString(PARAMETER_OID, String.valueOf(ConsoleIo.askForString("OID of MIB variable to request", DEFAULT_OID)));
+                configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to request", DEFAULT_OID));
 
                 yield null;
             }
@@ -61,8 +61,8 @@ public class SnmpService implements RaptorService {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
-                configuration.setString(PARAMETER_OID, String.valueOf(ConsoleIo.askForString("OID of MIB variable to set", DEFAULT_OID)));
-                configuration.setString(PARAMETER_VARIABLE, String.valueOf(ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE)));
+                configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to set", DEFAULT_OID));
+                configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
 
                 yield null;
             }

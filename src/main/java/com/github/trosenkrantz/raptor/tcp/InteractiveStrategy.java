@@ -4,7 +4,6 @@ import com.github.trosenkrantz.raptor.AbortedException;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.function.Consumer;
@@ -15,7 +14,7 @@ class InteractiveStrategy implements TcpSendStrategy {
     private static final Logger LOGGER = Logger.getLogger(InteractiveStrategy.class.getName());
 
     @Override
-    public Consumer<byte[]> initialise(Socket socket, Runnable shutDownAction) throws IOException {
+    public Consumer<byte[]> initialise(Socket socket, Runnable shutDownAction) {
         Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
         Thread.ofVirtual().start(() -> {
                     try {

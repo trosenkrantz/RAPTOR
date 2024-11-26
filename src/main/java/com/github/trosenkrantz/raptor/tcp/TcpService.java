@@ -75,7 +75,7 @@ public class TcpService implements RaptorService {
         configureWhatToSend(configuration);
     }
 
-    private void configureTls(Configuration configuration) throws Exception {
+    private void configureTls(Configuration configuration) {
         TlsVersion tlsVersion = ConsoleIo.askForOptions(TlsVersion.class, TlsVersion.NONE);
         configuration.setEnum(tlsVersion);
         if (tlsVersion != TlsVersion.NONE) {
