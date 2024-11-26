@@ -25,7 +25,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakeData) {
         LOGGER.info("Local socket at " + getSocket().getLocalSocketAddress() + " connected to remote socket at " + getSocket().getRemoteSocketAddress() + ".");
-        onInput = sendStrategy.initialise(this);
+        onInput = sendStrategy.initialise(this, () -> {});
     }
 
     @Override

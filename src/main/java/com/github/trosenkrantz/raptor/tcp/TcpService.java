@@ -1,7 +1,6 @@
 package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.*;
-import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
@@ -20,13 +19,12 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class TcpService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
 
-    private static final String PARAMETER_SEND_FILE = "send-file";
+    public static final String PARAMETER_SEND_FILE = "send-file";
     private static final String PARAMETER_HOST = "host";
     private static final String PARAMETER_PORT = "port";
     private static final String PARAMETER_KEY_STORE = "key-store";
@@ -78,9 +76,9 @@ public class TcpService implements RaptorService {
     }
 
     private void configureTls(Configuration configuration) throws Exception {
-        TlsVersion tlsVersion = ConsoleIo.askForOptions(TlsVersion.class, TlsVersion.None);
+        TlsVersion tlsVersion = ConsoleIo.askForOptions(TlsVersion.class, TlsVersion.NONE);
         configuration.setEnum(tlsVersion);
-        if (tlsVersion != TlsVersion.None) {
+        if (tlsVersion != TlsVersion.NONE) {
             String keyStorePath = ConsoleIo.askForFile("Absolute or relate path to key store (PKCS #12 or JKS)", "." + File.separator + "KeyStore.p12");
             configuration.setString(PARAMETER_KEY_STORE, keyStorePath);
 
@@ -182,7 +180,8 @@ public class TcpService implements RaptorService {
 
     @Override
     public void run(Configuration configuration) throws Exception {
-        TcpSendStrategy sendStrategy = loadSendStrategy(configuration);
+        TcpSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
+        sendStrategy.load(configuration);
 
         try {
             Void ignore = switch (configuration.requireEnum(Role.class)) {
@@ -230,7 +229,7 @@ public class TcpService implements RaptorService {
     }
 
     private static Socket getClientSocket(String host, int port, Configuration configuration) throws Exception {
-        if (configuration.requireEnum(TlsVersion.class) == TlsVersion.None) {
+        if (configuration.requireEnum(TlsVersion.class) == TlsVersion.NONE) {
             return new Socket(host, port);
         } else {
             return loadSslContext(configuration).getSocketFactory().createSocket(host, port);
@@ -238,7 +237,7 @@ public class TcpService implements RaptorService {
     }
 
     private static ServerSocket getServerSocket(int port, Configuration configuration) throws Exception {
-        if (configuration.requireEnum(TlsVersion.class) == TlsVersion.None) {
+        if (configuration.requireEnum(TlsVersion.class) == TlsVersion.NONE) {
             return new ServerSocket(port);
         } else {
             SSLServerSocket socket = (SSLServerSocket) loadSslContext(configuration).getServerSocketFactory().createServerSocket(port);
@@ -247,83 +246,10 @@ public class TcpService implements RaptorService {
         }
     }
 
-    private TcpSendStrategy loadSendStrategy(Configuration configuration) throws IOException {
-        SendStrategy sendFrom = configuration.requireEnum(SendStrategy.class);
-
-        return switch (sendFrom) {
-            case NONE -> socket -> { // Nothing to send initially
-                return input -> { // Nothing to send on inputs
-                };
-            };
-            case INTERACTIVE -> socket -> {
-                Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
-                Thread.ofVirtual().start(() -> {
-                            try {
-                                OutputStream out = socket.getOutputStream();
-                                byte[] whatToSends = supplier.get();
-                                while (!socket.isInputShutdown()) {
-                                    out.write(whatToSends);
-                                    LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSends));
-
-                                    whatToSends = supplier.get();
-                                }
-                            } catch (AbortedException ignore) {
-                                shutDown = true;
-                            } catch (Exception e) {
-                                ConsoleIo.writeException(e);
-                                shutDown = true;
-                            } finally {
-                                try {
-                                    socket.close();
-                                } catch (IOException e) {
-                                    ConsoleIo.writeException(e);
-                                    shutDown = true;
-                                }
-                            }
-                        }
-                );
-                return input -> { // Nothing to send on inputs
-                };
-            };
-            case FILE -> {
-                // Read file immediately to provide early feedback
-                byte[] fileContentToSend = Files.readAllBytes(Paths.get(configuration.requireString(PARAMETER_SEND_FILE)));
-
-                yield socket -> {
-                    socket.getOutputStream().write(fileContentToSend);
-                    LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(fileContentToSend));
-                    return input -> { // Nothing to send on inputs
-                    };
-                };
-            }
-            case AUTO_REPLY -> {
-                // Read state machine immediately to provide early feedback
-                StateMachineConfiguration stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(PARAMETER_SEND_FILE));
-
-                yield socket -> {
-                    OutputStream out = socket.getOutputStream();
-                    StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
-                        try {
-                            out.write(output);
-                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(output));
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    });
-                    return input -> {
-                        for (byte b : input) {
-                            stateMachine.onInput(new byte[]{b}); // Pass on byte by byte
-                        }
-                    };
-                };
-            }
-        };
-    }
-
     private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy) throws IOException {
         LOGGER.info("Local socket at " + socket.getLocalSocketAddress() + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
 
-        Consumer<byte[]> onInput = sendStrategy.initialise(socket);
+        Consumer<byte[]> onInput = sendStrategy.initialise(socket, () -> shutDown = true);
 
         InputStream in = socket.getInputStream();
         byte[] buffer = new byte[1024];
@@ -337,4 +263,5 @@ public class TcpService implements RaptorService {
 
         LOGGER.info("Socket closed normally.");
     }
+
 }

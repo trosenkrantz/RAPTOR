@@ -33,7 +33,7 @@ It exchanges data with a system under test, either as a standalone, interactive 
 ## How to use
 1. Download a release and unzip it.
 2. Either
-   - Download Java Runtime Environment 21 or newer, extracting it to a `java` dir, or
+   - Download Java Runtime Environment 21 (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir, or
    - Install Java 21 or newer on your machine.
 3. Run RAPTOR, either the `raptor` bash script or `raptor.cmd` script.
 

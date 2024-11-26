@@ -31,7 +31,13 @@ public class RaptorWebSocketServer extends WebSocketServer {
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         LOGGER.info("Local socket at " + webSocket.getLocalSocketAddress() + " connected to remote socket at " + webSocket.getRemoteSocketAddress() + ".");
-        onInput.put(webSocket.getRemoteSocketAddress(), sendStrategy.initialise(webSocket));
+        onInput.put(webSocket.getRemoteSocketAddress(), sendStrategy.initialise(webSocket, () -> {
+            try {
+                this.stop();
+            } catch (InterruptedException e) {
+                ConsoleIo.writeException(e);
+            }
+        }));
     }
 
     @Override

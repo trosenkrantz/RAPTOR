@@ -2,7 +2,6 @@ package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.RaptorService;
-import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
@@ -15,14 +14,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class WebSocketService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(WebSocketService.class.getName());
     private static final String PARAMETER_HOST = "host";
     private static final String PARAMETER_PORT = "port";
-    private static final String PARAMETER_SEND_FILE = "send-file";
+    public static final String PARAMETER_SEND_FILE = "send-file";
 
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 50000;
@@ -82,7 +80,8 @@ public class WebSocketService implements RaptorService {
 
     @Override
     public void run(Configuration configuration) throws Exception {
-        WebSocketSendStrategy sendStrategy = loadSendStrategy(configuration);
+        WebSocketSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
+        sendStrategy.load(configuration);
 
         Void ignore = switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
@@ -105,54 +104,7 @@ public class WebSocketService implements RaptorService {
         };
     }
 
-    private WebSocketSendStrategy loadSendStrategy(Configuration configuration) throws IOException {
-        SendStrategy sendFrom = configuration.requireEnum(SendStrategy.class);
-
-        return switch (sendFrom) {
-            case NONE -> socket -> { // Nothing to send initially
-                return input -> { // Nothing to send on inputs
-                };
-            };
-            case INTERACTIVE -> socket -> {
-                Supplier<Runnable> sendActionSupplier = () -> {
-                    String userAnswer = ConsoleIo.askForString("What to send", "Hello, World!"); // User answers with fully escaped string
-                    byte[] userAnswerAsBytes = BytesFormatter.fullyEscapedStringToBytes(userAnswer);
-                    return () -> send(socket, userAnswerAsBytes);
-                };
-
-                Thread.ofVirtual().start(() -> {
-                            try {
-                                Runnable sendAction = sendActionSupplier.get();
-                                while (socket.isOpen()) {
-                                    sendAction.run();
-                                    sendAction = sendActionSupplier.get();
-                                }
-                            } catch (Exception e) {
-                                ConsoleIo.writeException(e);
-                            }
-                        }
-                );
-                return input -> { // Nothing to send on inputs
-                };
-            };
-            case AUTO_REPLY -> {
-                // Read state machine immediately to provide early feedback
-                StateMachineConfiguration stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(PARAMETER_SEND_FILE));
-
-                yield socket -> {
-                    StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> send(socket, output));
-                    return input -> {
-                        for (byte b : input) {
-                            stateMachine.onInput(new byte[]{b}); // Pass on byte by byte
-                        }
-                        stateMachine.resetInputBuffer(); // Reset as we process whole WebSocket frames at a time
-                    };
-                };
-            }
-        };
-    }
-
-    private static void send(WebSocket socket, byte[] userAnswerAsBytes) {
+    public static void send(WebSocket socket, byte[] userAnswerAsBytes) {
         if (BytesFormatter.isText(userAnswerAsBytes)) { // Has only printable and control characters
             socket.send(new String(userAnswerAsBytes)); // Send as text frame
             LOGGER.info("Sent text: " + BytesFormatter.bytesToFullyEscapedTextString(userAnswerAsBytes));

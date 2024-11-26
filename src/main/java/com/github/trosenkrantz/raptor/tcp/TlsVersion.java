@@ -3,7 +3,7 @@ package com.github.trosenkrantz.raptor.tcp;
 import com.github.trosenkrantz.raptor.PromptEnum;
 
 public enum TlsVersion implements PromptEnum {
-    None("n", "[N]o TLS", null),
+    NONE("n", "[N]o TLS", null),
     V1_2("1.2", "TLS 1.2", "TLSv1.2"),
     V1_3("1.3", "TLS 1.3", "TLSv1.3");
 

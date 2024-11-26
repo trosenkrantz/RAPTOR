@@ -3,17 +3,19 @@ package com.github.trosenkrantz.raptor.tcp;
 import com.github.trosenkrantz.raptor.PromptEnum;
 
 public enum SendStrategy implements PromptEnum {
-    NONE("n", "Do [n]ot send"),
-    INTERACTIVE("i", "Prompt over console [i]nteractively"),
-    FILE("f", "Send content of a [f]ile"),
-    AUTO_REPLY("a", "Configure an [a]uto-reply");
+    NONE("n", "Do [n]ot send", new NoneSendStrategy()),
+    INTERACTIVE("i", "Prompt over console [i]nteractively", new InteractiveStrategy()),
+    FILE("f", "Send content of a [f]ile", new FileSendStrategy()),
+    AUTO_REPLY("a", "Configure an [a]uto-reply", new AutoReplySendStrategy());
 
     private final String promptValue;
     private final String description;
+    private final TcpSendStrategy strategy;
 
-    SendStrategy(String promptValue, String description) {
+    SendStrategy(String promptValue, String description, TcpSendStrategy strategy) {
         this.promptValue = promptValue;
         this.description = description;
+        this.strategy = strategy;
     }
 
     @Override
@@ -24,5 +26,9 @@ public enum SendStrategy implements PromptEnum {
     @Override
     public String getDescription() {
         return this.description;
+    }
+
+    public TcpSendStrategy getStrategy() {
+        return strategy;
     }
 }
