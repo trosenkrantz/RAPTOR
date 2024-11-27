@@ -25,7 +25,7 @@ public class SnmpService implements RaptorService {
     public static final String PARAMETER_HOST = "host";
     public static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_OID = "oid";
-    public static final String PARAMETER_SEND_FILE = "send-file";
+    public static final String PARAMETER_REPLY_FILE = "reply-file";
     public static final String PARAMETER_VARIABLE = "variable";
 
     @Override
@@ -80,7 +80,7 @@ public class SnmpService implements RaptorService {
                     throw new UncheckedIOException(e);
                 }
 
-                configuration.setString(PARAMETER_SEND_FILE, path);
+                configuration.setString(PARAMETER_REPLY_FILE, path);
 
                 yield null;
             }

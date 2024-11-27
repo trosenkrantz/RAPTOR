@@ -13,6 +13,14 @@ import java.util.HexFormat;
  * </ul>
  */
 public class BytesFormatter {
+    public static String bytesToFullyEscapedString(byte[] input) {
+        if (isText(input)) {
+            return bytesToFullyEscapedTextString(input);
+        } else {
+            return bytesToFullyEscapedHexString(input);
+        }
+    }
+
     public static String bytesToFullyEscapedStringWithType(byte[] input) {
         if (isText(input)) {
             return "text: " + bytesToFullyEscapedTextString(input);

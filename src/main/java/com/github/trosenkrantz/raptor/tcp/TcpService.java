@@ -13,8 +13,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
@@ -24,7 +22,7 @@ import java.util.logging.Logger;
 public class TcpService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
 
-    public static final String PARAMETER_SEND_FILE = "send-file";
+    public static final String PARAMETER_REPLY_FILE = "reply-file";
     private static final String PARAMETER_HOST = "host";
     private static final String PARAMETER_PORT = "port";
     private static final String PARAMETER_KEY_STORE = "key-store";
@@ -159,14 +157,6 @@ public class TcpService implements RaptorService {
         SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
         configuration.setEnum(sendStrategy);
 
-        if (sendStrategy.equals(SendStrategy.FILE)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "out");
-            // Read file immediately to provide early feedback
-            ConsoleIo.writeLine("Read file with " + Files.readAllBytes(Paths.get(path)).length + " bytes.");
-
-            configuration.setString(PARAMETER_SEND_FILE, path);
-        }
-
         if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
             String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "tcp-replies.json");
 
@@ -174,7 +164,7 @@ public class TcpService implements RaptorService {
             StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
             ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
 
-            configuration.setString(PARAMETER_SEND_FILE, path);
+            configuration.setString(PARAMETER_REPLY_FILE, path);
         }
     }
 

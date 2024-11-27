@@ -23,7 +23,7 @@ public class GetCommandResponder implements CommandResponder {
     private static byte[] output;
 
     public GetCommandResponder(Configuration configuration) throws IOException {
-        stateMachine = new StateMachine(StateMachineConfiguration.readFromFile(configuration.requireString(SnmpService.PARAMETER_SEND_FILE)), out -> output = out);
+        stateMachine = new StateMachine(StateMachineConfiguration.readFromFile(configuration.requireString(SnmpService.PARAMETER_REPLY_FILE)), out -> output = out);
     }
 
     @Override

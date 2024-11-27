@@ -35,20 +35,18 @@ It exchanges data with a system under test, either as a standalone, interactive 
 2. Either
    - Download Java Runtime Environment 21 (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir, or
    - Install Java 21 or newer on your machine.
-3. Run RAPTOR, either the `raptor` bash script or `raptor.cmd` script.
+3. Run either the `raptor` bash script or `raptor.cmd` script.
 
 RAPTOR will then guide you how to set it up.
 
 ## Encoding
-RAPTOR can handle arbitrary bytes, yet allows us to input printable ASCII characters as-is as well. To handle this, our input to RAPTOR must be either:
-- Printable characters (except `"` and `\`) as-is, e.g., `abc`.
+RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters as-is. To support this, we must input to RAPTOR either:
+- Printable ASCII characters (except `"` and `\`) as-is, e.g., `abc`.
 - The escape sequences `\n`, `\r`, `\t`, `\"`, and `\\`. 
 - Escaped hex strings `\\x00` through `\\xff` (any casing).
 - A mix of the above, e.g., `\\x00Hello\n` represents the 7 bytes with hex values `00`, `48`, `65`, `6c`, `6c`, `6f`, and `0a`.
 
-See below JSON as an example.
-
-RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste.
+RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste. Additionally, RAPTOR can convert between files and this encoding.
 
 ## Auto-Reply
 

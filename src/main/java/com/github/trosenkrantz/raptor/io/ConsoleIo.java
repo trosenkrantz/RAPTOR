@@ -122,13 +122,17 @@ public class ConsoleIo {
         }
     }
 
+    public static String askForFile(String description) {
+        return askForFile(description, null);
+    }
+
     public static String askForFile(String description, String defaultPath) {
         while (true) {
-            write(description + " (default " + defaultPath + ") or (e) exit: ");
+            write(description + (defaultPath == null ? "" : " (default " + defaultPath + ")") + " or (e) exit: ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
-            if (answer.isEmpty()) answer = defaultPath;
+            if (defaultPath != null && answer.isEmpty()) answer = defaultPath;
 
             Path path = Path.of(answer);
             if (Files.exists(path)) {

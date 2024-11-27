@@ -5,7 +5,6 @@ import com.github.trosenkrantz.raptor.PromptEnum;
 public enum SendStrategy implements PromptEnum {
     NONE("n", "Do [n]ot send", new NoneSendStrategy()),
     INTERACTIVE("i", "Prompt over console [i]nteractively", new InteractiveStrategy()),
-    FILE("f", "Send content of a [f]ile", new FileSendStrategy()),
     AUTO_REPLY("a", "Configure an [a]uto-reply", new AutoReplySendStrategy());
 
     private final String promptValue;
