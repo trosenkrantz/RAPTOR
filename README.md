@@ -77,7 +77,7 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
         "active": [
             {
                 "input": "set: \\d+!", // Use regexes
-                "output": "\\x00\\xff" // Denote arbitrary bytes with \xhh encoding
+                "output": "\\x00\\xff" // Denote arbitrary bytes with \\xhh encoding
                 // Absent nextState means stay
             },
             {
