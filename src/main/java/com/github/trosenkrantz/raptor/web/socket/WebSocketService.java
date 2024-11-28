@@ -5,8 +5,11 @@ import com.github.trosenkrantz.raptor.RaptorService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.tls.TlsUtility;
+import com.github.trosenkrantz.raptor.tls.TlsVersion;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
 import java.io.File;
@@ -59,6 +62,8 @@ public class WebSocketService implements RaptorService {
             }
         };
 
+        TlsUtility.configureTls(configuration);
+
         configureWhatToSend(configuration);
     }
 
@@ -88,6 +93,9 @@ public class WebSocketService implements RaptorService {
                 String host = configuration.requireString(PARAMETER_HOST);
                 int port = configuration.requireInt(PARAMETER_PORT);
                 WebSocketClient client = new RaptorWebSocketClient(new URI("ws://" + host + ":" + port), sendStrategy);
+                if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
+                    client.setSocketFactory(TlsUtility.loadSslContext(configuration).getSocketFactory());
+                }
                 LOGGER.info("Connecting to server at " + host + ":" + port + "...");
                 client.run(); // blocking call
 
@@ -96,6 +104,9 @@ public class WebSocketService implements RaptorService {
             case SERVER -> {
                 int port = configuration.requireInt(PARAMETER_PORT);
                 WebSocketServer server = new RaptorWebSocketServer(new InetSocketAddress("localhost", port), sendStrategy);
+                if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
+                    server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(TlsUtility.loadSslContext(configuration)));
+                }
                 LOGGER.info("Waiting for client to connect to port " + port + "...");
                 server.run(); // blocking call
 

@@ -5,6 +5,7 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import javax.net.ssl.SSLParameters;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
@@ -20,6 +21,11 @@ public class RaptorWebSocketClient extends WebSocketClient {
     public RaptorWebSocketClient(URI serverUri, WebSocketSendStrategy sendStrategy) {
         super(serverUri);
         this.sendStrategy = sendStrategy;
+    }
+
+    @Override
+    protected void onSetSSLParameters(SSLParameters sslParameters) {
+        sslParameters.setEndpointIdentificationAlgorithm(null);
     }
 
     @Override

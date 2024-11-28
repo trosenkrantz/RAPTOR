@@ -10,7 +10,7 @@ It exchanges data with a system under test, either as a standalone, interactive 
 
 - TCP:
   - Client and server.
-  - TLS.
+  - With and without TLS.
 - SNMP:
   - GET, SET, and TRAP operations.
   - Listening and responding.
@@ -19,6 +19,8 @@ It exchanges data with a system under test, either as a standalone, interactive 
   - Client.
   - server:
     - Multiple concurrent client connections.
+  - With and without TLS (`wss://` and `ws://`)
+  - Text and binary data.
 - Can be used as CLI.
 - Sending capabilities:
   - Interactively send text or binary data.
@@ -33,8 +35,18 @@ It exchanges data with a system under test, either as a standalone, interactive 
 ## How to use
 1. Download a release and unzip it.
 2. Either
-   - Download Java Runtime Environment 21 (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir, or
-   - Install Java 21 or newer on your machine.
+   - Download Java Runtime Environment 21 (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir:
+     ```
+     ├── java
+     │   ├── bin
+     │   ├── conf
+     │   └── ...
+     ├── libs
+     ├── LICENSE
+     ├── raptor
+     └── ...
+     ```
+   - Or install Java 21 or newer on your machine.
 3. Run either the `raptor` bash script or `raptor.cmd` script.
 
 RAPTOR will then guide you how to set it up.
@@ -94,6 +106,9 @@ See [tcp-replies.json](src/main/distributions/tcp-replies.json) for an example.
 For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
 
 See [tcp-replies.json](src/main/distributions/tcp-replies.json) for an example.
+
+## TLS
+RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates nor hostnames.
 
 ## Licence
 

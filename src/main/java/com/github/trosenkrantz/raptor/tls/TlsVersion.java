@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.tcp;
+package com.github.trosenkrantz.raptor.tls;
 
 import com.github.trosenkrantz.raptor.PromptEnum;
 
