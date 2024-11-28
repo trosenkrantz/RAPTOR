@@ -21,12 +21,12 @@ import java.util.logging.Logger;
 
 public class WebSocketService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(WebSocketService.class.getName());
-    private static final String PARAMETER_HOST = "host";
+    private static final String PARAMETER_URI = "uri";
     private static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_SEND_FILE = "send-file";
 
-    private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 50000;
+    private static final String DEFAULT_URI = "ws://localhost:" + DEFAULT_PORT + "/socket";
 
     @Override
     public String getPromptValue() {
@@ -50,7 +50,7 @@ public class WebSocketService implements RaptorService {
 
         Void ignore = switch (role) {
             case CLIENT -> {
-                configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
+                configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT)));
 
                 yield null;
@@ -90,13 +90,12 @@ public class WebSocketService implements RaptorService {
 
         Void ignore = switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
-                String host = configuration.requireString(PARAMETER_HOST);
-                int port = configuration.requireInt(PARAMETER_PORT);
-                WebSocketClient client = new RaptorWebSocketClient(new URI("ws://" + host + ":" + port), sendStrategy);
+                String uri = configuration.requireString(PARAMETER_URI);
+                WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy);
                 if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
                     client.setSocketFactory(TlsUtility.loadSslContext(configuration).getSocketFactory());
                 }
-                LOGGER.info("Connecting to server at " + host + ":" + port + "...");
+                LOGGER.info("Connecting to server at " + uri + "...");
                 client.run(); // blocking call
 
                 yield null;
@@ -104,10 +103,9 @@ public class WebSocketService implements RaptorService {
             case SERVER -> {
                 int port = configuration.requireInt(PARAMETER_PORT);
                 WebSocketServer server = new RaptorWebSocketServer(new InetSocketAddress("localhost", port), sendStrategy);
-                if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
-                    server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(TlsUtility.loadSslContext(configuration)));
-                }
-                LOGGER.info("Waiting for client to connect to port " + port + "...");
+                boolean useTls = configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE;
+                if (useTls) server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(TlsUtility.loadSslContext(configuration)));
+                LOGGER.info("Waiting for client to connect to " + (useTls ? "wss" : "ws") + "://localhost:" + port + "...");
                 server.run(); // blocking call
 
                 yield null;
