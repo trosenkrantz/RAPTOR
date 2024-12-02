@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor;
+package com.github.trosenkrantz.raptor.io;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -16,25 +16,29 @@ public class LoggingConfigurator {
         Logger rootLogger = Logger.getLogger(""); // Get the root logger (global logger for all classes)
 
         rootLogger.getHandlers()[0].setLevel(Level.OFF); // Turn off the default console logger
-        rootLogger.addHandler(getFileHandler());
+        String logFileName = getLogFileName();
+        rootLogger.addHandler(getFileHandler(logFileName));
         rootLogger.addHandler(getConsoleHandler());
 
         rootLogger.setLevel(Level.INFO);
 
         logVersion();
+        ConsoleIo.writeLine("Logging to " + logFileName + ".");
+    }
+
+    private static String getLogFileName() throws IOException {
+        Path logsPath = Files.createDirectories(Path.of("logs"));
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss").format(new Date()); // ISO 8601 format
+        return logsPath.resolve(timestamp + ".log").toAbsolutePath().toString();
     }
 
     private static void logVersion() throws IOException, URISyntaxException {
         try (JarFile jarFile = new JarFile(LoggingConfigurator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())) {
-            LOGGER.info("Starting RAPTOR version " + jarFile.getManifest().getMainAttributes().getValue("Implementation-Version"));
+            LOGGER.info("Running RAPTOR version " + jarFile.getManifest().getMainAttributes().getValue("Implementation-Version") + ".");
         }
     }
 
-    private static FileHandler getFileHandler() throws IOException {
-        Path path = Files.createDirectories(Path.of("logs"));
-        String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss").format(new Date()); // ISO 8601 format
-        String logFileName = path.resolve("RAPTOR " + timestamp + ".log").toString();
-
+    private static FileHandler getFileHandler(String logFileName) throws IOException {
         FileHandler fileHandler;
         fileHandler = new FileHandler(logFileName);
         fileHandler.setFormatter(new FileFormatter());
