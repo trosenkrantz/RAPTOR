@@ -23,7 +23,7 @@ public class WebSocketService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(WebSocketService.class.getName());
     private static final String PARAMETER_URI = "uri";
     private static final String PARAMETER_PORT = "port";
-    public static final String PARAMETER_SEND_FILE = "send-file";
+    public static final String PARAMETER_REPLY_FILE = "reply-file";
 
     private static final int DEFAULT_PORT = 50000;
     private static final String DEFAULT_URI = "ws://localhost:" + DEFAULT_PORT + "/socket";
@@ -79,7 +79,7 @@ public class WebSocketService implements RaptorService {
             StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
             ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
 
-            configuration.setString(PARAMETER_SEND_FILE, path);
+            configuration.setString(PARAMETER_REPLY_FILE, path);
         }
     }
 
