@@ -94,6 +94,10 @@ public class Configuration {
         return getInt(parameter).orElseThrow(() -> new IllegalArgumentException("Parameter --" + parameter + " not set."));
     }
 
+    public void setInt(String key, Integer port) {
+        setString(key, String.valueOf(port));
+    }
+
 
     /* Other */
 

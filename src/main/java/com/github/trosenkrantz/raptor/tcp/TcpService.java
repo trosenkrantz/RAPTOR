@@ -4,11 +4,14 @@ import com.github.trosenkrantz.raptor.*;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.IpPortValidator;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
 import com.github.trosenkrantz.raptor.tls.TlsVersion;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -21,7 +24,8 @@ public class TcpService implements RaptorService {
 
     public static final String PARAMETER_REPLY_FILE = "reply-file";
     private static final String PARAMETER_HOST = "host";
-    private static final String PARAMETER_PORT = "port";
+    private static final String PARAMETER_LOCAL_PORT = "local-port";
+    private static final String PARAMETER_REMOTE_PORT = "remote-port";
 
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 50000;
@@ -51,12 +55,17 @@ public class TcpService implements RaptorService {
         Void ignore = switch (role) {
             case CLIENT -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT)));
+                configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT, IpPortValidator.VALIDATOR));
+                ConsoleIo.askForOptionalInt(
+                        "IP port of local client socket",
+                        "arbitrary ephemeral port",
+                        IpPortValidator.VALIDATOR
+                ).ifPresent(port -> configuration.setInt(PARAMETER_LOCAL_PORT, port));
 
                 yield null;
             }
             case SERVER -> {
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
+                configuration.setInt(PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT, IpPortValidator.VALIDATOR));
 
                 yield null;
             }
@@ -91,18 +100,14 @@ public class TcpService implements RaptorService {
         try {
             Void ignore = switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
-                    String host = configuration.requireString(PARAMETER_HOST);
-                    int port = configuration.requireInt(PARAMETER_PORT);
-
-                    LOGGER.info("Connecting to server at " + host + ":" + port + "...");
-                    try (Socket socket = getClientSocket(host, port, configuration)) {
+                    try (Socket socket = getClientSocket(configuration)) {
                         runWithSocket(socket, sendStrategy);
                     }
 
                     yield null;
                 }
                 case SERVER -> {
-                    int port = configuration.requireInt(PARAMETER_PORT);
+                    int port = configuration.requireInt(PARAMETER_LOCAL_PORT);
 
                     try (ServerSocket socket = getServerSocket(port, configuration)) {
                         while (!shutDown) { // Open for new client when closed
@@ -133,12 +138,30 @@ public class TcpService implements RaptorService {
         }
     }
 
-    private static Socket getClientSocket(String host, int port, Configuration configuration) throws Exception {
+    private static Socket getClientSocket(Configuration configuration) throws Exception {
+        SocketFactory factory;
         if (configuration.requireEnum(TlsVersion.class) == TlsVersion.NONE) {
-            return new Socket(host, port);
+            factory = SocketFactory.getDefault();
         } else {
-            return TlsUtility.loadSslContext(configuration).getSocketFactory().createSocket(host, port);
+            factory = TlsUtility.loadSslContext(configuration).getSocketFactory();
         }
+
+        Socket socket = factory.createSocket();
+
+        configuration.getInt(PARAMETER_LOCAL_PORT).ifPresent(port -> {
+            try {
+                socket.bind(new InetSocketAddress(port));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+
+        String host = configuration.requireString(PARAMETER_HOST);
+        int port = configuration.requireInt(PARAMETER_REMOTE_PORT);
+        LOGGER.info("Connecting to server at " + host + ":" + port + "...");
+        socket.connect(new InetSocketAddress(host, port));
+
+        return socket;
     }
 
     private static ServerSocket getServerSocket(int port, Configuration configuration) throws Exception {

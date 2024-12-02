@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.LoggingConfigurator;
 
 import java.util.Collection;
 import java.util.logging.Logger;

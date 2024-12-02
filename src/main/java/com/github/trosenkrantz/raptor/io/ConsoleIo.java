@@ -82,23 +82,38 @@ public class ConsoleIo {
     }
 
     public static int askForInt(String description, int defaultValue) {
+        return askForInt(description, defaultValue, v -> Optional.empty());
+    }
+
+    public static int askForInt(String description, int defaultValue, Function<Integer, Optional<String>> validator) {
+        return askForOptionalInt(description, String.valueOf(defaultValue), validator).orElse(defaultValue);
+    }
+
+    public static Optional<Integer> askForOptionalInt(String description, String defaultDescription, Function<Integer, Optional<String>> validator) {
         while (true) {
-            write(description + " (default " + defaultValue + ") or (e) exit: ");
+            write(description + " (default " + defaultDescription + ") or (e) exit: ");
 
             String answer = readLine();
-            if (answer.isEmpty()) return defaultValue;
+            if (answer.isEmpty()) return Optional.empty();
             if (answer.equals("e")) throw new AbortedException();
 
-            if (answer.matches("\\d+")) {
-                return Integer.parseInt(answer);
-            } else {
+            if (!answer.matches("^-?\\d+$")) {
                 writeLine("Answer must be an integer.");
+                continue;
+            }
+            int intAnswer = Integer.parseInt(answer);
+
+            Optional<String> error = validator.apply(intAnswer);
+            if (error.isPresent()) {
+                writeLine(error.get());
+            } else {
+                return Optional.of(intAnswer);
             }
         }
     }
 
     public static String askForString(String description, String defaultValue) {
-        return askForString(description, defaultValue, s -> Optional.empty());
+        return askForString(description, defaultValue, v -> Optional.empty());
     }
 
     public static String askForString(String description, Function<String, Optional<String>> validator) {
