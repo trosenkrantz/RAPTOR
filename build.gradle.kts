@@ -3,6 +3,7 @@ plugins {
 }
 
 val distributionsDir = layout.buildDirectory.dir("distributions")
+val extraRuntimeDir = layout.buildDirectory.dir("extra-runtime")
 
 group = "com.github.trosenkrantz"
 version = "1.3.0"
@@ -92,7 +93,7 @@ tasks.build {
     dependsOn(zip)
 }
 
-tasks.register<Exec>("run") {
+val run = tasks.register<Exec>("run") {
     dependsOn(tasks.assemble)
     workingDir(distributionsDir)
     commandLine(
@@ -103,6 +104,29 @@ tasks.register<Exec>("run") {
         "/C",
         "raptor.cmd"
     ) // Starts RAPTOR in new console window, but in a way so the console windows closes when RAPTOR exists
+}
+
+val assembleExtraRuntime = tasks.register<Copy>("assembleExtraRuntime") {
+    dependsOn(tasks.assemble)
+    from(distributionsDir)
+    into(extraRuntimeDir)
+}
+
+val runExtra = tasks.register<Exec>("runExtra") {
+    dependsOn(assembleExtraRuntime)
+    workingDir(extraRuntimeDir)
+    commandLine(
+        "cmd",
+        "/C",
+        "start",
+        "cmd",
+        "/C",
+        "raptor.cmd"
+    ) // Starts RAPTOR in new console window, but in a way so the console windows closes when RAPTOR exists
+}
+
+tasks.register("run2") {
+    dependsOn(run, runExtra)
 }
 
 tasks.register<Exec>("debug") {
