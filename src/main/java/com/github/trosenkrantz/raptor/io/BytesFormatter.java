@@ -13,6 +13,8 @@ import java.util.HexFormat;
  * </ul>
  */
 public class BytesFormatter {
+    public static final String DEFAULT_FULLY_ESCAPED_STRING = "\\\\x00Hello, World!\\n";
+
     public static String bytesToFullyEscapedString(byte[] input) {
         if (isText(input)) {
             return bytesToFullyEscapedTextString(input);

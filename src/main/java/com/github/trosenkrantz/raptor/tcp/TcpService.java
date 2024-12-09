@@ -23,7 +23,7 @@ public class TcpService implements RaptorService {
     private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
 
     public static final String PARAMETER_REPLY_FILE = "reply-file";
-    private static final String PARAMETER_HOST = "host";
+    private static final String PARAMETER_REMOTE_HOST = "remote-host";
     private static final String PARAMETER_LOCAL_PORT = "local-port";
     private static final String PARAMETER_REMOTE_PORT = "remote-port";
 
@@ -54,10 +54,10 @@ public class TcpService implements RaptorService {
 
         Void ignore = switch (role) {
             case CLIENT -> {
-                configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
-                configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT, IpPortValidator.VALIDATOR));
+                configuration.setString(PARAMETER_REMOTE_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
+                configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("Port of server socket", DEFAULT_PORT, IpPortValidator.VALIDATOR));
                 ConsoleIo.askForOptionalInt(
-                        "IP port of local client socket",
+                        "Port of local client socket",
                         "arbitrary ephemeral port",
                         IpPortValidator.VALIDATOR
                 ).ifPresent(port -> configuration.setInt(PARAMETER_LOCAL_PORT, port));
@@ -65,7 +65,7 @@ public class TcpService implements RaptorService {
                 yield null;
             }
             case SERVER -> {
-                configuration.setInt(PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT, IpPortValidator.VALIDATOR));
+                configuration.setInt(PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("Port of local server socket to create", DEFAULT_PORT, IpPortValidator.VALIDATOR));
 
                 yield null;
             }
@@ -86,7 +86,7 @@ public class TcpService implements RaptorService {
 
             // Load state machine immediately to provide early feedback
             StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
+            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
 
             configuration.setString(PARAMETER_REPLY_FILE, path);
         }
@@ -156,7 +156,7 @@ public class TcpService implements RaptorService {
             }
         });
 
-        String host = configuration.requireString(PARAMETER_HOST);
+        String host = configuration.requireString(PARAMETER_REMOTE_HOST);
         int port = configuration.requireInt(PARAMETER_REMOTE_PORT);
         LOGGER.info("Connecting to server at " + host + ":" + port + "...");
         socket.connect(new InetSocketAddress(host, port));
