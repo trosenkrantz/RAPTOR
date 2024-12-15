@@ -3,9 +3,7 @@ package com.github.trosenkrantz.raptor.udp;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.RaptorService;
 import com.github.trosenkrantz.raptor.ThrowingRunnable;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.io.IpPortValidator;
+import com.github.trosenkrantz.raptor.io.*;
 
 import java.io.IOException;
 import java.net.*;
@@ -49,6 +47,7 @@ public class UdpService implements RaptorService {
 
         (switch (role) {
             case SEND -> (Runnable) () -> {
+                // Configure destination address
                 (switch (mode) {
                     case UNICAST -> (Runnable) () -> {
                         configuration.setString(PARAMETER_DESTINATION_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", DEFAULT_HOST));
@@ -80,24 +79,34 @@ public class UdpService implements RaptorService {
             case SEND -> (switch (configuration.requireEnum(Mode.class)) {
                 case UNICAST -> (ThrowingRunnable) () -> {
                     try (DatagramSocket socket = createSocket(configuration)) {
-                        send(configuration, InetAddress.getByName(configuration.requireString(PARAMETER_DESTINATION_ADDRESS)), socket);
+                        send(configuration, InetAddress.getByName(configuration.requireString(PARAMETER_DESTINATION_ADDRESS)), socket, true);
                     }
                 };
                 case MULTICAST -> (ThrowingRunnable) () -> {
                     try (MulticastSocket socket = createMulticastSocket(configuration)) {
                         for (NetworkInterface networkInterface : getAllMulticastCapableInterfaces()) {
                             socket.setNetworkInterface(networkInterface);
-                            send(configuration, InetAddress.getByName(configuration.requireString(PARAMETER_DESTINATION_ADDRESS)), socket);
+                            send(configuration, InetAddress.getByName(configuration.requireString(PARAMETER_DESTINATION_ADDRESS)), socket, true);
                         }
                     }
                 };
                 case BROADCAST -> (ThrowingRunnable) () -> {
-                    try (DatagramSocket socket = createSocket2(configuration)) {
+                    // Do directed broadcast on each network
+                    try (DatagramSocket socket = createSocket(configuration)) {
                         socket.setBroadcast(true);
 
-//                        for (InetAddress address : getAllBroadcastAddresses()) {
-                            send(configuration, InetAddress.getByName("255.255.255.255"), socket);
-//                        }
+                        for (InterfaceAddress address : getAllBroadcastCapableInterfaceAddresses()) {
+                            send(configuration, address.getBroadcast(), socket, true);
+                        }
+                    }
+
+                    // Do limited broadcast on each network
+                    int port = configuration.getInt(PARAMETER_SOURCE_PORT).orElse(0); // 0 means ephemeral
+                    for (InterfaceAddress address : getAllBroadcastCapableInterfaceAddresses()) {
+                        try (DatagramSocket socket = new DatagramSocket(new InetSocketAddress(address.getAddress(), port))) { // Bind explicitly to the address of the network interface, as we cannot automatically bind to the right one based on "255.255.255.255"
+                            socket.setBroadcast(true);
+                            send(configuration, InetAddress.getByName("255.255.255.255"), socket, false); // Since we already explicitly bound the socket, do not connect here as well
+                        }
                     }
                 };
             });
@@ -121,58 +130,36 @@ public class UdpService implements RaptorService {
         else return new DatagramSocket();
     }
 
-    private static DatagramSocket createSocket2(Configuration configuration) throws SocketException, UnknownHostException {
-        return new DatagramSocket(new InetSocketAddress(InetAddress.getByName("192.168.224.1"), 0));
-//        return new DatagramSocket(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 0));
-//        return new DatagramSocket(new InetSocketAddress(InetAddress.getByName("192.168.0.16"), 0));
-    }
-
     private static MulticastSocket createMulticastSocket(Configuration configuration) throws IOException {
         Optional<Integer> port = configuration.getInt(PARAMETER_SOURCE_PORT);
         if (port.isPresent()) return new MulticastSocket(port.get());
         else return new MulticastSocket();
     }
 
-    private static Collection<NetworkInterface> getAllMulticastCapableInterfaces() throws SocketException {
-        List<NetworkInterface> result = new ArrayList<>();
-
-        for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-            // Loopback interface does not normally support multicast
-            // Sometimes, there can be interfaces without an address that still claims to support multicast, so we filter those away
-            if (!networkInterface.isUp() || !networkInterface.supportsMulticast() || networkInterface.isLoopback() || networkInterface.getInterfaceAddresses().isEmpty()) {
-                continue;
-            }
-
-            result.add(networkInterface);
-        }
-
-        return result;
+    private static List<NetworkInterface> getAllMulticastCapableInterfaces() throws SocketException {
+        return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
+                .filter(CheckedPredicate.wrap(NetworkInterface::isUp))
+                .filter(CheckedPredicate.wrap(NetworkInterface::supportsMulticast))
+                .filter(CheckedPredicate.wrap(anInterface -> !anInterface.isLoopback())) // Loopback interface does not normally support multicast
+                .filter(anInterface -> !anInterface.getInterfaceAddresses().isEmpty()) // Sometimes, there can be interfaces without an address that still claims to support multicast, so we filter those away
+                .toList();
     }
 
-    private static Collection<InetAddress> getAllBroadcastAddresses() throws SocketException {
-        List<InetAddress> result = new ArrayList<>();
-
-        for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-            if (!networkInterface.isUp()) {
-                continue;
-            }
-
-            networkInterface.getInterfaceAddresses().stream()
-                    .map(InterfaceAddress::getBroadcast)
-                    .filter(Objects::nonNull)
-                    .forEach(result::add);
-        }
-
-        return result;
+    private static List<InterfaceAddress> getAllBroadcastCapableInterfaceAddresses() throws SocketException {
+        return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
+                .filter(CheckedPredicate.wrap(NetworkInterface::isUp))
+                .flatMap(anInterface -> anInterface.getInterfaceAddresses().stream())
+                .filter(address -> address.getBroadcast() != null)
+                .toList();
     }
 
-    private static void send(Configuration configuration, InetAddress destinationAddress, DatagramSocket socket) throws IOException {
+    private static void send(Configuration configuration, InetAddress destinationAddress, DatagramSocket socket, boolean connect) throws IOException {
         byte[] payload = BytesFormatter.fullyEscapedStringToBytes(configuration.requireString(PARAMETER_PAYLOAD));
 
         int destinationPort = configuration.requireInt(PARAMETER_DESTINATION_PORT);
 
         // Explicitly connect to get the actual source address instead of the wildcard address
-//        socket.connect(destinationAddress, destinationPort);
+        if (connect) socket.connect(destinationAddress, destinationPort);
 
         DatagramPacket packet = new DatagramPacket(
                 payload,
