@@ -1,5 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
+import com.github.trosenkrantz.raptor.io.BytesFormatter;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -8,6 +10,8 @@ public class Configuration {
 
     public Configuration(String[] args) {
         stringParameters = Arrays.stream(args).map(arg -> {
+            arg = BytesFormatter.unescapeCliArgument(arg);
+
             if (!arg.startsWith("--")) {
                 throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing -- prefix");
             }
@@ -103,6 +107,9 @@ public class Configuration {
 
     @Override
     public String toString() {
-        return stringParameters.stream().map(stringParameter -> "--" + stringParameter.key() + "=" + stringParameter.value()).collect(Collectors.joining(" "));
+        return stringParameters.stream()
+                .map(stringParameter -> BytesFormatter.escapeCliArgument("--" + stringParameter.key() + "=" + stringParameter.value()))
+                .collect(Collectors.joining(" ")
+                );
     }
 }

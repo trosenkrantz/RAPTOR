@@ -4,7 +4,7 @@ Rapid Assessment and Protocol-based Testing of Operational Responders (RAPTOR) i
 It exchanges data with a system under test, either as a standalone, interactive console application or scripted through command line arguments. This makes it useful for:
 
 - Experimenting with unfamiliar systems by using RAPTOR to interact with them.
-- Testing systems by configuring RAPTOR to simulate other systems you may not have easy access to.
+- Testing systems by configuring RAPTOR to simulate other systems we may not have easy access to.
 
 ## Capabilities
 
@@ -29,10 +29,11 @@ It exchanges data with a system under test, either as a standalone, interactive 
     - Text and binary data.
     - Regex match inputs, even for binary inputs.
     - Define states, running a state machine.
-- Supports various OSs through Java, bash, and CMD (Windows) scripts.
+- Supports various OSs through Java, Bash, and .cmd (Windows) scripts.
+- Portable application, can we run from a USB stick.
 - Logging to capture data exchange.
 
-## How to use
+## Getting Started
 1. Download a release and unzip it.
 2. Either
    - Download Java Runtime Environment 21 (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir:
@@ -59,6 +60,16 @@ RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters
 - A mix of the above, e.g., `\\x00Hello\n` represents the 7 bytes with hex values `00`, `48`, `65`, `6c`, `6c`, `6f`, and `0a`.
 
 RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste. Additionally, RAPTOR can convert between files and this encoding.
+
+## CLI
+
+Starting RAPTOR without arguments will prompt us to configure it. After configuration, it will output and log the configuration as CLI arguments, escaped and quoted as needed, e.g.:
+```
+Using arguments:
+--service=udp --mode=unicast --role=send --destination-address=localhost --destination-port=50000 "--payload=Hello, World\!"
+```
+
+We can now run RAPTOR with the arguments directly without user interaction.
 
 ## Auto-Reply
 
