@@ -39,6 +39,10 @@ public class BytesFormatter {
         return true;
     }
 
+    public static String getType(byte[] bytes) {
+        return isText(bytes) ? "text" : "bytes";
+    }
+
     private static boolean isText(byte b) {
         if (b < 0x20) { // Is control char
             return b == 0x09 || b == 0x0A || b == 0x0D; // If tab, LF, or CR

@@ -24,12 +24,12 @@ public class Main {
             String serviceKey = configuration.requireString("service");
             services.stream().filter(service -> service.getParameterKey().equals(serviceKey)).findAny().orElseThrow(() -> new IllegalArgumentException("Service " + serviceKey + " not found.")).run(configuration);
 
-            ConsoleIo.promptUserToExit();
+            ConsoleIo.onExit();
         } catch (AbortedException ignore) {
             // Exit immediately
         } catch (Throwable e) {
             ConsoleIo.writeException(e);
-            ConsoleIo.promptUserToExit();
+            ConsoleIo.onExit();
         }
     }
 

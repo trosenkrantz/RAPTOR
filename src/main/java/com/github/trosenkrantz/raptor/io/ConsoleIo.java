@@ -158,10 +158,17 @@ public class ConsoleIo {
         }
     }
 
-    public static void promptUserToExit() {
+    public static void onExit() {
         if (haveHadUserInteraction) { // Skip prompt if running as CLI
             write(System.lineSeparator() + "Type enter to terminate...");
             readLine();
         }
+    }
+
+    public static void promptUserToExit() {
+        ConsoleIo.writeLine(System.lineSeparator() + "Type enter to terminate...");
+        ConsoleIo.readLine();
+
+        haveHadUserInteraction = false; // Reset to avoid double prompt
     }
 }
