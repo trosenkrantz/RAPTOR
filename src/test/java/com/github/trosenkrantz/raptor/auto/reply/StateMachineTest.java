@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.auto.reply;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,13 +19,13 @@ class StateMachineTest {
         ), capturedOutputs::add);
 
         // Act
-        stateMachine.onInput("login".getBytes());
+        stateMachine.onInput("login".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertTrue(capturedOutputs.isEmpty()); // Still no output
-        stateMachine.onInput("\n".getBytes());
+        stateMachine.onInput("\n".getBytes(StandardCharsets.US_ASCII));
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+        Assertions.assertArrayEquals("ok".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
     }
 
     @Test
@@ -38,13 +39,13 @@ class StateMachineTest {
 
         // Act
         stateMachine.onInput(new byte[]{0});
-        stateMachine.onInput("logi".getBytes());
+        stateMachine.onInput("logi".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertTrue(capturedOutputs.isEmpty()); // Still no output
-        stateMachine.onInput("n".getBytes());
+        stateMachine.onInput("n".getBytes(StandardCharsets.US_ASCII));
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+        Assertions.assertArrayEquals("ok".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
     }
 
     @Test
@@ -63,7 +64,7 @@ class StateMachineTest {
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+        Assertions.assertArrayEquals("ok".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
     }
 
     @Test
@@ -76,13 +77,13 @@ class StateMachineTest {
         ), capturedOutputs::add);
 
         // Act
-        stateMachine.onInput("1.2.3.".getBytes());
+        stateMachine.onInput("1.2.3.".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertTrue(capturedOutputs.isEmpty()); // Still no output
-        stateMachine.onInput("4".getBytes());
+        stateMachine.onInput("4".getBytes(StandardCharsets.US_ASCII));
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+        Assertions.assertArrayEquals("ok".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
     }
 
     @Test
@@ -95,13 +96,13 @@ class StateMachineTest {
         ), capturedOutputs::add);
 
         // Act
-        stateMachine.onInput("1.2.3.".getBytes());
+        stateMachine.onInput("1.2.3.".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertTrue(capturedOutputs.isEmpty()); // Still no output
-        stateMachine.onInput("4".getBytes());
+        stateMachine.onInput("4".getBytes(StandardCharsets.US_ASCII));
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("ok".getBytes(), capturedOutputs.getFirst());
+        Assertions.assertArrayEquals("ok".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
     }
 
     @Test
@@ -114,11 +115,11 @@ class StateMachineTest {
         ), capturedOutputs::add);
 
         // Act
-        stateMachine.onInput("login".getBytes());
+        stateMachine.onInput("login".getBytes(StandardCharsets.US_ASCII));
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("ok\n".getBytes(), capturedOutputs.getFirst());
+        Assertions.assertArrayEquals("ok\n".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
     }
 
     @Test
@@ -131,7 +132,7 @@ class StateMachineTest {
         ), capturedOutputs::add);
 
         // Act
-        stateMachine.onInput("login".getBytes());
+        stateMachine.onInput("login".getBytes(StandardCharsets.US_ASCII));
 
         // Assert
         Assertions.assertEquals(1, capturedOutputs.size());
@@ -151,14 +152,14 @@ class StateMachineTest {
         ), capturedOutputs::add);
 
         // Act and Assert
-        stateMachine.onInput("S1 input".getBytes());
+        stateMachine.onInput("S1 input".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertEquals(1, capturedOutputs.size());
-        Assertions.assertArrayEquals("S1 output".getBytes(), capturedOutputs.getFirst());
-        stateMachine.onInput("S2 input".getBytes());
+        Assertions.assertArrayEquals("S1 output".getBytes(StandardCharsets.US_ASCII), capturedOutputs.getFirst());
+        stateMachine.onInput("S2 input".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertEquals(2, capturedOutputs.size());
-        Assertions.assertArrayEquals("S2 output".getBytes(), capturedOutputs.get(1));
-        stateMachine.onInput("S1 input".getBytes());
+        Assertions.assertArrayEquals("S2 output".getBytes(StandardCharsets.US_ASCII), capturedOutputs.get(1));
+        stateMachine.onInput("S1 input".getBytes(StandardCharsets.US_ASCII));
         Assertions.assertEquals(3, capturedOutputs.size());
-        Assertions.assertArrayEquals("S1 output".getBytes(), capturedOutputs.get(2));
+        Assertions.assertArrayEquals("S1 output".getBytes(StandardCharsets.US_ASCII), capturedOutputs.get(2));
     }
 }

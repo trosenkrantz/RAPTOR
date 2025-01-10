@@ -1,5 +1,6 @@
 plugins {
     java
+    id("net.ltgt.errorprone") version "4.1.0" // For lint checking
 }
 
 val distributionsDir = layout.buildDirectory.dir("distributions")
@@ -38,6 +39,9 @@ dependencies {
     // For testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // For lint checking
+    errorprone("com.google.errorprone:error_prone_core:2.36.0")
 }
 
 java {
@@ -146,4 +150,8 @@ tasks.register<Exec>("debug") {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Werror") // Converts all Java compiler warnings into errors
 }

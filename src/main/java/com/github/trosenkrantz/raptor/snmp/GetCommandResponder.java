@@ -13,6 +13,7 @@ import org.snmp4j.mp.StatusInformation;
 import org.snmp4j.smi.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 public class GetCommandResponder implements CommandResponder {
@@ -20,7 +21,7 @@ public class GetCommandResponder implements CommandResponder {
 
     private final StateMachine stateMachine;
 
-    private static byte[] output;
+    private byte[] output;
 
     public GetCommandResponder(Configuration configuration) throws IOException {
         stateMachine = new StateMachine(StateMachineConfiguration.readFromFile(configuration.requireString(SnmpService.PARAMETER_REPLY_FILE)), out -> output = out);
@@ -45,7 +46,7 @@ public class GetCommandResponder implements CommandResponder {
 
         synchronized (this) {
             for (VariableBinding binding : pdu.getVariableBindings()) {
-                stateMachine.onInput(binding.getOid().toDottedString().getBytes());
+                stateMachine.onInput(binding.getOid().toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
                 responsePDU.add(new VariableBinding(binding.getOid(), extractOutputVariable()));
                 stateMachine.resetInputBuffer();
                 output = null;
@@ -70,7 +71,7 @@ public class GetCommandResponder implements CommandResponder {
         }
     }
 
-    private static Variable extractOutputVariable() {
+    private Variable extractOutputVariable() {
         if (output == null) {
             return new Null();
         } else {

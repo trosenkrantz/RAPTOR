@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-class InteractiveStrategy implements TcpSendStrategy {
-    private static final Logger LOGGER = Logger.getLogger(InteractiveStrategy.class.getName());
+class InteractiveSendStrategy implements TcpSendStrategy {
+    private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
 
     @Override
     public Consumer<byte[]> initialise(Socket socket, Runnable shutDownAction) {

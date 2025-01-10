@@ -2,19 +2,27 @@ package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.PromptEnum;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 public enum SendStrategy implements PromptEnum {
-    NONE("n", "Do [n]ot send", new NoneSendStrategy()),
-    INTERACTIVE("i", "Prompt over console [i]nteractively", new InteractiveSendStrategy()),
-    AUTO_REPLY("a", "Configure an [a]uto-reply", new AutoReplySendStrategy());
+    NONE("n", "Do [n]ot send"),
+    INTERACTIVE("i", "Prompt over console [i]nteractively"),
+    AUTO_REPLY("a", "Configure an [a]uto-reply");
+
+    private static final Map<SendStrategy, WebSocketSendStrategy> STRATEGY_MAP = new EnumMap<>(SendStrategy.class);
+    static {
+        STRATEGY_MAP.put(NONE, new NoneSendStrategy());
+        STRATEGY_MAP.put(INTERACTIVE, new InteractiveSendStrategy());
+        STRATEGY_MAP.put(AUTO_REPLY, new AutoReplySendStrategy());
+    }
 
     private final String promptValue;
     private final String description;
-    private final WebSocketSendStrategy strategy;
 
-    SendStrategy(String promptValue, String description, WebSocketSendStrategy strategy) {
+    SendStrategy(String promptValue, String description) {
         this.promptValue = promptValue;
         this.description = description;
-        this.strategy = strategy;
     }
 
     @Override
@@ -28,6 +36,6 @@ public enum SendStrategy implements PromptEnum {
     }
 
     public WebSocketSendStrategy getStrategy() {
-        return strategy;
+        return STRATEGY_MAP.get(this);
     }
 }

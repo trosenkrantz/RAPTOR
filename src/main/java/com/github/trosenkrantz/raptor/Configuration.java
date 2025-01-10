@@ -41,7 +41,7 @@ public class Configuration {
 
     private static <E extends Enum<E>> String extractParameterKeyFromEnumClass(Class<E> enumClass) {
         // Convert Pascal-case enum class name to kebab-case parameter key
-        return enumClass.getSimpleName().replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase();
+        return enumClass.getSimpleName().replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase(Locale.ROOT);
     }
 
 
@@ -50,11 +50,11 @@ public class Configuration {
     }
 
     private static <E extends Enum<E>> String convertEnumToParameterValue(E value) {
-        return value.name().replaceAll("_", "-").toLowerCase();
+        return value.name().replaceAll("_", "-").toLowerCase(Locale.ROOT);
     }
 
     private static String convertParameterValueToEnumName(String stringValue) {
-        return stringValue.replaceAll("-", "_").toUpperCase();
+        return stringValue.replaceAll("-", "_").toUpperCase(Locale.ROOT);
     }
 
     public <E extends Enum<E>> Optional<E> getEnum(String parameter, Class<E> enumClass) {

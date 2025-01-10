@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -48,19 +49,15 @@ public class WebSocketService implements RaptorService {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
-        Void ignore = switch (role) {
+        switch (role) {
             case CLIENT -> {
                 configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT)));
-
-                yield null;
             }
             case SERVER -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
-
-                yield null;
             }
-        };
+        }
 
         TlsUtility.configureTls(configuration);
 
@@ -88,7 +85,7 @@ public class WebSocketService implements RaptorService {
         WebSocketSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
         sendStrategy.load(configuration);
 
-        Void ignore = switch (configuration.requireEnum(Role.class)) {
+        switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
                 String uri = configuration.requireString(PARAMETER_URI);
                 WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy);
@@ -97,8 +94,6 @@ public class WebSocketService implements RaptorService {
                 }
                 LOGGER.info("Connecting to server at " + uri + "...");
                 client.run(); // blocking call
-
-                yield null;
             }
             case SERVER -> {
                 int port = configuration.requireInt(PARAMETER_PORT);
@@ -107,15 +102,13 @@ public class WebSocketService implements RaptorService {
                 if (useTls) server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(TlsUtility.loadSslContext(configuration)));
                 LOGGER.info("Waiting for client to connect to " + (useTls ? "wss" : "ws") + "://localhost:" + port + "...");
                 server.run(); // blocking call
-
-                yield null;
             }
-        };
+        }
     }
 
     public static void send(WebSocket socket, byte[] userAnswerAsBytes) {
         if (BytesFormatter.isText(userAnswerAsBytes)) { // Has only printable and control characters
-            socket.send(new String(userAnswerAsBytes)); // Send as text frame
+            socket.send(new String(userAnswerAsBytes, StandardCharsets.US_ASCII)); // Send as text frame, using ASCII as we just checked this is ASCII text
             LOGGER.info("Sent text: " + BytesFormatter.bytesToFullyEscapedTextString(userAnswerAsBytes));
         } else {
             socket.send(userAnswerAsBytes); // Send as binary frame

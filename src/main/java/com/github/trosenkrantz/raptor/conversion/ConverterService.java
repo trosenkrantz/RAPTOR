@@ -53,7 +53,7 @@ public class ConverterService implements RaptorService {
 
     @Override
     public void run(Configuration configuration) throws Exception {
-        Void ignore = switch (configuration.requireEnum(Action.class)) {
+        switch (configuration.requireEnum(Action.class)) {
             case ENCODING -> {
                 String encoding = ConsoleIo.askForString("RAPTOR encoding to convert to file", "\\\\x00Hello\\n");
 
@@ -68,14 +68,10 @@ public class ConverterService implements RaptorService {
                 );
 
                 LOGGER.info("Wrote " + bytes.length + (bytes.length == 1 ? " byte" : " bytes") + " to " + path + ".");
-
-                yield null;
             }
             case FILE -> {
                 LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToFullyEscapedString(Files.readAllBytes(Paths.get(configuration.requireString(PARAMETER_PATH)))));
-
-                yield null;
             }
-        };
+        }
     }
 }

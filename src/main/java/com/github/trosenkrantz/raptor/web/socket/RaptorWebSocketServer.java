@@ -8,6 +8,7 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -42,7 +43,7 @@ public class RaptorWebSocketServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket webSocket, String message) {
-        byte[] input = message.getBytes();
+        byte[] input = message.getBytes(StandardCharsets.UTF_8); // WebSockets use UTF-8 for text frames
         InetSocketAddress remoteAddress = webSocket.getRemoteSocketAddress();
         LOGGER.info("Received text from " + remoteAddress + ": " + BytesFormatter.bytesToFullyEscapedTextString(input));
         onInput.get(remoteAddress).accept(input);

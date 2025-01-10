@@ -52,7 +52,7 @@ public class TcpService implements RaptorService {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
-        Void ignore = switch (role) {
+        switch (role) {
             case CLIENT -> {
                 configuration.setString(PARAMETER_REMOTE_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
                 configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("Port of server socket", DEFAULT_PORT, IpPortValidator.VALIDATOR));
@@ -61,15 +61,11 @@ public class TcpService implements RaptorService {
                         "arbitrary ephemeral port",
                         IpPortValidator.VALIDATOR
                 ).ifPresent(port -> configuration.setInt(PARAMETER_LOCAL_PORT, port));
-
-                yield null;
             }
             case SERVER -> {
                 configuration.setInt(PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("Port of local server socket to create", DEFAULT_PORT, IpPortValidator.VALIDATOR));
-
-                yield null;
             }
-        };
+        }
 
         TlsUtility.configureTls(configuration);
 
@@ -98,13 +94,11 @@ public class TcpService implements RaptorService {
         sendStrategy.load(configuration);
 
         try {
-            Void ignore = switch (configuration.requireEnum(Role.class)) {
+            switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
                     try (Socket socket = getClientSocket(configuration)) {
                         runWithSocket(socket, sendStrategy);
                     }
-
-                    yield null;
                 }
                 case SERVER -> {
                     int port = configuration.requireInt(PARAMETER_LOCAL_PORT);
@@ -124,10 +118,8 @@ public class TcpService implements RaptorService {
                             }
                         }
                     }
-
-                    yield null;
                 }
-            };
+            }
         } catch (SocketException e) {
             if ("Socket closed".equals(e.getMessage())) {
                 LOGGER.info("Socket closed normally.");

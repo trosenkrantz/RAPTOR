@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.jar.JarFile;
 import java.util.logging.*;
 
 public class LoggingConfigurator {
     private static final Logger LOGGER = Logger.getLogger(LoggingConfigurator.class.getName());
+
+    private static final DateTimeFormatter TIME_FORMATTER_FILE_NAME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss");
+    private static final DateTimeFormatter TIME_FORMATTER_RECORD = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public static void initialise() throws IOException, URISyntaxException {
         Logger rootLogger = Logger.getLogger(""); // Get the root logger (global logger for all classes)
@@ -28,7 +32,7 @@ public class LoggingConfigurator {
 
     private static String getLogFileName() throws IOException {
         Path logsPath = Files.createDirectories(Path.of("logs"));
-        String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss").format(new Date()); // ISO 8601 format
+        String timestamp = LocalDateTime.now(ZoneId.systemDefault()).format(TIME_FORMATTER_FILE_NAME);
         return logsPath.resolve(timestamp + ".log").toAbsolutePath().toString();
     }
 
@@ -58,7 +62,7 @@ public class LoggingConfigurator {
         public String format(LogRecord record) {
             return String.format(
                     "%s: %s%n",
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date()), // ISO 8601 format
+                    LocalDateTime.ofInstant(record.getInstant(), ZoneId.systemDefault()).format(TIME_FORMATTER_RECORD),
                     record.getMessage()
             );
         }

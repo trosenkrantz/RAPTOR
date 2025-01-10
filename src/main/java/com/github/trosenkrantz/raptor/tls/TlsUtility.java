@@ -12,10 +12,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class TlsUtility {
@@ -100,7 +97,8 @@ public class TlsUtility {
     }
 
     private static String determineKeyStoreType(String keyStorePath) {
-        if (keyStorePath.toLowerCase().endsWith(".p12") || keyStorePath.toLowerCase().endsWith(".pfx")) {
+        String keyStorePathLowerCase = keyStorePath.toLowerCase(Locale.ROOT);
+        if (keyStorePathLowerCase.endsWith(".p12") || keyStorePathLowerCase.endsWith(".pfx")) {
             return "PKCS12";
         } else {
             return "JKS";

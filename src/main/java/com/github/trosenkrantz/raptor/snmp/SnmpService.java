@@ -9,7 +9,10 @@ import org.snmp4j.PDU;
 import org.snmp4j.SNMP4JSettings;
 import org.snmp4j.asn1.BERInputStream;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
+import org.snmp4j.smi.AbstractVariable;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.Variable;
+import org.snmp4j.smi.VariableBinding;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,14 +51,12 @@ public class SnmpService implements RaptorService {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
-        Void ignore = switch (role) {
+        switch (role) {
             case GET_REQUEST -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to request", DEFAULT_OID));
-
-                yield null;
             }
             case SET_REQUEST -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
@@ -63,8 +64,6 @@ public class SnmpService implements RaptorService {
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to set", DEFAULT_OID));
                 configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
-
-                yield null;
             }
             case RESPOND -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Local IP port to set up socket for and for managers to send requests to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
@@ -74,15 +73,13 @@ public class SnmpService implements RaptorService {
                 // Load state machine immediately to provide early feedback
                 try {
                     StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-                    ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
+                    ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
                 } catch (IOException e) {
                     ConsoleIo.writeLine("Failed reading file.");
                     throw new UncheckedIOException(e);
                 }
 
                 configuration.setString(PARAMETER_REPLY_FILE, path);
-
-                yield null;
             }
             case TRAP -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of manager to send trap to", DEFAULT_HOST));
@@ -90,20 +87,16 @@ public class SnmpService implements RaptorService {
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of TRAP to send", DEFAULT_OID));
                 configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
-
-                yield null;
             }
             case LISTEN -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Local IP port to set up socket for and for agent to send traps to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT)));
-
-                yield null;
             }
-        };
+        }
     }
 
     @Override
     public void run(Configuration configuration) throws IOException, InterruptedException {
-        Void ignore = switch (configuration.requireEnum(Role.class)) {
+        switch (configuration.requireEnum(Role.class)) {
             case GET_REQUEST -> {
                 SnmpSender.run(
                         configuration,
@@ -113,7 +106,6 @@ public class SnmpService implements RaptorService {
                                 List.of(new VariableBinding(new OID(configuration.requireString(PARAMETER_OID))))
                         )
                 );
-                yield null;
             }
             case SET_REQUEST -> {
                 SnmpSender.run(
@@ -127,7 +119,6 @@ public class SnmpService implements RaptorService {
                                 ))
                         )))
                 );
-                yield null;
             }
             case TRAP -> {
                 SnmpSender.run(
@@ -141,17 +132,14 @@ public class SnmpService implements RaptorService {
                                 ))
                         )))
                 );
-                yield null;
             }
             case LISTEN -> {
                 SnmpListener.run(configuration, new ListeningCommandResponder());
-                yield null;
             }
             case RESPOND -> {
                 SnmpListener.run(configuration, new GetCommandResponder(configuration));
-                yield null;
             }
-        };
+        }
     }
 
     public static Variable toVariable(byte[] output) throws IOException {

@@ -8,6 +8,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import javax.net.ssl.SSLParameters;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -36,7 +37,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        byte[] input = message.getBytes();
+        byte[] input = message.getBytes(StandardCharsets.UTF_8); // WebSockets use UTF-8 for text frames
         LOGGER.info("Received text: " + BytesFormatter.bytesToFullyEscapedTextString(input));
         onInput.accept(input);
     }
