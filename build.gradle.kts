@@ -7,7 +7,7 @@ val distributionsDir = layout.buildDirectory.dir("distributions")
 val extraRuntimeDir = layout.buildDirectory.dir("extra-runtime")
 
 group = "com.github.trosenkrantz"
-version = "1.3.0"
+version = "1.4.0"
 
 repositories {
     mavenCentral()
