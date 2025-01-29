@@ -7,7 +7,9 @@ It exchanges data with a system under test, either as a standalone, interactive 
 - Testing systems by configuring RAPTOR to simulate other systems we may not have easy access to.
 
 ## Capabilities
-
+- UDP:
+  - Unicast, multicast, and broadcast.
+  - Send and receive.
 - TCP:
   - Client and server.
   - With and without TLS.
