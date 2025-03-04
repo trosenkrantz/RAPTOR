@@ -61,20 +61,20 @@ public class WebSocketService implements RaptorService {
 
         TlsUtility.configureTls(configuration);
 
-        configureWhatToSend(configuration);
+        configureSendStrategy(configuration);
     }
 
-    private static void configureWhatToSend(Configuration configuration) throws IOException {
+    private static void configureSendStrategy(Configuration configuration) throws IOException {
         ConsoleIo.write("What data to send to the remote system? ");
         SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
         configuration.setEnum(sendStrategy);
 
         if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "tcp-replies.json");
+            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "replies.json");
 
             // Load state machine immediately to provide early feedback
             StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().keySet().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
+            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
 
             configuration.setString(PARAMETER_REPLY_FILE, path);
         }

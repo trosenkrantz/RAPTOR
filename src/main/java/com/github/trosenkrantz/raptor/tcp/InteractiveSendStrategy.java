@@ -15,9 +15,10 @@ class InteractiveSendStrategy implements TcpSendStrategy {
 
     @Override
     public Consumer<byte[]> initialise(Socket socket, Runnable shutDownAction) {
-        Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
         Thread.ofVirtual().start(() -> {
                     try {
+                        Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
+
                         OutputStream out = socket.getOutputStream();
                         byte[] whatToSends = supplier.get();
                         while (!socket.isInputShutdown()) {

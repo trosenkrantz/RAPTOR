@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.conversion.ConverterService;
+import com.github.trosenkrantz.raptor.serial.port.SerialPortService;
 import com.github.trosenkrantz.raptor.snmp.SnmpService;
 import com.github.trosenkrantz.raptor.tcp.TcpService;
 import com.github.trosenkrantz.raptor.udp.UdpService;
@@ -14,6 +15,7 @@ public class RaptorServiceFactory {
         return List.of(
                 new UdpService(),
                 new TcpService(),
+                new SerialPortService(),
                 new SnmpService(),
                 new WebSocketService(),
                 new ConverterService()

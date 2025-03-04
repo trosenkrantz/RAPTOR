@@ -113,12 +113,12 @@ See [snmp-replies.json](src/main/distributions/snmp-replies.json) for an example
 ## TCP
 For TCP auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
 
-See [tcp-replies.json](src/main/distributions/tcp-replies.json) for an example.
+See [replies.json](src/main/distributions/replies.json) for an example.
 
 ## WebSocket
 For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
 
-See [tcp-replies.json](src/main/distributions/tcp-replies.json) for an example.
+See [replies.json](src/main/distributions/replies.json) for an example.
 
 ## TLS
 RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates nor hostnames.

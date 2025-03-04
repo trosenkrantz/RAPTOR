@@ -33,7 +33,7 @@ public class SnmpService implements RaptorService {
 
     @Override
     public String getPromptValue() {
-        return "s";
+        return "sn";
     }
 
     @Override

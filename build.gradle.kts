@@ -26,6 +26,10 @@ dependencies {
     add("runtime", "com.fasterxml.jackson.core:jackson-core:2.18.0")
     add("runtime", "com.fasterxml.jackson.core:jackson-annotations:2.18.0")
 
+    // For serial port
+    implementation("com.fazecast:jSerialComm:2.11.0")
+    add("runtime", "com.fazecast:jSerialComm:2.11.0")
+
     // For SNMP
     implementation("org.snmp4j:snmp4j:3.8.2")
     add("runtime", "org.snmp4j:snmp4j:3.8.2")

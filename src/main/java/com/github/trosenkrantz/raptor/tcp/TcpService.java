@@ -78,7 +78,7 @@ public class TcpService implements RaptorService {
         configuration.setEnum(sendStrategy);
 
         if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "tcp-replies.json");
+            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "replies.json");
 
             // Load state machine immediately to provide early feedback
             StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
