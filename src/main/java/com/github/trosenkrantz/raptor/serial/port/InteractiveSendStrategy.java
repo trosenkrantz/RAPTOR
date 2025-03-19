@@ -12,16 +12,20 @@ import org.java_websocket.WebSocket;
 import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 class InteractiveSendStrategy implements SerialPortSendStrategy {
+    private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
+
     @Override
     public Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction) {
         Thread.ofVirtual().start(() -> {
                     try {
                         while (port.isOpen()) {
                             String userAnswer = ConsoleIo.askForString("What to send", "Hello, World!"); // User answers with fully escaped string
-                            byte[] userAnswerAsBytes = BytesFormatter.fullyEscapedStringToBytes(userAnswer);
-                            port.writeBytes(userAnswerAsBytes, userAnswerAsBytes.length);
+                            byte[] whatToSend = BytesFormatter.fullyEscapedStringToBytes(userAnswer);
+                            port.writeBytes(whatToSend, whatToSend.length);
+                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSend));
                         }
                     } catch (AbortedException ignore) {
                         shutDownAction.run();

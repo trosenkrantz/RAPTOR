@@ -7,7 +7,7 @@ public enum Role implements PromptEnum {
     SET_REQUEST("S", "Send [S]ET request, typically as manager to agent"),
     RESPOND("r", "[R]esond to requests, typically as agent back to manager"),
     TRAP("t", "Send [T]RAP, typically as agent to manager"),
-    LISTEN("l", "[l]isten to PDUs, typically as manager listening to TRAPs from an agent");
+    LISTEN("l", "[L]isten to PDUs, typically as manager listening to TRAPs from an agent");
 
     private final String promptValue;
     private final String description;

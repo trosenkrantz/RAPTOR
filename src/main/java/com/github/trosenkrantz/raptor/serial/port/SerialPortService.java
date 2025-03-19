@@ -1,18 +1,16 @@
 package com.github.trosenkrantz.raptor.serial.port;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.fazecast.jSerialComm.SerialPortDataListener;
-import com.fazecast.jSerialComm.SerialPortEvent;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.RaptorService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -22,10 +20,14 @@ public class SerialPortService implements RaptorService {
 
     private static final String DEFAULT_PORT = "COM1";
     private static final int DEFAULT_BAUD_RATE = 9600;
+    private static final int DEFAULT_DATA_BITS = 8;
+    private static final StopBits DEFAULT_STOP_BITS = StopBits.ONE;
+    private static final Parity DEFAULT_PARITY = Parity.NO;
 
     public static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_BAUD_RATE = "baud-rate";
     public static final String PARAMETER_REPLY_FILE = "reply-file";
+    public static final String PARAMETER_DATA_BITS = "data-bits";
 
     @Override
     public String getPromptValue() {
@@ -52,6 +54,18 @@ public class SerialPortService implements RaptorService {
 
         configuration.setInt(PARAMETER_BAUD_RATE, ConsoleIo.askForInt("Baud rate", DEFAULT_BAUD_RATE));
 
+        configuration.setInt(PARAMETER_DATA_BITS, ConsoleIo.askForInt("Data bits", DEFAULT_DATA_BITS, value -> {
+            if (value == 5 || value == 6 || value == 7 || value == 8) {
+                return Optional.empty();
+            } else {
+                return Optional.of("Data bits must be 5, 6, 7, or 8.");
+            }
+        }));
+
+        configuration.setEnum(ConsoleIo.askForOptions(StopBits.class, DEFAULT_STOP_BITS));
+
+        configuration.setEnum(ConsoleIo.askForOptions(Parity.class, DEFAULT_PARITY));
+
         configureSendStrategy(configuration);
     }
 
@@ -74,10 +88,14 @@ public class SerialPortService implements RaptorService {
     @Override
     public void run(Configuration configuration) throws Exception {
         String portName = configuration.requireString(PARAMETER_PORT);
-        int baudRate = configuration.requireInt(PARAMETER_BAUD_RATE);
 
         SerialPort serialPort = SerialPort.getCommPort(portName);
-        serialPort.setComPortParameters(baudRate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY); // TODO make configurable
+        serialPort.setComPortParameters(
+                configuration.requireInt(PARAMETER_BAUD_RATE),
+                configuration.requireInt(PARAMETER_DATA_BITS),
+                configuration.requireEnum(StopBits.class).getValue(),
+                configuration.requireEnum(Parity.class).getValue()
+        );
 
         if (!serialPort.isOpen()) {
             LOGGER.info("Opening port " + portName + "...");
@@ -95,22 +113,9 @@ public class SerialPortService implements RaptorService {
 
         Consumer<byte[]> onReceivedData = configuration.requireEnum(SendStrategy.class).getStrategy().start(configuration, serialPort, shutDownLatch::countDown);
 
-        LOGGER.info("Listing to data received on " + portName + "...");
-        serialPort.addDataListener(new SerialPortDataListener() {
-            @Override
-            public int getListeningEvents() {
-                return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
-            }
-
-            @Override
-            public void serialEvent(SerialPortEvent event) {
-                byte[] data = event.getReceivedData();
-                LOGGER.info("Received " + BytesFormatter.bytesToFullyEscapedStringWithType(data));
-                onReceivedData.accept(data);
-            }
-        });
-
-        // TODO Listen to other events
+        LOGGER.info("Listing to " + portName + "...");
+        // We can only have a single listener according to the JDoc
+        serialPort.addDataListener(new MySerialPortDataListener(onReceivedData));
 
         shutDownLatch.await();
         try {

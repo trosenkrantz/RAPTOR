@@ -17,6 +17,7 @@ It exchanges data with a system under test, either as a standalone, interactive 
   - GET, SET, and TRAP operations.
   - Listening and responding.
   - Arbitrary data support trough Basic Encoding Rules (BER) encoding.
+- Serial port.
 - WebSocket:
   - Client.
   - server:
@@ -32,7 +33,7 @@ It exchanges data with a system under test, either as a standalone, interactive 
     - Regex match inputs, even for binary inputs.
     - Define states, running a state machine.
 - Supports various OSs through Java, Bash, and .cmd (Windows) scripts.
-- Portable application, can we run from a USB stick.
+- Portable application, can be run from a USB stick.
 - Logging to capture data exchange.
 
 ## Getting Started
@@ -103,19 +104,19 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
 ```
 RAPTOR checks for matching inputs in the order of appearance. It ignores simple line and block comments but does not use JSON5.
 
-## SNMP
+### TCP and Serial Port
+For TCP and serial port auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
+
+See [replies.json](src/main/distributions/replies.json) for an example.
+
+### SNMP
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
 If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
 
 See [snmp-replies.json](src/main/distributions/snmp-replies.json) for an example.
 
-## TCP
-For TCP auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
-
-See [replies.json](src/main/distributions/replies.json) for an example.
-
-## WebSocket
+### WebSocket
 For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
 
 See [replies.json](src/main/distributions/replies.json) for an example.
@@ -125,7 +126,7 @@ RAPTOR is purposed for testing and analysis, not for operational usage. When usi
 
 ## Licence
 
-This project is licenced under MIT, see [LICENSE](LICENSE) for more details. The project uses the following third-party libraries, which are subject to their own licences:
+RAPTOR's source code is licenced under MIT, see [LICENSE](LICENSE) for more details. The release includes the following third-party libraries, which are subject to their own licences:
 
 | Name                                                                    | License                                                  |
 |-------------------------------------------------------------------------|----------------------------------------------------------|
@@ -133,6 +134,7 @@ This project is licenced under MIT, see [LICENSE](LICENSE) for more details. The
 | [Jackson Core](https://github.com/FasterXML/jackson-core)               | [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 | [Jackson Databind](https://github.com/FasterXML/jackson-databind)       | [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 | [Java WebSockets](https://github.com/TooTallNate/Java-WebSocket)        | [MIT](https://opensource.org/license/mit)                |
+| [jSerialComm](https://github.com/Fazecast/jSerialComm)                  | [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 | [SLF4J API](https://www.slf4j.org)                                      | [MIT](https://opensource.org/license/mit)                |
 | [SLF4J JDK14 Provider](https://www.slf4j.org)                           | [MIT](https://opensource.org/license/mit)                |
 | [SNMP4J](https://www.snmp4j.org)                                        | [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |

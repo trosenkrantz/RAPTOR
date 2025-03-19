@@ -20,12 +20,12 @@ class InteractiveSendStrategy implements TcpSendStrategy {
                         Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
 
                         OutputStream out = socket.getOutputStream();
-                        byte[] whatToSends = supplier.get();
+                        byte[] whatToSend = supplier.get();
                         while (!socket.isInputShutdown()) {
-                            out.write(whatToSends);
-                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSends));
+                            out.write(whatToSend);
+                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSend));
 
-                            whatToSends = supplier.get();
+                            whatToSend = supplier.get();
                         }
                     } catch (AbortedException ignore) {
                         shutDownAction.run();
