@@ -13,7 +13,7 @@ public class Main {
         try {
             LoggingConfigurator.initialise();
 
-            Collection<RaptorService> services = RaptorServiceFactory.createServices();
+            Collection<RootService> services = RaptorServiceFactory.createServices();
             Configuration configuration = new Configuration(args);
 
             if (configuration.getString("service").isEmpty()) {
@@ -33,10 +33,10 @@ public class Main {
         }
     }
 
-    private static void configure(Collection<RaptorService> services, Configuration configuration) throws Exception {
-        RaptorService raptorService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList());
+    private static void configure(Collection<RootService> services, Configuration configuration) throws Exception {
+        RootService rootService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList());
 
-        configuration.setString("service", raptorService.getParameterKey());
-        raptorService.configure(configuration);
+        configuration.setString("service", rootService.getParameterKey());
+        rootService.configure(configuration);
     }
 }

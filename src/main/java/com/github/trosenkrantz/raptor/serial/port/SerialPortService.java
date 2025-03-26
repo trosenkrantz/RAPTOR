@@ -2,7 +2,7 @@ package com.github.trosenkrantz.raptor.serial.port;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.github.trosenkrantz.raptor.Configuration;
-import com.github.trosenkrantz.raptor.RaptorService;
+import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class SerialPortService implements RaptorService {
+public class SerialPortService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(SerialPortService.class.getName());
 
     private static final String DEFAULT_PORT = "COM1";

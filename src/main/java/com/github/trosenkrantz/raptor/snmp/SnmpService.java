@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.snmp;
 
 import com.github.trosenkrantz.raptor.Configuration;
-import com.github.trosenkrantz.raptor.RaptorService;
+import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
@@ -20,7 +20,7 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class SnmpService implements RaptorService {
+public class SnmpService implements RootService {
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_OID = "1.2.3.4";
     private static final String DEFAULT_VARIABLE = "\\\\x04\\\\x05Hello";

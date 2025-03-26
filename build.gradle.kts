@@ -42,7 +42,10 @@ dependencies {
 
     // For testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("org.testcontainers:testcontainers:1.20.6")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.6")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.slf4j:slf4j-nop:2.0.7") // testcontainers use SLF4J, route to NOP to ignore
 
     // For lint checking
     errorprone("com.google.errorprone:error_prone_core:2.36.0")
@@ -152,7 +155,14 @@ tasks.register<Exec>("debug") {
     )
 }
 
+val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
+    dependsOn(tasks.assemble)
+    workingDir(distributionsDir)
+    commandLine("docker", "build", "-f", "${projectDir}/src/main/docker/Dockerfile", "-t", "raptor:latest", projectDir)
+}
+
 tasks.test {
+    dependsOn(buildDockerImage) // For end-to-end tests
     useJUnitPlatform()
 }
 

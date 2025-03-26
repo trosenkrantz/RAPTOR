@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.Configuration;
-import com.github.trosenkrantz.raptor.RaptorService;
+import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class WebSocketService implements RaptorService {
+public class WebSocketService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(WebSocketService.class.getName());
     private static final String PARAMETER_URI = "uri";
     private static final String PARAMETER_PORT = "port";

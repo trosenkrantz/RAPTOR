@@ -1,15 +1,18 @@
 package com.github.trosenkrantz.raptor.udp;
 
 import com.github.trosenkrantz.raptor.Configuration;
-import com.github.trosenkrantz.raptor.RaptorService;
+import com.github.trosenkrantz.raptor.RootService;
+import com.github.trosenkrantz.raptor.gateway.Endpoint;
+import com.github.trosenkrantz.raptor.gateway.EndpointService;
 import com.github.trosenkrantz.raptor.io.*;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class UdpService implements RaptorService {
+public class UdpService implements RootService, EndpointService {
     private static final Logger LOGGER = Logger.getLogger(UdpService.class.getName());
 
     private static final String PARAMETER_LOCAL_PORT = "local-port";
@@ -45,38 +48,56 @@ public class UdpService implements RaptorService {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
-        (switch (role) {
-            case SEND -> (Runnable) () -> {
-                // Configure remote / destination address
-                (switch (mode) {
-                    case UNICAST -> (Runnable) () -> {
-                        configuration.setString(PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", DEFAULT_ADDRESS));
-                    };
-                    case MULTICAST -> (Runnable) () -> {
-                        configuration.setString(PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to send to", DEFAULT_MULTICAST_GROUP));
-                    };
-                    case BROADCAST -> (Runnable) () -> {
-                    };
-                }).run();
+        switch (role) {
+            case SEND -> {
+                // Configure remote address
+                switch (mode) {
+                    case UNICAST -> configuration.setString(PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", DEFAULT_ADDRESS));
+                    case MULTICAST -> configuration.setString(PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to send to", DEFAULT_MULTICAST_GROUP));
+                    case BROADCAST -> {
+                    }
+                }
 
-                configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("Destination port", DEFAULT_PORT, IpPortValidator.VALIDATOR));
+                configureRemotePort(configuration);
 
-                ConsoleIo.askForOptionalInt(
-                        "Local socket to bind to",
-                        "arbitrary ephemeral port",
-                        IpPortValidator.VALIDATOR
-                ).ifPresent(port -> configuration.setInt(PARAMETER_LOCAL_PORT, port));
+                configureLocalPortAllowingForEphemeral(configuration);
 
                 configuration.setString(PARAMETER_PAYLOAD, ConsoleIo.askForString("Payload to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING));
-            };
-            case RECEIVE -> (Runnable) () -> {
+            }
+            case RECEIVE -> {
                 if (mode == Mode.MULTICAST) {
                     configuration.setString(PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to receive from", DEFAULT_MULTICAST_GROUP));
                 }
 
                 configuration.setInt(PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("Port of local server socket to listen to", DEFAULT_PORT, IpPortValidator.VALIDATOR));
-            };
-        }).run();
+            }
+        }
+    }
+
+    private static void configureLocalPortAllowingForEphemeral(Configuration configuration) {
+        ConsoleIo.askForOptionalInt(
+                "Local socket port to bind to",
+                "arbitrary ephemeral port",
+                IpPortValidator.VALIDATOR
+        ).ifPresent(port -> configuration.setInt(PARAMETER_LOCAL_PORT, port));
+    }
+
+    private static void configureRemotePort(Configuration configuration) {
+        configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("Remote port", DEFAULT_PORT, IpPortValidator.VALIDATOR));
+    }
+
+    @Override
+    public void configureEndpoint(Configuration configuration) {
+        EndpointMode mode = ConsoleIo.askForOptions(EndpointMode.class);
+        configuration.setEnum("mode", mode);
+
+        if (mode == EndpointMode.MULTICAST) {
+            configuration.setString(PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to use", DEFAULT_MULTICAST_GROUP));
+        }
+
+        configureRemotePort(configuration);
+
+        configureLocalPortAllowingForEphemeral(configuration);
     }
 
     @Override
@@ -239,5 +260,10 @@ public class UdpService implements RaptorService {
 
         socket.send(packet);
         LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " to " + destinationAddress.getHostAddress() + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+    }
+
+    @Override
+    public Endpoint createEndpoint(Configuration configuration, Consumer<byte[]> broker) {
+        return null;
     }
 }

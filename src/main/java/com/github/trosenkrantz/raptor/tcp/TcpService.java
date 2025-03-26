@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class TcpService implements RaptorService {
+public class TcpService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
 
     public static final String PARAMETER_REPLY_FILE = "reply-file";

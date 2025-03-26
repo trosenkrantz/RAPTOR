@@ -15,9 +15,11 @@ fi
 
 if [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then # Windows
     BASE_DIR=$(cygpath -w "$(dirname "$0")")
+    CLASS_SEPARATOR=";"
 else # Assume Unix-like
     BASE_DIR=$(dirname "$0")
+    CLASS_SEPARATOR=":"
 fi
 
 # Run the Java application using the current directory as the classpath
-"$JAVA_EXEC" -cp "$BASE_DIR/*;$BASE_DIR/libs/*" com.github.trosenkrantz.raptor.Main "$@"
+"$JAVA_EXEC" -cp "$BASE_DIR/*$CLASS_SEPARATOR$BASE_DIR/libs/*" com.github.trosenkrantz.raptor.Main "$@"

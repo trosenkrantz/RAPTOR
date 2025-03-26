@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.conversion;
 
 import com.github.trosenkrantz.raptor.Configuration;
-import com.github.trosenkrantz.raptor.RaptorService;
+import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Logger;
 
-public class ConverterService implements RaptorService {
+public class ConverterService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(ConverterService.class.getName());
     private static final String PARAMETER_PATH = "path";
 

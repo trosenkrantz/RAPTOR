@@ -6,26 +6,66 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Configuration {
-    private final List<StringParameter> stringParameters;
+    private final Map<String, String> parameters;
 
+    public Configuration() {
+        parameters = new HashMap<>();
+    }
+
+    /**
+     * Creates a new configuration from CLI arguments.
+     * Each argument must be in the form --{@code key}={@code value}.
+     *
+     * @param args CLI arguments
+     */
     public Configuration(String[] args) {
-        stringParameters = Arrays.stream(args).map(arg -> {
+        parameters = Arrays.stream(args).map(arg -> {
             arg = BytesFormatter.unescapeCliArgument(arg);
 
             if (!arg.startsWith("--")) {
                 throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing -- prefix");
             }
+            if (!arg.contains("=")) {
+                throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing =");
+            }
 
-            String[] parts = arg.substring(2).split("=", 2);
-            return new StringParameter(parts[0], parts[1]);
-        }).collect(Collectors.toCollection(ArrayList::new)); // Collect to mutable list
+            return arg.substring(2).split("=", 2);
+        }).collect(Collectors.toMap(parts -> parts[0], parts -> parts[1]));
     }
 
+    private Configuration(final Map<String, String> parameters) {
+        this.parameters = new HashMap<>(parameters);
+    }
+
+    /**
+     * Add all parameters from a configuration to this configuration prefixing the keys to add.
+     * The keys of the added parameters will be {@code <prefix>-<key of original parameter}.
+     *
+     * @param prefix        prefix to add
+     * @param configuration configuration to copy from
+     */
+    public void addWithPrefix(final String prefix, final Configuration configuration) {
+        configuration.parameters.forEach((key, value) -> this.parameters.put(prefix + "-" + key, value));
+    }
+
+    /**
+     * Extract all parameters from this configuration that have a key starting with the given prefix.
+     * The returned configuration will have the prefix and '-' removed from the keys.
+     *
+     * @param prefix prefix to filter with
+     * @return a new configuration containing only the matching parameters
+     */
+    public Configuration extractWithPrefix(final String prefix) {
+        return new Configuration(
+                parameters.entrySet().stream()
+                        .filter(entry -> entry.getKey().startsWith(prefix + "-"))
+                        .collect(Collectors.toMap(entry -> entry.getKey().substring(prefix.length() + 1), Map.Entry::getValue))
+        );
+    }
 
     /* String */
-
     public Optional<String> getString(final String key) {
-        return stringParameters.stream().filter(stringParameter -> stringParameter.key().equals(key)).findAny().map(StringParameter::value);
+        return Optional.ofNullable(parameters.get(key));
     }
 
     public String requireString(final String key) {
@@ -33,7 +73,7 @@ public class Configuration {
     }
 
     public void setString(String key, String value) {
-        stringParameters.add(new StringParameter(key, value));
+        parameters.put(key, value);
     }
 
 
@@ -107,9 +147,8 @@ public class Configuration {
 
     @Override
     public String toString() {
-        return stringParameters.stream()
-                .map(stringParameter -> BytesFormatter.escapeCliArgument("--" + stringParameter.key() + "=" + stringParameter.value()))
-                .collect(Collectors.joining(" ")
-                );
+        return parameters.entrySet().stream()
+                .map(parameter -> BytesFormatter.escapeCliArgument("--" + parameter.getKey() + "=" + parameter.getValue()))
+                .collect(Collectors.joining(" "));
     }
 }

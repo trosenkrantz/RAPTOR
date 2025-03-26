@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.conversion.ConverterService;
+import com.github.trosenkrantz.raptor.gateway.GatewayService;
 import com.github.trosenkrantz.raptor.serial.port.SerialPortService;
 import com.github.trosenkrantz.raptor.snmp.SnmpService;
 import com.github.trosenkrantz.raptor.tcp.TcpService;
@@ -11,13 +12,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class RaptorServiceFactory {
-    public static Collection<RaptorService> createServices() {
+    public static Collection<RootService> createServices() {
         return List.of(
                 new UdpService(),
                 new TcpService(),
                 new SerialPortService(),
                 new SnmpService(),
                 new WebSocketService(),
+                new GatewayService(),
                 new ConverterService()
         );
     }
