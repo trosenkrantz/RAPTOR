@@ -30,8 +30,16 @@ public class ConsoleIo {
         write(message + System.lineSeparator());
     }
 
-    public static void writeException(Throwable e) {
+    public static void writeException(Throwable e) { // TODO Use other one when there is also a string message
         e.printStackTrace(console.writer());
+    }
+
+    public static void writeException(String message, Throwable e) {
+        StringBuilder output = new StringBuilder(message);
+        for (StackTraceElement element : e.getStackTrace()) {
+            output.append(System.lineSeparator()).append("\tat ").append(element);
+        }
+        writeLine(output.toString());
     }
 
     public static String readLine() {

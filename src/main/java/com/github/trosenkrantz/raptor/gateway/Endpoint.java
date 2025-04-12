@@ -1,6 +1,11 @@
 package com.github.trosenkrantz.raptor.gateway;
 
-import java.util.function.Consumer;
+import java.io.IOException;
 
-public interface Endpoint extends Consumer<byte[]> {
+/**
+ * A gateway has two endpoints and a broker.
+ * An endpoint is interfacing with an external system.
+ */
+public interface Endpoint {
+    void sendToExternalSystem(byte[] payload) throws IOException;
 }

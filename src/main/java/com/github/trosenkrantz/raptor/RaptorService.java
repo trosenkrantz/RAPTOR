@@ -21,12 +21,4 @@ public interface RaptorService {
      * @return The description.
      */
     String getDescription();
-
-    /**
-     * Prompts the user to configure the service.
-     *
-     * @param configuration configuration to populate with the user's input.
-     * @throws Exception if the configuration fails.
-     */
-    void configure(Configuration configuration) throws Exception;
 }

@@ -5,6 +5,14 @@ package com.github.trosenkrantz.raptor;
  */
 public interface RootService extends RaptorService {
     /**
+     * Prompts the user to configure the service.
+     *
+     * @param configuration configuration to populate with the user's input.
+     * @throws Exception if the configuration fails.
+     */
+    void configure(Configuration configuration) throws Exception;
+
+    /**
      * Runs the service.
      *
      * @param configuration configuration specifying how to run the service.

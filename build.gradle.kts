@@ -4,7 +4,7 @@ plugins {
 }
 
 val distributionsDir = layout.buildDirectory.dir("distributions")
-val extraRuntimeDir = layout.buildDirectory.dir("extra-runtime")
+val runtimesDir = layout.buildDirectory.dir("runtimes")
 
 group = "com.github.trosenkrantz"
 version = "1.5.0"
@@ -104,40 +104,33 @@ tasks.build {
     dependsOn(zip)
 }
 
-val run = tasks.register<Exec>("run") {
-    dependsOn(tasks.assemble)
-    workingDir(distributionsDir)
-    commandLine(
-        "cmd",
-        "/C",
-        "start",
-        "cmd",
-        "/C",
-        "raptor.cmd"
-    ) // Starts RAPTOR in new console window, but in a way so the console windows closes when RAPTOR exists
+val size: String? by project
+val runTasks = mutableListOf<Task>()
+repeat(size?.toIntOrNull() ?: 1) { index ->
+    val runtimeDir = runtimesDir.get().dir("${index + 1}")
+
+    val copyTask = tasks.register<Copy>("createRuntime${index + 1}") {
+        dependsOn(tasks.assemble)
+        from(distributionsDir)
+        into(runtimeDir)
+    }
+
+    runTasks.add(tasks.register<Exec>("run${index + 1}") {
+        dependsOn(copyTask)
+        workingDir(runtimeDir)
+        commandLine(
+            "cmd",
+            "/C",
+            "start",
+            "cmd",
+            "/C",
+            "raptor.cmd"
+        ) // Starts RAPTOR in new console window, but in a way so the console windows closes when RAPTOR exists
+    }.get())
 }
 
-val assembleExtraRuntime = tasks.register<Copy>("assembleExtraRuntime") {
-    dependsOn(tasks.assemble)
-    from(distributionsDir)
-    into(extraRuntimeDir)
-}
-
-val runExtra = tasks.register<Exec>("runExtra") {
-    dependsOn(assembleExtraRuntime)
-    workingDir(extraRuntimeDir)
-    commandLine(
-        "cmd",
-        "/C",
-        "start",
-        "cmd",
-        "/C",
-        "raptor.cmd"
-    ) // Starts RAPTOR in new console window, but in a way so the console windows closes when RAPTOR exists
-}
-
-tasks.register("run2") {
-    dependsOn(run, runExtra)
+tasks.register("run") {
+    dependsOn(runTasks)
 }
 
 tasks.register<Exec>("debug") {
@@ -164,8 +157,9 @@ val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
 tasks.test {
     dependsOn(buildDockerImage) // For end-to-end tests
     useJUnitPlatform()
+    maxParallelForks = Runtime.getRuntime().availableProcessors()
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.add("-Werror") // Converts all Java compiler warnings into errors
+    options.compilerArgs.add("-Werror") // Converts all Java compiler warnings into errors, to accept no warnings
 }

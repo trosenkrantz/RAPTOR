@@ -4,18 +4,26 @@ import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.udp.UdpService;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public class GatewayService implements RootService {
-    public static final String PARAMETER_ENDPOINT = "endpoint";
-    public static final Collection<EndpointService> ENDPOINT_SERVICES = EndpointServiceFactory.createServices();
-    public static final List<PromptOption<EndpointService>> ENDPOINT_SERVICE_OPTIONS = ENDPOINT_SERVICES.stream().map(endpoint -> new PromptOption<>(endpoint.getPromptValue(), endpoint.getDescription(), endpoint)).toList();
+    private static final Logger LOGGER = Logger.getLogger(UdpService.class.getName());
+
+    private static final String PARAMETER_ENDPOINT = "endpoint";
+    private static final Collection<EndpointService> ENDPOINT_SERVICES = EndpointServiceFactory.createServices();
+    private static final List<PromptOption<EndpointService>> ENDPOINT_SERVICE_OPTIONS = ENDPOINT_SERVICES.stream().map(endpoint -> new PromptOption<>(endpoint.getPromptValue(), endpoint.getDescription(), endpoint)).toList();
+
     private Endpoint endpointA;
     private Endpoint endpointB;
+    private CountDownLatch shouldFinish;
 
     @Override
     public String getPromptValue() {
@@ -44,13 +52,15 @@ public class GatewayService implements RootService {
         EndpointService service = ConsoleIo.askForOptions(ENDPOINT_SERVICE_OPTIONS);
         Configuration endpointConfiguration = new Configuration();
         endpointConfiguration.setString(PARAMETER_ENDPOINT, service.getParameterKey());
-        service.configure(endpointConfiguration);
+        service.configureEndpoint(endpointConfiguration);
 
         rootConfiguration.addWithPrefix(endpointName.toLowerCase(Locale.ROOT), endpointConfiguration);
     }
 
     @Override
     public void run(Configuration configuration) throws Exception {
+        shouldFinish = new CountDownLatch(1);
+
         // As endpoint A might produce data before endpoint B is ready, we need to buffer the data
         DelayedConsumer<byte[]> fromAConsumer = new DelayedConsumer<>();
         DelayedConsumer<byte[]> fromBConsumer = new DelayedConsumer<>();
@@ -58,21 +68,36 @@ public class GatewayService implements RootService {
         endpointA = createEndpoint(configuration.extractWithPrefix("a"), fromAConsumer);
         endpointB = createEndpoint(configuration.extractWithPrefix("b"), fromBConsumer);
 
-        // Now that both endpoints are created, we can start processing the data, flushing the buffer
+        // Now that both endpoints are created, we can start processing the data, flushing the buffers
         fromAConsumer.setDelegate(this::acceptFromEndpointA);
         fromBConsumer.setDelegate(this::acceptFromEndpointB);
+
+        shouldFinish.await();
     }
 
-    private static Endpoint createEndpoint(Configuration endpointConfiguration, Consumer<byte[]> consumer) throws Exception {
-        String endpointAKey = endpointConfiguration.requireString(PARAMETER_ENDPOINT);
-        return ENDPOINT_SERVICES.stream().filter(service -> service.getParameterKey().equals(endpointAKey)).findAny().orElseThrow(() -> new IllegalArgumentException("Service " + endpointAKey + " not found.")).createEndpoint(endpointConfiguration, consumer);
+    private Endpoint createEndpoint(Configuration endpointConfiguration, Consumer<byte[]> consumer) throws IOException {
+        String endpointKey = endpointConfiguration.requireString(PARAMETER_ENDPOINT);
+        EndpointService configuredEndpointService = ENDPOINT_SERVICES.stream().filter(service -> service.getParameterKey().equals(endpointKey)).findAny().orElseThrow(() -> new IllegalArgumentException("Service " + endpointKey + " not found."));
+        return configuredEndpointService.createEndpoint(endpointConfiguration, consumer, () -> shouldFinish.countDown());
     }
 
     private void acceptFromEndpointA(byte[] data) {
-        endpointB.accept(data);
+        try {
+            endpointB.sendToExternalSystem(data);
+        } catch (IOException e) {
+            LOGGER.severe("Failed to process data.");
+            ConsoleIo.writeException(e);
+            shouldFinish.countDown();
+        }
     }
 
     private void acceptFromEndpointB(byte[] data) {
-        endpointA.accept(data);
+        try {
+            endpointA.sendToExternalSystem(data);
+        } catch (IOException e) {
+            LOGGER.severe("Failed to process data.");
+            ConsoleIo.writeException(e);
+            shouldFinish.countDown();
+        }
     }
 }

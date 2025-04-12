@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.gateway;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.RaptorService;
 
+import java.io.IOException;
 import java.util.function.Consumer;
 
 /**
@@ -21,9 +22,10 @@ public interface EndpointService extends RaptorService {
     /**
      * Creates an endpoint based on the configuration.
      *
-     * @param configuration configuration to use for creating the endpoint
-     * @param broker        broker for the endpoint to send data to
+     * @param configuration    configuration to use for creating the endpoint
+     * @param broker           broker for the endpoint to send data to
+     * @param onEndpointClosed callback to be called when the endpoint is closed
      * @return the created endpoint
      */
-    Endpoint createEndpoint(final Configuration configuration, final Consumer<byte[]> broker);
+    Endpoint createEndpoint(final Configuration configuration, final Consumer<byte[]> broker, Runnable onEndpointClosed) throws IOException;
 }

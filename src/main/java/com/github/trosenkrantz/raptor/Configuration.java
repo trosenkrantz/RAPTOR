@@ -1,12 +1,13 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.udp.EndpointMode;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Configuration {
-    private final Map<String, String> parameters;
+    private final Map<String, String> parameters; // TODO Data structure to keep order of insertion?
 
     public Configuration() {
         parameters = new HashMap<>();
@@ -63,6 +64,10 @@ public class Configuration {
         );
     }
 
+    public Configuration copy() {
+        return new Configuration(parameters);
+    }
+
     /* String */
     public Optional<String> getString(final String key) {
         return Optional.ofNullable(parameters.get(key));
@@ -97,7 +102,7 @@ public class Configuration {
         return stringValue.replaceAll("-", "_").toUpperCase(Locale.ROOT);
     }
 
-    public <E extends Enum<E>> Optional<E> getEnum(String parameter, Class<E> enumClass) {
+    private <E extends Enum<E>> Optional<E> getEnum(String parameter, Class<E> enumClass) {
         return getString(parameter).map(stringValue -> {
             String name = convertParameterValueToEnumName(stringValue);
             try {
@@ -108,9 +113,12 @@ public class Configuration {
         });
     }
 
-    public <E extends Enum<E>> E requireEnum(Class<E> enumClass) {
-        String parameter = extractParameterKeyFromEnumClass(enumClass);
+    public <E extends Enum<E>> E requireEnum(String parameter, Class<E> enumClass) {
         return getEnum(parameter, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter --" + parameter + " not set."));
+    }
+
+    public <E extends Enum<E>> E requireEnum(Class<E> enumClass) {
+        return requireEnum(extractParameterKeyFromEnumClass(enumClass), enumClass);
     }
 
     public <E extends Enum<E>> void setEnum(String parameter, E value) {
@@ -120,7 +128,6 @@ public class Configuration {
     public <E extends Enum<E>> void setEnum(E value) {
         setEnum(extractParameterKeyFromEnum(value), value);
     }
-
 
     /* Int */
 
