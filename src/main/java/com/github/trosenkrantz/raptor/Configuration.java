@@ -7,10 +7,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Configuration {
-    private final Map<String, String> parameters; // TODO Data structure to keep order of insertion?
+    private final Map<String, String> parameters;
 
     public Configuration() {
-        parameters = new HashMap<>();
+        parameters = new LinkedHashMap<>();
     }
 
     /**
@@ -31,11 +31,11 @@ public class Configuration {
             }
 
             return arg.substring(2).split("=", 2);
-        }).collect(Collectors.toMap(parts -> parts[0], parts -> parts[1]));
+        }).collect(Collectors.toMap(parts -> parts[0], parts -> parts[1], (existing, replacement) -> existing, LinkedHashMap::new));
     }
 
     private Configuration(final Map<String, String> parameters) {
-        this.parameters = new HashMap<>(parameters);
+        this.parameters = new LinkedHashMap<>(parameters);
     }
 
     /**

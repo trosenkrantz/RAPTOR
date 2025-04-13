@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SerialPortService implements RootService {
@@ -122,8 +123,7 @@ public class SerialPortService implements RootService {
             serialPort.closePort();
             LOGGER.info("Closed port " + portName + ".");
         } catch (Exception e) {
-            LOGGER.severe("Failed to close port " + portName + ".");
-            ConsoleIo.writeException(e);
+            LOGGER.log(Level.SEVERE, "Failed closing port " + portName + ".", e);
         }
     }
 }

@@ -14,7 +14,6 @@ public class LoggingConfigurator {
     private static final Logger LOGGER = Logger.getLogger(LoggingConfigurator.class.getName());
 
     private static final DateTimeFormatter TIME_FORMATTER_FILE_NAME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss");
-    private static final DateTimeFormatter TIME_FORMATTER_RECORD = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public static void initialise() throws IOException, URISyntaxException {
         Logger rootLogger = Logger.getLogger(""); // Get the root logger (global logger for all classes)
@@ -57,21 +56,4 @@ public class LoggingConfigurator {
         return consoleHandler;
     }
 
-    private static class FileFormatter extends Formatter {
-        @Override
-        public String format(LogRecord record) {
-            return String.format(
-                    "%s: %s%n",
-                    LocalDateTime.ofInstant(record.getInstant(), ZoneId.systemDefault()).format(TIME_FORMATTER_RECORD),
-                    record.getMessage()
-            );
-        }
-    }
-
-    private static class ConsoleFormatter extends Formatter {
-        @Override
-        public String format(LogRecord record) {
-            return record.getMessage() + System.lineSeparator();
-        }
-    }
 }

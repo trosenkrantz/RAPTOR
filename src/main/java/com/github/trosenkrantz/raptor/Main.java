@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.LoggingConfigurator;
 
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
@@ -28,7 +29,7 @@ public class Main {
         } catch (AbortedException ignore) {
             // Exit immediately
         } catch (Throwable e) {
-            ConsoleIo.writeException(e);
+            LOGGER.log(Level.SEVERE, "Error occurred.", e);
             ConsoleIo.onExit();
         }
     }

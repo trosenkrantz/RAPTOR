@@ -1,24 +1,46 @@
 package com.github.trosenkrantz.raptor;
 
+import com.github.dockerjava.api.async.ResultCallback;
 import org.junit.jupiter.api.Assertions;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
-import org.testcontainers.containers.output.WaitingConsumer;
 
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 public class Raptor extends GenericContainer<Raptor> {
-    public Raptor(final Network network) {
+    private static final long TIMEOUT_MS = 4000L;
+    private static final long EXPECT_INTERVAL_MS = 10L; // Same as WaitingConsumer
+
+    private final List<String> stdoutLines = new ArrayList<>();
+    private final RaptorNetwork network;
+
+    public Raptor(final RaptorNetwork network) {
         super("raptor:latest");
 
-        withNetwork(network).withCreateContainerCmdModifier(cmd -> cmd.withTty(true));
+        this.network = network;
+        this.network.addContainer(this);
+        withCreateContainerCmdModifier(cmd -> {
+            cmd.withTty(true);
+            cmd.withStdinOpen(true);
+        });
+        withLogConsumer(outputFrame -> {
+            if (outputFrame.getType() == OutputFrame.OutputType.STDOUT) {
+                String line = outputFrame.getUtf8String();
+                synchronized (this) {
+                    stdoutLines.add(line);
+                }
+            }
+        });
     }
 
     @Override
@@ -40,27 +62,55 @@ public class Raptor extends GenericContainer<Raptor> {
         return argsList.toArray(new String[0]);
     }
 
-    /**
-     * Assert that this container have output all the given strings on a single output line.
-     * This ignores casing.
-     *
-     * @param expected the expected strings to be found
-     */
-    public void expectOutputLineContains(String... expected) {
-        WaitingConsumer consumer = new WaitingConsumer();
-        followOutput(consumer, OutputFrame.OutputType.STDOUT);
-        StringBuilder output = new StringBuilder();
+    public void expectAnyOutputLineContains(String... expectedPhrases) {
+        List<String> expectedPhrases2 = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
 
-        try {
-            consumer.waitUntil(frame -> {
-                String line = frame.getUtf8String();
-                output.append(line);
-                String lineLowerCase = line.toLowerCase(Locale.ROOT);
-                return Arrays.stream(expected).allMatch(string -> lineLowerCase.contains(string.toLowerCase(Locale.ROOT)));
-            }, 4, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            Assertions.fail("Timeout waiting for expected output. Output:" + System.lineSeparator() + output);
-        }
+        expectOutputLines(actualLines -> actualLines.stream().anyMatch(lineContainsAllPhrases(expectedPhrases2)));
+    }
+
+    private static Predicate<String> lineContainsAllPhrases(List<String> expectedPhrases) {
+        return actualLine -> expectedPhrases.stream().allMatch(actualLine::contains);
+    }
+
+    public void expectNumberOfOutputLineContains(int expectedNumber, String... expectedPhrases) {
+        List<String> expectedPhrases2 = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
+
+        expectOutputLines(actualLines -> {
+            long linesMatch = actualLines.stream().filter(lineContainsAllPhrases(expectedPhrases2)).count();
+            return linesMatch == expectedNumber;
+        });
+    }
+
+    public void expectOutputLines(Predicate<List<String>> predicate) {
+        List<String> capturedLines;
+
+        long deadline = System.currentTimeMillis() + TIMEOUT_MS;
+        do {
+            synchronized (this) {
+                capturedLines = new ArrayList<>(stdoutLines);
+            }
+            List<String> actualLines = capturedLines.stream().map(String::toLowerCase).toList();
+
+            if (predicate.test(actualLines)) {
+                return; // Success
+            }
+
+            try {
+                Thread.sleep(EXPECT_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        } while (System.currentTimeMillis() < deadline);
+
+
+        Assertions.fail("Timeout waiting for expected outputs. Output:" + System.lineSeparator() +
+                String.join("", capturedLines) + System.lineSeparator() +
+                "Other RAPTORs output:" + System.lineSeparator() +
+                String.join(System.lineSeparator(), network.getContainers().stream().filter(container -> !equals(container)).map(Raptor::getOutput).toList()));
+    }
+
+    public synchronized String getOutput() {
+        return String.join("", stdoutLines);
     }
 
     public String getRaptorHostname() {
@@ -69,5 +119,20 @@ public class Raptor extends GenericContainer<Raptor> {
 
     public String getRaptorIpAddress() {
         return getContainerInfo().getNetworkSettings().getNetworks().get(((Network.NetworkImpl) getNetwork()).getName()).getIpAddress();
+    }
+
+    public void writeLineToStdIn(String message) throws IOException {
+        try (PipedOutputStream out = new PipedOutputStream()) {
+            PipedInputStream in = new PipedInputStream(out);
+
+            DockerClientFactory.instance().client().attachContainerCmd(getContainerId())
+                    .withFollowStream(true)
+                    .withStdIn(in)
+                    .exec(new ResultCallback.Adapter<>() {
+                    });
+
+            out.write((message + "\n").getBytes(StandardCharsets.UTF_8));
+            out.flush();
+        }
     }
 }

@@ -10,6 +10,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RaptorWebSocketClient extends WebSocketClient {
@@ -58,7 +59,6 @@ public class RaptorWebSocketClient extends WebSocketClient {
 
     @Override
     public void onError(Exception e) {
-        LOGGER.info("Error occurred. " + e.getMessage());
-        ConsoleIo.writeException(e);
+        LOGGER.log(Level.SEVERE, "Error occurred.", e);
     }
 }

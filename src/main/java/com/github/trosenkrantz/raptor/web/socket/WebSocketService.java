@@ -52,7 +52,6 @@ public class WebSocketService implements RootService {
         switch (role) {
             case CLIENT -> {
                 configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of server socket", DEFAULT_PORT)));
             }
             case SERVER -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
@@ -97,10 +96,10 @@ public class WebSocketService implements RootService {
             }
             case SERVER -> {
                 int port = configuration.requireInt(PARAMETER_PORT);
-                WebSocketServer server = new RaptorWebSocketServer(new InetSocketAddress("localhost", port), sendStrategy);
+                WebSocketServer server = new RaptorWebSocketServer(new InetSocketAddress("0.0.0.0", port), sendStrategy);
                 boolean useTls = configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE;
                 if (useTls) server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(TlsUtility.loadSslContext(configuration)));
-                LOGGER.info("Waiting for client to connect to " + (useTls ? "wss" : "ws") + "://localhost:" + port + "...");
+                LOGGER.info("Waiting for client to connect to " + (useTls ? "wss" : "ws") + "://0.0.0.0:" + port + "...");
                 server.run(); // blocking call
             }
         }

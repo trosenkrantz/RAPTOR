@@ -5,6 +5,7 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import java.io.IOException;
 import java.net.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RaptorReceivingMulticastSocket extends MulticastSocket {
@@ -45,7 +46,7 @@ public class RaptorReceivingMulticastSocket extends MulticastSocket {
         try {
             leaveMulticastGroup();
         } catch (IOException e) {
-            ConsoleIo.writeException("Failed leaving multicast group.", e);
+            LOGGER.log(Level.SEVERE, "Failed leaving multicast group.", e);
         }
         super.close();
     }

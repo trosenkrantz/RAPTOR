@@ -7,7 +7,7 @@ import org.testcontainers.containers.Network;
 class RaptorTest {
     @Test
     void withBasicCommand() {
-        try (Network network = Network.newNetwork();
+        try (RaptorNetwork network = new RaptorNetwork();
              Raptor raptor = new Raptor(network)
                      .withCommand("--mode=broadcast --local-port=50000 --role=receive --service=udp")) {
 
@@ -21,7 +21,7 @@ class RaptorTest {
 
     @Test
     void withQuotedCommand() {
-        try (Network network = Network.newNetwork();
+        try (RaptorNetwork network = new RaptorNetwork();
              Raptor raptor = new Raptor(network)
                      .withCommand("--mode=broadcast --role=send \"--payload=Hello, World\\!\" --service=udp --remote-port=50000")) {
 

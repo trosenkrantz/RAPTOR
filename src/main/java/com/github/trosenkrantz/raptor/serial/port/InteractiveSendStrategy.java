@@ -12,6 +12,7 @@ import org.java_websocket.WebSocket;
 import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class InteractiveSendStrategy implements SerialPortSendStrategy {
@@ -30,13 +31,13 @@ class InteractiveSendStrategy implements SerialPortSendStrategy {
                     } catch (AbortedException ignore) {
                         shutDownAction.run();
                     } catch (Exception e) {
-                        ConsoleIo.writeException(e);
+                        LOGGER.log(Level.SEVERE, "Error occurred.", e);
                         shutDownAction.run();
                     } finally {
                         try {
                             port.closePort();
                         } catch (Exception e) {
-                            ConsoleIo.writeException(e);
+                            LOGGER.log(Level.SEVERE, "Failed closing port.", e);
                             shutDownAction.run();
                         }
                     }

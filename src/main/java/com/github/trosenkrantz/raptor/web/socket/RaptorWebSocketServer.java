@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RaptorWebSocketServer extends WebSocketServer {
@@ -34,9 +35,10 @@ public class RaptorWebSocketServer extends WebSocketServer {
         LOGGER.info("Local socket at " + webSocket.getLocalSocketAddress() + " connected to remote socket at " + webSocket.getRemoteSocketAddress() + ".");
         onInput.put(webSocket.getRemoteSocketAddress(), sendStrategy.initialise(webSocket, () -> {
             try {
-                this.stop();
+                stop();
             } catch (InterruptedException e) {
-                ConsoleIo.writeException(e);
+                LOGGER.log(Level.SEVERE, "Error stopping server.", e);
+                Thread.currentThread().interrupt();
             }
         }));
     }
@@ -66,7 +68,6 @@ public class RaptorWebSocketServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket webSocket, Exception e) {
-        LOGGER.info("Error occurred. " + e.getMessage());
-        ConsoleIo.writeException(e);
+        LOGGER.log(Level.SEVERE, "Error occurred.", e);
     }
 }

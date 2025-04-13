@@ -51,7 +51,6 @@ public class UdpEndpointService implements EndpointService {
     public Endpoint createEndpoint(Configuration configuration, Consumer<byte[]> broker, Runnable onEndpointClosed) throws IOException {
         return switch (configuration.requireEnum(UdpEndpointService.PARAMETER_MODE, EndpointMode.class)) {
             case MULTICAST -> new UdpMulticastEndpoint(configuration, broker, onEndpointClosed);
-            case BROADCAST -> throw new UnsupportedOperationException(); // TODO Implement
         };
     }
 }

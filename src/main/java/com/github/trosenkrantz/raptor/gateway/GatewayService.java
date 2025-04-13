@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GatewayService implements RootService {
@@ -85,8 +86,7 @@ public class GatewayService implements RootService {
         try {
             endpointB.sendToExternalSystem(data);
         } catch (IOException e) {
-            LOGGER.severe("Failed to process data.");
-            ConsoleIo.writeException(e);
+            LOGGER.log(Level.SEVERE, "Failed to process data.", e);
             shouldFinish.countDown();
         }
     }
@@ -95,8 +95,7 @@ public class GatewayService implements RootService {
         try {
             endpointA.sendToExternalSystem(data);
         } catch (IOException e) {
-            LOGGER.severe("Failed to process data.");
-            ConsoleIo.writeException(e);
+            LOGGER.log(Level.SEVERE, "Failed to process data.", e);
             shouldFinish.countDown();
         }
     }

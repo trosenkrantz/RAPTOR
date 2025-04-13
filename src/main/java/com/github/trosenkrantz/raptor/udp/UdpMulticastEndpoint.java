@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UdpMulticastEndpoint implements Endpoint {
@@ -29,7 +30,7 @@ public class UdpMulticastEndpoint implements Endpoint {
             try {
                 createReceivingSocketAndKeepReceiving(receiveConfiguration, broker);
             } catch (Exception e) {
-                ConsoleIo.writeException(e);
+                LOGGER.log(Level.SEVERE, "Failed creating or receiving from socket.", e);
             } finally {
                 // Receiving is blocking, so we inform endpoint closed afterwards
                 onEndpointClosed.run();

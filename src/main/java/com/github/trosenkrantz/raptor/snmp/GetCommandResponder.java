@@ -14,6 +14,7 @@ import org.snmp4j.smi.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GetCommandResponder implements CommandResponder {
@@ -67,7 +68,7 @@ public class GetCommandResponder implements CommandResponder {
                     new StatusInformation()
             );
         } catch (MessageException e) {
-            ConsoleIo.writeException(e);
+            LOGGER.log(Level.SEVERE, "Failed to send response PDU", e);
         }
     }
 
@@ -78,8 +79,7 @@ public class GetCommandResponder implements CommandResponder {
             try {
                 return SnmpService.toVariable(output);
             } catch (IOException e) {
-                ConsoleIo.writeLine("Failed parsing " + BytesFormatter.bytesToFullyEscapedStringWithType(output) + " as Basic Encoding Rules.");
-                ConsoleIo.writeException(e);
+                LOGGER.log(Level.SEVERE, "Failed parsing " + BytesFormatter.bytesToFullyEscapedStringWithType(output) + " as Basic Encoding Rules.", e);
                 return new Null();
             }
         }

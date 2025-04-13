@@ -7,8 +7,12 @@ import org.java_websocket.WebSocket;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class InteractiveSendStrategy implements WebSocketSendStrategy {
+    private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
+
     @Override
     public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction) {
         Thread.ofVirtual().start(() -> {
@@ -28,13 +32,13 @@ class InteractiveSendStrategy implements WebSocketSendStrategy {
                     } catch (AbortedException ignore) {
                         shutDownAction.run();
                     } catch (Exception e) {
-                        ConsoleIo.writeException(e);
+                        LOGGER.log(Level.SEVERE, "Error occurred.", e);
                         shutDownAction.run();
                     } finally {
                         try {
                             socket.close();
                         } catch (Exception e) {
-                            ConsoleIo.writeException(e);
+                            LOGGER.log(Level.SEVERE, "Failed closing socket.", e);
                             shutDownAction.run();
                         }
                     }

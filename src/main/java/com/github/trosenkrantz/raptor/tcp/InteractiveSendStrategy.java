@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class InteractiveSendStrategy implements TcpSendStrategy {
@@ -30,13 +31,13 @@ class InteractiveSendStrategy implements TcpSendStrategy {
                     } catch (AbortedException ignore) {
                         shutDownAction.run();
                     } catch (Exception e) {
-                        ConsoleIo.writeException(e);
+                        LOGGER.log(Level.SEVERE, "Error occurred.", e);
                         shutDownAction.run();
                     } finally {
                         try {
                             socket.close();
                         } catch (Exception e) {
-                            ConsoleIo.writeException(e);
+                            LOGGER.log(Level.SEVERE, "Failed closing socket.", e);
                             shutDownAction.run();
                         }
                     }

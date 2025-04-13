@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UdpService implements RootService {
@@ -123,9 +124,8 @@ public class UdpService implements RootService {
                     LOGGER.info("Waiting to receive data on port " + localPort);
                     keepReceivingAndPromptUserToCloseSocket(socket, packet -> ":" + localPort);
                 } catch (SocketException e) {
-                    if (!"Socket closed".equals(e.getMessage())) ConsoleIo.writeException(e); // Probably closed by user
-                } catch (IOException e) {
-                    ConsoleIo.writeException(e);
+                    // If "Socket closed", it was probably closed by user, so ignore
+                    if (!"Socket closed".equals(e.getMessage())) throw e;
                 }
             }
             case MULTICAST -> {
@@ -143,9 +143,8 @@ public class UdpService implements RootService {
                     LOGGER.info("Waiting to receive broadcast data on port " + localPort);
                     keepReceivingAndPromptUserToCloseSocket(socket, packet -> ":" + localPort);
                 } catch (SocketException e) {
-                    if (!"Socket closed".equals(e.getMessage())) ConsoleIo.writeException(e); // Probably closed by user
-                } catch (IOException e) {
-                    ConsoleIo.writeException(e);
+                    // If "Socket closed", it was probably closed by user, so ignore
+                    if (!"Socket closed".equals(e.getMessage())) throw e;
                 }
             }
         }
