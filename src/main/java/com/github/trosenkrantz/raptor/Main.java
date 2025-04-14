@@ -1,5 +1,6 @@
 package com.github.trosenkrantz.raptor;
 
+import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.LoggingConfigurator;
 
@@ -16,6 +17,7 @@ public class Main {
 
             Collection<RootService> services = RaptorServiceFactory.createServices();
             Configuration configuration = new Configuration(args);
+            Ansi.configure(configuration);
 
             if (configuration.getString("service").isEmpty()) {
                 configure(services, configuration);

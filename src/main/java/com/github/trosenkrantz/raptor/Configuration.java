@@ -27,7 +27,7 @@ public class Configuration {
                 throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing -- prefix");
             }
             if (!arg.contains("=")) {
-                throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing =");
+                return new String[]{arg.substring(2), ""};
             }
 
             return arg.substring(2).split("=", 2);

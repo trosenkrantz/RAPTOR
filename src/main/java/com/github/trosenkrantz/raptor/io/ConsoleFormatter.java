@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.io;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 class ConsoleFormatter extends Formatter {
@@ -17,6 +18,12 @@ class ConsoleFormatter extends Formatter {
             PrintWriter printWriter = new PrintWriter(stringWriter);
             record.getThrown().printStackTrace(printWriter);
             builder.append(stringWriter);
+        }
+
+        String string = builder.toString();
+
+        if (record.getLevel().equals(Level.SEVERE)) {
+            return Ansi.ERROR.apply(string);
         }
 
         return builder.toString();

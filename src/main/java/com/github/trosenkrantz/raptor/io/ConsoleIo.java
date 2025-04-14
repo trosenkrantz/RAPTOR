@@ -22,12 +22,20 @@ public class ConsoleIo {
         console.printf(message);
     }
 
+    private static void write(String message, Ansi colour) {
+        write(colour.apply(message));
+    }
+
     public static void writeLine() {
         write(System.lineSeparator());
     }
 
     public static void writeLine(String message) {
         write(message + System.lineSeparator());
+    }
+
+    public static void writeLine(String message, Ansi colour) {
+        write(message + System.lineSeparator(), colour);
     }
 
     public static String readLine() {
@@ -58,10 +66,10 @@ public class ConsoleIo {
     public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue) {
         while (true) {
             writeLine(
-                    "Choose between" +
+                    Ansi.PROMPT.apply("Choose") + " between" +
                             (defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")") +
-                            " or (e) exit:" + System.lineSeparator() +
-                            options.stream().map(option -> option.promptValue() + " - " + option.description()).collect(Collectors.joining(System.lineSeparator()))
+                            " or (" + Ansi.PROMPT.apply("e") + ") exit:" + System.lineSeparator() +
+                            options.stream().map(option -> Ansi.PROMPT.apply(option.promptValue()) + " - " + option.description()).collect(Collectors.joining(System.lineSeparator()))
             );
 
             String answer = readLine();
@@ -72,7 +80,7 @@ public class ConsoleIo {
             if (result.isPresent()) {
                 return result.get().value();
             } else {
-                writeLine("Unrecognised answer.");
+                writeLine("Unrecognised answer.", Ansi.ERROR);
             }
         }
     }
@@ -87,14 +95,14 @@ public class ConsoleIo {
 
     public static Optional<Integer> askForOptionalInt(String description, String defaultDescription, Function<Integer, Optional<String>> validator) {
         while (true) {
-            write(description + " (default " + defaultDescription + ") or (e) exit: ");
+            write(description + " (default " + defaultDescription + ") or (" + Ansi.PROMPT.apply("e") + ") exit: ");
 
             String answer = readLine();
             if (answer.isEmpty()) return Optional.empty();
             if (answer.equals("e")) throw new AbortedException();
 
             if (!answer.matches("^-?\\d+$")) {
-                writeLine("Answer must be an integer.");
+                writeLine("Answer must be an integer.", Ansi.ERROR);
                 continue;
             }
             int intAnswer = Integer.parseInt(answer);
@@ -118,7 +126,7 @@ public class ConsoleIo {
 
     public static String askForString(String description, String defaultValue, Function<String, Optional<String>> validator) {
         while (true) {
-            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or (e) exit: ");
+            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or (" + Ansi.PROMPT.apply("e") + ") exit: ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -139,7 +147,7 @@ public class ConsoleIo {
 
     public static String askForFile(String description, String defaultPath) {
         while (true) {
-            write(description + (defaultPath == null ? "" : " (default " + defaultPath + ")") + " or (e) exit: ");
+            write(description + (defaultPath == null ? "" : " (default " + defaultPath + ")") + " or (" + Ansi.PROMPT.apply("e") + ") exit: ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -149,20 +157,19 @@ public class ConsoleIo {
             if (Files.exists(path)) {
                 return answer;
             } else {
-                writeLine("Cannot find " + path + ".");
+                writeLine("Cannot find " + path + ".", Ansi.ERROR);
             }
         }
     }
 
     public static void onExit() {
         if (haveHadUserInteraction) { // Skip prompt if running as CLI
-            write(System.lineSeparator() + "Type enter to terminate...");
-            readLine();
+            promptUserToExit();
         }
     }
 
     public static void promptUserToExit() {
-        ConsoleIo.writeLine(System.lineSeparator() + "Type enter to terminate...");
+        write(System.lineSeparator() + "Type " + Ansi.PROMPT.apply("enter") + " to terminate...");
         ConsoleIo.readLine();
 
         haveHadUserInteraction = false; // Reset to avoid double prompt
