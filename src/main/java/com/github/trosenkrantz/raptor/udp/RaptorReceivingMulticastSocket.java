@@ -1,7 +1,5 @@
 package com.github.trosenkrantz.raptor.udp;
 
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
-
 import java.io.IOException;
 import java.net.*;
 import java.util.List;
@@ -9,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RaptorReceivingMulticastSocket extends MulticastSocket {
-    private static final Logger LOGGER = Logger.getLogger(UdpService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
     private List<NetworkInterface> allMulticastCapableInterfaces;
     private SocketAddress group;
 

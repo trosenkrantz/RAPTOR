@@ -43,20 +43,37 @@ public class Raptor extends GenericContainer<Raptor> {
         });
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This support multiple arguments in {@code cmd} string for easy copy paste.
+     * This supports quoted arguments.
+     *
+     * @param cmd the commands
+     * @return this
+     */
     @Override
     public Raptor withCommand(String cmd) {
         // The withCommand out of the box does not support quoted arguments, so we parse them ourselves
         return super.withCommand(parseArguments(cmd));
     }
 
+    public ExecResult execInContainer(String command) throws UnsupportedOperationException, IOException, InterruptedException {
+        return super.execInContainer(parseArguments(command));
+    }
+
     public static String[] parseArguments(String cliArgs) {
         List<String> argsList = new ArrayList<>();
 
-        String regex = "--[\\w-]+=[^\\s\"]+|\"[^\"]*\"";
+        String regex = "\"([^\"]*)\"|(\\S+)";
 
         var matcher = Pattern.compile(regex).matcher(cliArgs);
         while (matcher.find()) {
-            argsList.add(matcher.group());
+            if (matcher.group(1) != null) {
+                argsList.add(matcher.group(1)); // Double-quoted content without the quotes
+            } else {
+                argsList.add(matcher.group(2)); // Unquoted argument
+            }
         }
 
         return argsList.toArray(new String[0]);
@@ -134,5 +151,10 @@ public class Raptor extends GenericContainer<Raptor> {
             out.write((message + "\n").getBytes(StandardCharsets.UTF_8));
             out.flush();
         }
+    }
+
+    public Raptor runRaptor(String arguments) throws IOException {
+        writeLineToStdIn("/app/raptor " + arguments);
+        return this;
     }
 }

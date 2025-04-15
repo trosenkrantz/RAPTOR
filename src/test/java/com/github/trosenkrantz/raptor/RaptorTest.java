@@ -20,7 +20,7 @@ class RaptorTest {
     }
 
     @Test
-    void withQuotedCommand() {
+    void withQuotedCommand1() {
         try (RaptorNetwork network = new RaptorNetwork();
              Raptor raptor = new Raptor(network)
                      .withCommand("--mode=broadcast --role=send \"--payload=Hello, World\\!\" --service=udp --remote-port=50000")) {
@@ -28,9 +28,21 @@ class RaptorTest {
             Assertions.assertEquals(5, raptor.getCommandParts().length);
             Assertions.assertEquals("--mode=broadcast", raptor.getCommandParts()[0]);
             Assertions.assertEquals("--role=send", raptor.getCommandParts()[1]);
-            Assertions.assertEquals("\"--payload=Hello, World\\!\"", raptor.getCommandParts()[2]);
+            Assertions.assertEquals("--payload=Hello, World\\!", raptor.getCommandParts()[2]);
             Assertions.assertEquals("--service=udp", raptor.getCommandParts()[3]);
             Assertions.assertEquals("--remote-port=50000", raptor.getCommandParts()[4]);
+        }
+    }
+
+    @Test
+    void withQuotedCommand2() {
+        try (RaptorNetwork network = new RaptorNetwork();
+             Raptor raptor = new Raptor(network)
+                     .withCommand("-c \"socat -d -d TCP-LISTEN:50000,reuseaddr,fork PTY,link=/dev/ttyS1,raw & /app/raptor\"")) {
+
+            Assertions.assertEquals(2, raptor.getCommandParts().length);
+            Assertions.assertEquals("-c", raptor.getCommandParts()[0]);
+            Assertions.assertEquals("socat -d -d TCP-LISTEN:50000,reuseaddr,fork PTY,link=/dev/ttyS1,raw & /app/raptor", raptor.getCommandParts()[1]);
         }
     }
 }

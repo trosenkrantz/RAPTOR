@@ -4,7 +4,7 @@ import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.udp.UdpService;
+import com.github.trosenkrantz.raptor.udp.UdpRootService;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GatewayService implements RootService {
-    private static final Logger LOGGER = Logger.getLogger(UdpService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
 
     private static final String PARAMETER_ENDPOINT = "endpoint";
     private static final Collection<EndpointService> ENDPOINT_SERVICES = EndpointServiceFactory.createServices();

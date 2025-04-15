@@ -12,11 +12,7 @@ docker network create --driver bridge raptor
 ```
 To run RAPTOR interactively with it:
 ```bash
-docker run -it --network raptor raptor:latest
-```
-To run RAPTOR as CLI:
-```bash
-docker run -it --network raptor raptor:latest <args>
+docker run -it --rm --name raptor1 --network raptor raptor:latest /app/raptor <potential args>
 ```
 To get IP address of the container:
 ```bash

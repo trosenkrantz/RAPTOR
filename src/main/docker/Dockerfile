@@ -1,7 +1,13 @@
 FROM openjdk:21-jdk-slim
 
-WORKDIR /app
-COPY build/distributions /app
+# Install socat, used for serial port forwarding
+RUN apt-get update && \
+    apt-get install -y socat && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
+COPY build/distributions /app
+WORKDIR /app
 RUN chmod +x /app/raptor
-ENTRYPOINT ["/app/raptor"]
+
+CMD ["bash"]

@@ -12,8 +12,8 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-public class UdpService implements RootService {
-    private static final Logger LOGGER = Logger.getLogger(UdpService.class.getName());
+public class UdpRootService implements RootService {
+    private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
 
     @Override
     public String getPromptValue() {
