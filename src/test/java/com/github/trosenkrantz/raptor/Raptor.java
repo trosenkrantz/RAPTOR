@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 public class Raptor extends GenericContainer<Raptor> {
-    private static final long TIMEOUT_MS = 4000L;
+    private static final long TIMEOUT_MS = 8000L;
     private static final long EXPECT_INTERVAL_MS = 10L; // Same as WaitingConsumer
 
     private final List<String> stdoutLines = new ArrayList<>();

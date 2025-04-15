@@ -155,9 +155,8 @@ val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
 }
 
 tasks.test {
-    dependsOn(buildDockerImage) // For end-to-end tests
+    dependsOn(buildDockerImage) // For integration tests
     useJUnitPlatform()
-    maxParallelForks = Runtime.getRuntime().availableProcessors()
 }
 
 tasks.withType<JavaCompile>().configureEach {
