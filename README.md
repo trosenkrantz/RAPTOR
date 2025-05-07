@@ -125,7 +125,7 @@ See [replies.json](src/main/distributions/replies.json) for an example.
 RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates nor hostnames.
 
 ## ANSI
-RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument in case your console does not support it.
+RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument in case our console does not support it.
 
 ## Licence
 

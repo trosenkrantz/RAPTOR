@@ -66,7 +66,7 @@ public class ConsoleIo {
     public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue) {
         while (true) {
             writeLine(
-                    Ansi.PROMPT.apply("Choose") + " between" +
+                    "Choose between" +
                             (defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")") +
                             " or (" + Ansi.PROMPT.apply("e") + ") exit:" + System.lineSeparator() +
                             options.stream().map(option -> Ansi.PROMPT.apply(option.promptValue()) + " - " + option.description()).collect(Collectors.joining(System.lineSeparator()))

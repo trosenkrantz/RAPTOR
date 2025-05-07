@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.udp;
+package com.github.trosenkrantz.raptor.udp.gateway;
 
 import com.github.trosenkrantz.raptor.PromptEnum;
 

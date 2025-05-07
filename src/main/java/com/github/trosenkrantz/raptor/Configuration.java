@@ -1,16 +1,24 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.udp.EndpointMode;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Configuration {
+    public static final String DEFAULT_PREFIX = "--";
+    public static final String KEY_SEPARATOR = "-";
+
     private final Map<String, String> parameters;
 
+    /**
+     * Used as output to the user so they can tell the full path.
+     * This includes the ´-´s.
+     */
+    private final String prefix;
+
     public Configuration() {
-        parameters = new LinkedHashMap<>();
+        this(new LinkedHashMap<>());
     }
 
     /**
@@ -20,22 +28,27 @@ public class Configuration {
      * @param args CLI arguments
      */
     public Configuration(String[] args) {
-        parameters = Arrays.stream(args).map(arg -> {
+        this(Arrays.stream(args).map(arg -> {
             arg = BytesFormatter.unescapeCliArgument(arg);
 
-            if (!arg.startsWith("--")) {
-                throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing -- prefix");
+            if (!arg.startsWith(DEFAULT_PREFIX)) {
+                throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing " + DEFAULT_PREFIX + " prefix");
             }
             if (!arg.contains("=")) {
                 return new String[]{arg.substring(2), ""};
             }
 
             return arg.substring(2).split("=", 2);
-        }).collect(Collectors.toMap(parts -> parts[0], parts -> parts[1], (existing, replacement) -> existing, LinkedHashMap::new));
+        }).collect(Collectors.toMap(parts -> parts[0], parts -> parts[1], (existing, replacement) -> existing, LinkedHashMap::new)));
     }
 
     private Configuration(final Map<String, String> parameters) {
+        this(new LinkedHashMap<>(parameters), DEFAULT_PREFIX);
+    }
+
+    private Configuration(final Map<String, String> parameters, String prefix) {
         this.parameters = new LinkedHashMap<>(parameters);
+        this.prefix = prefix;
     }
 
     /**
@@ -46,7 +59,7 @@ public class Configuration {
      * @param configuration configuration to copy from
      */
     public void addWithPrefix(final String prefix, final Configuration configuration) {
-        configuration.parameters.forEach((key, value) -> this.parameters.put(prefix + "-" + key, value));
+        configuration.parameters.forEach((key, value) -> this.parameters.put(prefix + KEY_SEPARATOR + key, value));
     }
 
     /**
@@ -59,8 +72,9 @@ public class Configuration {
     public Configuration extractWithPrefix(final String prefix) {
         return new Configuration(
                 parameters.entrySet().stream()
-                        .filter(entry -> entry.getKey().startsWith(prefix + "-"))
-                        .collect(Collectors.toMap(entry -> entry.getKey().substring(prefix.length() + 1), Map.Entry::getValue))
+                        .filter(entry -> entry.getKey().startsWith(prefix + KEY_SEPARATOR))
+                        .collect(Collectors.toMap(entry -> entry.getKey().substring(prefix.length() + 1), Map.Entry::getValue)),
+                prefix + KEY_SEPARATOR
         );
     }
 
@@ -74,7 +88,7 @@ public class Configuration {
     }
 
     public String requireString(final String key) {
-        return getString(key).orElseThrow(() -> new IllegalArgumentException("Parameter --" + key + " not set."));
+        return getString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + key + " not set."));
     }
 
     public void setString(String key, String value) {
@@ -95,11 +109,11 @@ public class Configuration {
     }
 
     private static <E extends Enum<E>> String convertEnumToParameterValue(E value) {
-        return value.name().replaceAll("_", "-").toLowerCase(Locale.ROOT);
+        return value.name().replaceAll("_", KEY_SEPARATOR).toLowerCase(Locale.ROOT);
     }
 
     private static String convertParameterValueToEnumName(String stringValue) {
-        return stringValue.replaceAll("-", "_").toUpperCase(Locale.ROOT);
+        return stringValue.replaceAll(KEY_SEPARATOR, "_").toUpperCase(Locale.ROOT);
     }
 
     private <E extends Enum<E>> Optional<E> getEnum(String parameter, Class<E> enumClass) {
@@ -114,7 +128,7 @@ public class Configuration {
     }
 
     public <E extends Enum<E>> E requireEnum(String parameter, Class<E> enumClass) {
-        return getEnum(parameter, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter --" + parameter + " not set."));
+        return getEnum(parameter, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + parameter + " not set."));
     }
 
     public <E extends Enum<E>> E requireEnum(Class<E> enumClass) {
@@ -142,7 +156,7 @@ public class Configuration {
     }
 
     public int requireInt(String parameter) {
-        return getInt(parameter).orElseThrow(() -> new IllegalArgumentException("Parameter --" + parameter + " not set."));
+        return getInt(parameter).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + parameter + " not set."));
     }
 
     public void setInt(String key, Integer port) {
@@ -155,7 +169,7 @@ public class Configuration {
     @Override
     public String toString() {
         return parameters.entrySet().stream()
-                .map(parameter -> BytesFormatter.escapeCliArgument("--" + parameter.getKey() + "=" + parameter.getValue()))
+                .map(parameter -> BytesFormatter.escapeCliArgument(DEFAULT_PREFIX + parameter.getKey() + "=" + parameter.getValue()))
                 .collect(Collectors.joining(" "));
     }
 }

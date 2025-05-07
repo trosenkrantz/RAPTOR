@@ -1,8 +1,9 @@
-package com.github.trosenkrantz.raptor.udp;
+package com.github.trosenkrantz.raptor.udp.gateway;
 
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.gateway.Endpoint;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.udp.UdpUtility;
 
 import java.io.IOException;
 import java.net.*;

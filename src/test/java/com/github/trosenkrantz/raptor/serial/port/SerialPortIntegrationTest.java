@@ -3,8 +3,6 @@ package com.github.trosenkrantz.raptor.serial.port;
 import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.lifecycle.Startables;
 
 import java.io.IOException;
 
@@ -16,17 +14,14 @@ public class SerialPortIntegrationTest {
              Raptor raptor2 = new Raptor(network)) {
             network.startAll();
 
-            raptor1.writeLineToStdIn("socat -d -d TCP-LISTEN:50000,reuseaddr,fork PTY,link=/dev/ttyS1,raw &"); // Map between serial port and TCP server socket
-            raptor1.expectNumberOfOutputLineContains(1, "listening"); // Wait for TCP server to open
+            String portName = "ttyS1";
+            SocatUtility.bridgeSerialPorts(raptor1, portName, raptor2, portName, "50000");
 
-            raptor2.writeLineToStdIn("socat -d -d PTY,link=/dev/ttyS1,raw TCP:" + raptor1.getRaptorHostname() + ":50000 &"); // Map between serial port and TCP client socket, connecting to raptor1
-            raptor1.expectNumberOfOutputLineContains(1, "starting data transfer"); // Wait for socat connection established
-            raptor2.expectNumberOfOutputLineContains(1, "starting data transfer");
-
-            raptor1.runRaptor("--service=serial-port --port=ttyS1 --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
-            raptor2.runRaptor("--service=serial-port --port=ttyS1 --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
-            raptor1.expectNumberOfOutputLineContains(1, "Listing to ttyS1");
-            raptor2.expectNumberOfOutputLineContains(1, "Listing to ttyS1");
+            // Start
+            raptor1.runRaptor("--service=serial-port --port=" + portName + " --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
+            raptor2.runRaptor("--service=serial-port --port=" + portName + " --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
+            raptor1.expectNumberOfOutputLineContains(1, "Listing to " + portName);
+            raptor2.expectNumberOfOutputLineContains(1, "Listing to " + portName);
 
             // raptor1 sends a message to the raptor2
             String textMessage = "Hello, World!";

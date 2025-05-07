@@ -14,14 +14,14 @@ import java.util.logging.Logger;
 public class UdpUtility {
     private static final Logger LOGGER = Logger.getLogger(UdpUtility.class.getName());
 
-    static final String PARAMETER_LOCAL_PORT = "local-port";
-    static final String PARAMETER_REMOTE_PORT = "remote-port";
-    static final String PARAMETER_REMOTE_ADDRESS = "remote-address";
-    static final String PARAMETER_PAYLOAD = "payload";
-    static final String DEFAULT_ADDRESS = "localhost";
-    static final int DEFAULT_PORT = 50000;
-    static final String DEFAULT_MULTICAST_GROUP = "224.0.2.0";
-    static final int MAX_UDP_PAYLOAD_SIZE = 65507;
+    public static final String PARAMETER_LOCAL_PORT = "local-port";
+    public static final String PARAMETER_REMOTE_PORT = "remote-port";
+    public static final String PARAMETER_REMOTE_ADDRESS = "remote-address";
+    public static final String PARAMETER_PAYLOAD = "payload";
+    public static final String DEFAULT_ADDRESS = "localhost";
+    public static final int DEFAULT_PORT = 50000;
+    public static final String DEFAULT_MULTICAST_GROUP = "224.0.2.0";
+    public static final int MAX_UDP_PAYLOAD_SIZE = 65507;
 
     static DatagramSocket createSocket(Configuration configuration) throws SocketException {
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
@@ -29,7 +29,7 @@ public class UdpUtility {
         else return new DatagramSocket();
     }
 
-    static void send(Configuration configuration, InetAddress destinationAddress, DatagramSocket socket, boolean connect, byte[] payload) throws IOException {
+    public static void send(Configuration configuration, InetAddress destinationAddress, DatagramSocket socket, boolean connect, byte[] payload) throws IOException {
         int destinationPort = configuration.requireInt(PARAMETER_REMOTE_PORT);
 
         // Explicitly connect to get the actual source address instead of the wildcard address
@@ -46,20 +46,20 @@ public class UdpUtility {
         LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " to " + destinationAddress.getHostAddress() + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
     }
 
-    static MulticastSocket createMulticastSocket(Configuration configuration) throws IOException {
+    public static MulticastSocket createMulticastSocket(Configuration configuration) throws IOException {
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
         if (port.isPresent()) return new MulticastSocket(port.get());
         else return new MulticastSocket();
     }
 
-    static RaptorReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
+    public static RaptorReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
         String multicastGroup = configuration.requireString(PARAMETER_REMOTE_ADDRESS);
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
         if (port.isPresent()) return new RaptorReceivingMulticastSocket(multicastGroup, port.get());
         else return new RaptorReceivingMulticastSocket(multicastGroup);
     }
 
-    static List<NetworkInterface> getAllMulticastCapableInterfaces() throws SocketException {
+    public static List<NetworkInterface> getAllMulticastCapableInterfaces() throws SocketException {
         return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
                 .filter(CheckedPredicate.wrap(NetworkInterface::isUp))
                 .filter(CheckedPredicate.wrap(NetworkInterface::supportsMulticast))

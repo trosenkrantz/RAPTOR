@@ -1,10 +1,11 @@
-package com.github.trosenkrantz.raptor.udp;
+package com.github.trosenkrantz.raptor.udp.gateway;
 
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.gateway.Endpoint;
 import com.github.trosenkrantz.raptor.gateway.EndpointService;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
+import com.github.trosenkrantz.raptor.udp.UdpUtility;
 
 import java.io.IOException;
 import java.util.function.Consumer;
