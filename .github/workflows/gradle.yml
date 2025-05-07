@@ -4,6 +4,7 @@ on:
   push:
   schedule:
     - cron: '0 0 1 * *' # First day of every month
+  workflow_dispatch: # Enables option to manually trigger build
 
 jobs:
   build:
