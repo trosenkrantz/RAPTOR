@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.Raptor;
+import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -8,7 +9,7 @@ import org.testcontainers.lifecycle.Startables;
 
 import java.io.IOException;
 
-public class TcpIntegrationTest {
+public class TcpIntegrationTest extends RaptorIntegrationTest {
     @Test
     public void twoClients() throws IOException {
         try (RaptorNetwork network = new RaptorNetwork();

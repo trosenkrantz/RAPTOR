@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor.udp;
 
 import com.github.trosenkrantz.raptor.Raptor;
+import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Network;
@@ -8,7 +9,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 
-public class UdpMulticastGatewayIntegrationTest {
+public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
     /**
      * Sender -> gateway -> receiver.
      */

@@ -1,13 +1,14 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.Raptor;
+import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 
-public class WebSocketIntegrationTest {
+public class WebSocketIntegrationTest extends RaptorIntegrationTest {
     @Test
     public void twoClients() throws IOException {
         try (RaptorNetwork network = new RaptorNetwork();

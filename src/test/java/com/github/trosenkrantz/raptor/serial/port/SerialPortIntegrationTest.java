@@ -1,12 +1,13 @@
 package com.github.trosenkrantz.raptor.serial.port;
 
 import com.github.trosenkrantz.raptor.Raptor;
+import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class SerialPortIntegrationTest {
+public class SerialPortIntegrationTest extends RaptorIntegrationTest {
     @Test
     public void interactive() throws IOException {
         try (RaptorNetwork network = new RaptorNetwork();
