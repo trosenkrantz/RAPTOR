@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.serial.port;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
@@ -93,5 +94,21 @@ public class SerialPortUtility {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed closing port " + portName + ".", e);
         }
+    }
+
+    public static void writeToPort(SerialPort port, byte[] payload) {
+        int writeResult = port.writeBytes(payload, payload.length);
+        if (writeResult == -1) {
+            LOGGER.severe("Failed writing to port " + port.getSystemPortName() + ".");
+            return;
+        }
+
+        boolean flushResult = port.flushIOBuffers();
+        if (!flushResult) {
+            LOGGER.severe("Failed flushing port " + port.getSystemPortName() + ".");
+            return;
+        }
+
+        LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(payload));
     }
 }

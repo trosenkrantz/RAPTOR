@@ -25,8 +25,7 @@ class InteractiveSendStrategy implements SerialPortSendStrategy {
                         while (port.isOpen()) {
                             String userAnswer = ConsoleIo.askForString("What to send", "Hello, World!"); // User answers with fully escaped string
                             byte[] whatToSend = BytesFormatter.fullyEscapedStringToBytes(userAnswer);
-                            port.writeBytes(whatToSend, whatToSend.length);
-                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSend));
+                            SerialPortUtility.writeToPort(port, whatToSend);
                         }
                     } catch (AbortedException ignore) {
                         shutDownAction.run();

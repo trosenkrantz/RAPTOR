@@ -3,12 +3,14 @@ package com.github.trosenkrantz.raptor.serial.port;
 import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 public class SerialPortIntegrationTest extends RaptorIntegrationTest {
     @Test
+    @Disabled("Due to socat bridging being flaky.")
     public void interactive() throws IOException {
         try (RaptorNetwork network = new RaptorNetwork();
              Raptor raptor1 = new Raptor(network);

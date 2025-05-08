@@ -21,10 +21,7 @@ public class SerialPortEndpoint implements Endpoint {
             try {
                 SerialPortUtility.connectAndStartSendingAndReceiving(configuration, (ignore1, port, ignore2) -> {
                     // Now that the port is open, we can set what to do with data from the broker
-                    fromBroker.setDelegate(payload -> {
-                        port.writeBytes(payload, payload.length);
-                        LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(payload));
-                    });
+                    fromBroker.setDelegate(payload -> SerialPortUtility.writeToPort(port, payload));
 
                     return broker; // When serial port receives data, pass to broker
                 });
