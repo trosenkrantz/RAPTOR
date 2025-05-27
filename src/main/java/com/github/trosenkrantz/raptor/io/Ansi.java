@@ -4,7 +4,8 @@ import com.github.trosenkrantz.raptor.Configuration;
 
 public enum Ansi {
     ERROR("\u001B[31m"), // Red
-    PROMPT("\u001B[36m"); // Cyan
+    PROMPT("\u001B[36m"), // Cyan
+    EXIT("\u001B[90m");
 
     private static final String RESET = "\u001B[0m";
 

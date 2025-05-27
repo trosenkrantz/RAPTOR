@@ -4,26 +4,20 @@ import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.udp.UdpRootService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GatewayService implements RootService {
-    private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
-
     private static final String PARAMETER_ENDPOINT = "endpoint";
     private static final Collection<EndpointService> ENDPOINT_SERVICES = EndpointServiceFactory.createServices();
     private static final List<PromptOption<EndpointService>> ENDPOINT_SERVICE_OPTIONS = ENDPOINT_SERVICES.stream().map(endpoint -> new PromptOption<>(endpoint.getPromptValue(), endpoint.getDescription(), endpoint)).toList();
 
-    private Endpoint endpointA;
-    private Endpoint endpointB;
     private CountDownLatch shouldFinish;
 
     @Override
@@ -45,6 +39,9 @@ public class GatewayService implements RootService {
     public void configure(Configuration configuration) throws Exception {
         configureEndpoint(configuration, "A");
         configureEndpoint(configuration, "B");
+
+        configureNetworkImpairment(configuration, "A to B");
+        configureNetworkImpairment(configuration, "B to A");
     }
 
     private static void configureEndpoint(Configuration rootConfiguration, String endpointName) {
@@ -58,6 +55,15 @@ public class GatewayService implements RootService {
         rootConfiguration.addWithPrefix(endpointName.toLowerCase(Locale.ROOT), endpointConfiguration);
     }
 
+    private static void configureNetworkImpairment(Configuration rootConfiguration, String direction) {
+        ConsoleIo.writeLine("---- Configuring network impairment " + direction + " ----");
+
+        Configuration directionConfiguration = new Configuration();
+        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(Settings.LATENCY), directionConfiguration);
+
+        rootConfiguration.addWithPrefix(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
+    }
+
     @Override
     public void run(Configuration configuration) throws Exception {
         shouldFinish = new CountDownLatch(1);
@@ -66,12 +72,15 @@ public class GatewayService implements RootService {
         DelayedConsumer<byte[]> fromAConsumer = new DelayedConsumer<>();
         DelayedConsumer<byte[]> fromBConsumer = new DelayedConsumer<>();
 
-        endpointA = createEndpoint(configuration.extractWithPrefix("a"), fromAConsumer);
-        endpointB = createEndpoint(configuration.extractWithPrefix("b"), fromBConsumer);
+        Endpoint endpointA = createEndpoint(configuration.extractWithPrefix("a"), fromAConsumer);
+        Endpoint endpointB = createEndpoint(configuration.extractWithPrefix("b"), fromBConsumer);
 
-        // Now that both endpoints are created, we can start processing the data, flushing the buffers
-        fromAConsumer.setDelegate(this::acceptFromEndpointA);
-        fromBConsumer.setDelegate(this::acceptFromEndpointB);
+        Consumer<byte[]> impairmentAToB = createNetworkImpairment(configuration.extractWithPrefix("a-to-b"), endpointB);
+        Consumer<byte[]> impairmentBToA = createNetworkImpairment(configuration.extractWithPrefix("b-to-a"), endpointA);
+
+        // Now that endpoints and impairments are created, we can start processing the data, flushing the buffers
+        fromAConsumer.setDelegate(impairmentAToB); // When receiving data from A, pass to impairment a-to-b
+        fromBConsumer.setDelegate(impairmentBToA); // When receiving data from B, pass to impairment b-to-a
 
         shouldFinish.await();
     }
@@ -82,21 +91,17 @@ public class GatewayService implements RootService {
         return configuredEndpointService.createEndpoint(endpointConfiguration, consumer, () -> shouldFinish.countDown());
     }
 
-    private void acceptFromEndpointA(byte[] data) {
-        try {
-            endpointB.sendToExternalSystem(data);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to process data.", e);
-            shouldFinish.countDown();
-        }
-    }
+    private Consumer<byte[]> createNetworkImpairment(Configuration impairmentConfiguration, Endpoint toEndpoint) {
+        List<NetworkImpairmentFactory> factories = new ArrayList<>();
 
-    private void acceptFromEndpointB(byte[] data) {
-        try {
-            endpointA.sendToExternalSystem(data);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to process data.", e);
-            shouldFinish.countDown();
+        // Latency
+        Settings.LATENCY.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyNetworkImpairmentFactory(latency)));
+
+        // Each factory needs to next consumer to pass the data to, so combine them in reverse order
+        Consumer<byte[]> result = toEndpoint::sendToExternalSystem;
+        for (int i = factories.size() - 1; i >= 0; i--) {
+            result = factories.get(i).create(result);
         }
+        return result;
     }
 }

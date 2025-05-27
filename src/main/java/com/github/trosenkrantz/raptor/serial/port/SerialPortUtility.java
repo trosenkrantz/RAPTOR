@@ -83,7 +83,7 @@ public class SerialPortUtility {
 
         Consumer<byte[]> onReceivedData = sendStrategy.start(configuration, serialPort, shutDownLatch::countDown);
 
-        LOGGER.info("Listing to " + portName + "...");
+        LOGGER.info("Listening to " + portName + "...");
         // We can only have a single listener according to the JDoc
         serialPort.addDataListener(new MySerialPortDataListener(onReceivedData));
 

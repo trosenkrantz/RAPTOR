@@ -18,7 +18,7 @@ public class SnmpListener {
         try (Snmp snmp = new Snmp(new DefaultUdpTransportMapping(address))) {
             snmp.addCommandResponder(listener);
 
-            LOGGER.info("Listing to requests at " + address + "...");
+            LOGGER.info("Listening to requests at " + address + "...");
             snmp.listen();
             new CountDownLatch(1).await(); // Wait indefinitely to let agent run
         }

@@ -30,10 +30,10 @@ public class SerialPortGatewayIntegrationTest extends RaptorIntegrationTest {
             raptor1.runRaptor("--service=serial-port --port=" + portName1 + " --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
             gateway.runRaptor("--service=gateway --a-endpoint=serial-port --a-port=" + portName1 + " --a-baud-rate=9600 --a-data-bits=8 --a-stop-bits=one --a-parity=no --b-endpoint=serial-port --b-port=" + portName2 + " --b-baud-rate=9600 --b-data-bits=8 --b-stop-bits=one --b-parity=no");
             raptor2.runRaptor("--service=serial-port --port=" + portName1 + " --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
-            raptor1.expectNumberOfOutputLineContains(1, "Listing to " + portName1);
-            gateway.expectNumberOfOutputLineContains(1, "Listing to " + portName1);
-            gateway.expectNumberOfOutputLineContains(1, "Listing to " + portName2);
-            raptor2.expectNumberOfOutputLineContains(1, "Listing to " + portName1);
+            raptor1.expectNumberOfOutputLineContains(1, "Listening to " + portName1);
+            gateway.expectNumberOfOutputLineContains(1, "Listening to " + portName1);
+            gateway.expectNumberOfOutputLineContains(1, "Listening to " + portName2);
+            raptor2.expectNumberOfOutputLineContains(1, "Listening to " + portName1);
 
             // raptor1 sends a message
             String textMessage = "Hello, World!";

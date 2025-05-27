@@ -23,8 +23,8 @@ public class SerialPortIntegrationTest extends RaptorIntegrationTest {
             // Start
             raptor1.runRaptor("--service=serial-port --port=" + portName + " --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
             raptor2.runRaptor("--service=serial-port --port=" + portName + " --baud-rate=9600 --data-bits=8 --stop-bits=one --parity=no --send-strategy=interactive");
-            raptor1.expectNumberOfOutputLineContains(1, "Listing to " + portName);
-            raptor2.expectNumberOfOutputLineContains(1, "Listing to " + portName);
+            raptor1.expectNumberOfOutputLineContains(1, "Listening to " + portName);
+            raptor2.expectNumberOfOutputLineContains(1, "Listening to " + portName);
 
             // raptor1 sends a message to the raptor2
             String textMessage = "Hello, World!";

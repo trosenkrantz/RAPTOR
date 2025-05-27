@@ -26,7 +26,7 @@ public class LoggingConfigurator {
         rootLogger.setLevel(Level.INFO);
 
         logVersion();
-        ConsoleIo.writeLine("Logging to " + logFileName + ".");
+        ConsoleIo.writeLine("Logging to " + logFileName + "." + System.lineSeparator());
     }
 
     private static String getLogFileName() throws IOException {

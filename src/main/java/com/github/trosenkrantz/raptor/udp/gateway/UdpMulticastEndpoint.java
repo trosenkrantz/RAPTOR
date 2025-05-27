@@ -75,10 +75,15 @@ public class UdpMulticastEndpoint implements Endpoint {
     }
 
     @Override
-    public void sendToExternalSystem(byte[] payload) throws IOException {
-        for (NetworkInterface networkInterface : UdpUtility.getAllMulticastCapableInterfaces()) {
-            sendSocket.setNetworkInterface(networkInterface);
-            UdpUtility.send(sendConfiguration, InetAddress.getByName(multicastGroup), sendSocket, true, payload);
+    public void sendToExternalSystem(byte[] payload) {
+        try {
+            for (NetworkInterface networkInterface : UdpUtility.getAllMulticastCapableInterfaces()) {
+                sendSocket.setNetworkInterface(networkInterface);
+                UdpUtility.send(sendConfiguration, InetAddress.getByName(multicastGroup), sendSocket, true, payload);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed sending to external system.", e);
+            // Do not consider the endpoint closed on send failure, as it might be a temporary issue
         }
     }
 }

@@ -1,12 +1,16 @@
 package com.github.trosenkrantz.raptor.io;
 
 import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
+import com.github.trosenkrantz.raptor.configuration.Setting;
+import com.github.trosenkrantz.raptor.configuration.SettingInstance;
 
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -65,12 +69,11 @@ public class ConsoleIo {
 
     public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue) {
         while (true) {
-            writeLine(
-                    "Choose between" +
-                            (defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")") +
-                            " or (" + Ansi.PROMPT.apply("e") + ") exit:" + System.lineSeparator() +
-                            options.stream().map(option -> Ansi.PROMPT.apply(option.promptValue()) + " - " + option.description()).collect(Collectors.joining(System.lineSeparator()))
-            );
+            List<List<String>> rows = options.stream().map(option -> List.of(Ansi.PROMPT.apply(option.promptValue()), option.description())).collect(Collectors.toList());
+            rows.add(List.of(Ansi.PROMPT.apply("e"), Ansi.EXIT.apply("Exit")));
+
+            String defaultString = defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")";
+            writeLine("Choose between" + defaultString + ":" + System.lineSeparator() + TableFormatter.format(rows));
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -85,6 +88,10 @@ public class ConsoleIo {
         }
     }
 
+    public static int askForInt(String description) {
+        return askForInt(description, v -> Optional.empty());
+    }
+
     public static int askForInt(String description, int defaultValue) {
         return askForInt(description, defaultValue, v -> Optional.empty());
     }
@@ -93,9 +100,31 @@ public class ConsoleIo {
         return askForOptionalInt(description, String.valueOf(defaultValue), validator).orElse(defaultValue);
     }
 
+    public static int askForInt(String description, Function<Integer, Optional<String>> validator) {
+        while (true) {
+            write(description + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
+
+            String answer = readLine();
+            if (answer.equals("e")) throw new AbortedException();
+
+            if (!answer.matches("^-?\\d+$")) {
+                writeLine("Answer must be an integer.", Ansi.ERROR);
+                continue;
+            }
+            int intAnswer = Integer.parseInt(answer);
+
+            Optional<String> error = validator.apply(intAnswer);
+            if (error.isPresent()) {
+                writeLine(error.get());
+            } else {
+                return intAnswer;
+            }
+        }
+    }
+
     public static Optional<Integer> askForOptionalInt(String description, String defaultDescription, Function<Integer, Optional<String>> validator) {
         while (true) {
-            write(description + " (default " + defaultDescription + ") or (" + Ansi.PROMPT.apply("e") + ") exit: ");
+            write(description + (defaultDescription == null ? "" : " (default " + defaultDescription + ")") + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
 
             String answer = readLine();
             if (answer.isEmpty()) return Optional.empty();
@@ -126,7 +155,7 @@ public class ConsoleIo {
 
     public static String askForString(String description, String defaultValue, Function<String, Optional<String>> validator) {
         while (true) {
-            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or (" + Ansi.PROMPT.apply("e") + ") exit: ");
+            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or type " + Ansi.PROMPT.apply("e") + " exit: ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -147,7 +176,7 @@ public class ConsoleIo {
 
     public static String askForFile(String description, String defaultPath) {
         while (true) {
-            write(description + (defaultPath == null ? "" : " (default " + defaultPath + ")") + " or (" + Ansi.PROMPT.apply("e") + ") exit: ");
+            write(description + (defaultPath == null ? "" : " (default " + defaultPath + ")") + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -158,6 +187,32 @@ public class ConsoleIo {
                 return answer;
             } else {
                 writeLine("Cannot find " + path + ".", Ansi.ERROR);
+            }
+        }
+    }
+
+    public static void configureAdvancedSettings(String description, List<Setting<?>> settings, Configuration configuration) {
+        // Instantiate all settings
+        List<SettingInstance<?>> settingInstances = new ArrayList<>();
+        settings.forEach(setting -> settingInstances.add(setting.instantiateDefault()));
+
+        while (true) {
+            List<List<String>> rows = settingInstances.stream().map(instance -> List.of(
+                    Ansi.PROMPT.apply(instance.getSetting().getPromptValue()),
+                    instance.getSetting().getDescription(),
+                    instance.toString()
+            )).toList();
+            writeLine(description + " or type " + Ansi.PROMPT.apply("enter") + " to continue or " + Ansi.PROMPT.apply("e") + " to exit: " + System.lineSeparator() + TableFormatter.format(rows));
+
+            String answer = readLine();
+            if (answer.isEmpty()) return; // User chosen to continue
+            if (answer.equals("e")) throw new AbortedException();
+
+            Optional<SettingInstance<?>> result = settingInstances.stream().filter(instance -> instance.getSetting().getPromptValue().equalsIgnoreCase(answer)).findAny();
+            if (result.isPresent()) {
+                result.get().configure(configuration); // And do not return to allow for additional settings afterwards
+            } else {
+                writeLine("Unrecognised answer.", Ansi.ERROR);
             }
         }
     }
