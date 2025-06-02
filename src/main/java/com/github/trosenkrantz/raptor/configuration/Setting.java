@@ -5,6 +5,8 @@ import com.github.trosenkrantz.raptor.Configuration;
 import java.util.Optional;
 
 public abstract class Setting<T> {
+    public static String EMPTY_VALUE_TO_STRING = "N/A";
+
     private final String promptValue;
     private final String description;
     private final String parameterKey;
@@ -40,8 +42,6 @@ public abstract class Setting<T> {
         return Optional.ofNullable(defaultValue);
     }
 
-    public abstract SettingInstance<T> instantiateDefault();
-
     public abstract Optional<T> read(Configuration configuration);
 
     public T readAndRequire(Configuration configuration) {
@@ -51,4 +51,8 @@ public abstract class Setting<T> {
         }
         return value.get();
     }
+
+    public abstract String valueToString(Configuration configuration);
+
+    public abstract void configure(Configuration configuration);
 }

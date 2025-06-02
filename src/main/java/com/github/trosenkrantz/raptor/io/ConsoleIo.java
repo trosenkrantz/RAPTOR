@@ -5,12 +5,10 @@ import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.configuration.Setting;
-import com.github.trosenkrantz.raptor.configuration.SettingInstance;
 
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -192,15 +190,11 @@ public class ConsoleIo {
     }
 
     public static void configureAdvancedSettings(String description, List<Setting<?>> settings, Configuration configuration) {
-        // Instantiate all settings
-        List<SettingInstance<?>> settingInstances = new ArrayList<>();
-        settings.forEach(setting -> settingInstances.add(setting.instantiateDefault()));
-
         while (true) {
-            List<List<String>> rows = settingInstances.stream().map(instance -> List.of(
-                    Ansi.PROMPT.apply(instance.getSetting().getPromptValue()),
-                    instance.getSetting().getDescription(),
-                    instance.toString()
+            List<List<String>> rows = settings.stream().map(setting -> List.of(
+                    Ansi.PROMPT.apply(setting.getPromptValue()),
+                    setting.getDescription(),
+                    setting.valueToString(configuration)
             )).toList();
             writeLine(description + " or type " + Ansi.PROMPT.apply("enter") + " to continue or " + Ansi.PROMPT.apply("e") + " to exit: " + System.lineSeparator() + TableFormatter.format(rows));
 
@@ -208,7 +202,7 @@ public class ConsoleIo {
             if (answer.isEmpty()) return; // User chosen to continue
             if (answer.equals("e")) throw new AbortedException();
 
-            Optional<SettingInstance<?>> result = settingInstances.stream().filter(instance -> instance.getSetting().getPromptValue().equalsIgnoreCase(answer)).findAny();
+            Optional<Setting<?>> result = settings.stream().filter(setting -> setting.getPromptValue().equalsIgnoreCase(answer)).findAny();
             if (result.isPresent()) {
                 result.get().configure(configuration); // And do not return to allow for additional settings afterwards
             } else {
