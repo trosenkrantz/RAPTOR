@@ -52,11 +52,11 @@ public class UdpUtility {
         else return new MulticastSocket();
     }
 
-    public static RaptorReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
+    public static AllReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
         String multicastGroup = configuration.requireString(PARAMETER_REMOTE_ADDRESS);
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
-        if (port.isPresent()) return new RaptorReceivingMulticastSocket(multicastGroup, port.get());
-        else return new RaptorReceivingMulticastSocket(multicastGroup);
+        if (port.isPresent()) return new AllReceivingMulticastSocket(multicastGroup, port.get());
+        else return new AllReceivingMulticastSocket(multicastGroup);
     }
 
     public static List<NetworkInterface> getAllMulticastCapableInterfaces() throws SocketException {

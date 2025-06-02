@@ -6,17 +6,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RaptorReceivingMulticastSocket extends MulticastSocket {
-    private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
+public class AllReceivingMulticastSocket extends MulticastSocket {
+    private static final Logger LOGGER = Logger.getLogger(AllReceivingMulticastSocket.class.getName());
     private List<NetworkInterface> allMulticastCapableInterfaces;
     private SocketAddress group;
 
-    public RaptorReceivingMulticastSocket(String multicastGroup) throws IOException {
+    private volatile boolean closed = false;
+
+    public AllReceivingMulticastSocket(String multicastGroup) throws IOException {
         super();
         joinMulticastGroup(multicastGroup);
     }
 
-    public RaptorReceivingMulticastSocket(String multicastGroup, int localPort) throws IOException {
+    public AllReceivingMulticastSocket(String multicastGroup, int localPort) throws IOException {
         super(localPort);
         joinMulticastGroup(multicastGroup);
     }
@@ -40,7 +42,10 @@ public class RaptorReceivingMulticastSocket extends MulticastSocket {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
+        if (closed) return;
+        closed = true;
+
         try {
             leaveMulticastGroup();
         } catch (IOException e) {
