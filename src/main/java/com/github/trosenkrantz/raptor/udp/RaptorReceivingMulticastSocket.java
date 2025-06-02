@@ -29,7 +29,7 @@ public class RaptorReceivingMulticastSocket extends MulticastSocket {
         for (NetworkInterface networkInterface : allMulticastCapableInterfaces) {
             joinGroup(group, networkInterface);
         }
-        LOGGER.info("Waiting to receive data on multicast group " + multicastAddress.getHostAddress() + " on port " + getLocalPort());
+        LOGGER.info("Waiting to receive data on multicast group " + multicastAddress.getHostAddress() + " on port " + getLocalPort() + ".");
     }
 
     private void leaveMulticastGroup() throws IOException {

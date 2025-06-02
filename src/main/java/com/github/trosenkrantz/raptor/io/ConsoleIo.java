@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 public class ConsoleIo {
     private static final Console console = System.console();
 
-    private static boolean haveHadUserInteraction = false;
+    private static boolean shouldPromptUserBeforeExit = false;
 
     public static void write(String message) {
         console.printf(message);
@@ -41,7 +41,7 @@ public class ConsoleIo {
     }
 
     public static String readLine() {
-        haveHadUserInteraction = true;
+        shouldPromptUserBeforeExit = true;
         String result = console.readLine();
         writeLine();
         return result;
@@ -212,15 +212,15 @@ public class ConsoleIo {
     }
 
     public static void onExit() {
-        if (haveHadUserInteraction) { // Skip prompt if running as CLI
+        if (shouldPromptUserBeforeExit) { // Skip prompt if running as CLI
             promptUserToExit();
         }
     }
 
     public static void promptUserToExit() {
-        write(System.lineSeparator() + "Type " + Ansi.PROMPT.apply("enter") + " to terminate...");
+        writeLine(System.lineSeparator() + "Type " + Ansi.PROMPT.apply("enter") + " to terminate...");
         ConsoleIo.readLine();
 
-        haveHadUserInteraction = false; // Reset to avoid double prompt
+        shouldPromptUserBeforeExit = false; // Reset to avoid double prompt
     }
 }

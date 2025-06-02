@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.gateway;
+package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
 import java.util.function.Consumer;
 

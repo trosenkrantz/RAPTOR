@@ -3,6 +3,8 @@ package com.github.trosenkrantz.raptor.gateway;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.LatencyNetworkImpairmentFactory;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.NetworkImpairmentFactory;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
@@ -81,6 +83,11 @@ public class GatewayService implements RootService {
         // Now that endpoints and impairments are created, we can start processing the data, flushing the buffers
         fromAConsumer.setDelegate(impairmentAToB); // When receiving data from A, pass to impairment a-to-b
         fromBConsumer.setDelegate(impairmentBToA); // When receiving data from B, pass to impairment b-to-a
+
+        Thread.ofVirtual().start(() -> {
+            ConsoleIo.promptUserToExit();
+            shouldFinish.countDown();
+        });
 
         shouldFinish.await();
     }
