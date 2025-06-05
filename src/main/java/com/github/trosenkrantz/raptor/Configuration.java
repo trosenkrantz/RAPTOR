@@ -116,27 +116,27 @@ public class Configuration {
         return stringValue.replaceAll(KEY_SEPARATOR, "_").toUpperCase(Locale.ROOT);
     }
 
-    private <E extends Enum<E>> Optional<E> getEnum(String parameter, Class<E> enumClass) {
-        return getString(parameter).map(stringValue -> {
+    private <E extends Enum<E>> Optional<E> getEnum(String key, Class<E> enumClass) {
+        return getString(key).map(stringValue -> {
             String name = convertParameterValueToEnumName(stringValue);
             try {
                 return Enum.valueOf(enumClass, name);
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Failed getting parameter " + parameter + ". No enum constant " + enumClass.getCanonicalName() + "." + name + ".", e);
+                throw new IllegalArgumentException("Failed getting parameter " + key + ". No enum constant " + enumClass.getCanonicalName() + "." + name + ".", e);
             }
         });
     }
 
-    public <E extends Enum<E>> E requireEnum(String parameter, Class<E> enumClass) {
-        return getEnum(parameter, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + parameter + " not set."));
+    public <E extends Enum<E>> E requireEnum(String key, Class<E> enumClass) {
+        return getEnum(key, enumClass).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + key + " not set."));
     }
 
     public <E extends Enum<E>> E requireEnum(Class<E> enumClass) {
         return requireEnum(extractParameterKeyFromEnumClass(enumClass), enumClass);
     }
 
-    public <E extends Enum<E>> void setEnum(String parameter, E value) {
-        setString(parameter, convertEnumToParameterValue(value));
+    public <E extends Enum<E>> void setEnum(String key, E value) {
+        setString(key, convertEnumToParameterValue(value));
     }
 
     public <E extends Enum<E>> void setEnum(E value) {
@@ -145,24 +145,40 @@ public class Configuration {
 
     /* Int */
 
-    public Optional<Integer> getInt(final String parameter) {
-        return getString(parameter).map(stringValue -> {
+    public Optional<Integer> getInt(final String key) {
+        return getString(key).map(stringValue -> {
             try {
                 return Integer.valueOf(stringValue);
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Failed reading parameter " + parameter + ".", e);
+                throw new IllegalArgumentException("Failed reading parameter " + key + ".", e);
             }
         });
     }
 
-    public int requireInt(String parameter) {
-        return getInt(parameter).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + parameter + " not set."));
+    public int requireInt(String key) {
+        return getInt(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + prefix + key + " not set."));
     }
 
     public void setInt(String key, Integer port) {
         setString(key, String.valueOf(port));
     }
 
+
+    /* Double */
+
+    public Optional<Double> getDouble(String key) {
+        return getString(key).map(stringValue -> {
+            try {
+                return Double.valueOf(stringValue);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Failed reading parameter " + key + ".", e);
+            }
+        });
+    }
+
+    public void setDouble(String key, Double value) {
+        setString(key, String.valueOf(value));
+    }
 
     /* Other */
 

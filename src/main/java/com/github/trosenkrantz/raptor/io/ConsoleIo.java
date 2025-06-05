@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.AbortedException;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
+import com.github.trosenkrantz.raptor.configuration.DoubleSetting;
 import com.github.trosenkrantz.raptor.configuration.Setting;
 
 import java.io.Console;
@@ -47,6 +48,9 @@ public class ConsoleIo {
         return result;
     }
 
+
+    /* Enum */
+
     private static <T extends Enum<T> & PromptEnum> List<PromptOption<T>> getPromptOptions(Class<T> enumClass) {
         return Stream.of(enumClass.getEnumConstants())
                 .map(value -> new PromptOption<>(value.getPromptValue(), value.getDescription(), value))
@@ -86,6 +90,9 @@ public class ConsoleIo {
         }
     }
 
+
+    /* Int */
+
     public static int askForInt(String description) {
         return askForInt(description, v -> Optional.empty());
     }
@@ -94,11 +101,11 @@ public class ConsoleIo {
         return askForInt(description, defaultValue, v -> Optional.empty());
     }
 
-    public static int askForInt(String description, int defaultValue, Function<Integer, Optional<String>> validator) {
+    public static int askForInt(String description, int defaultValue, Validator<Integer> validator) {
         return askForOptionalInt(description, String.valueOf(defaultValue), validator).orElse(defaultValue);
     }
 
-    public static int askForInt(String description, Function<Integer, Optional<String>> validator) {
+    public static int askForInt(String description, Validator<Integer> validator) {
         while (true) {
             write(description + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
 
@@ -111,7 +118,7 @@ public class ConsoleIo {
             }
             int intAnswer = Integer.parseInt(answer);
 
-            Optional<String> error = validator.apply(intAnswer);
+            Optional<String> error = validator.validate(intAnswer);
             if (error.isPresent()) {
                 writeLine(error.get());
             } else {
@@ -120,7 +127,7 @@ public class ConsoleIo {
         }
     }
 
-    public static Optional<Integer> askForOptionalInt(String description, String defaultDescription, Function<Integer, Optional<String>> validator) {
+    public static Optional<Integer> askForOptionalInt(String description, String defaultDescription, Validator<Integer> validator) {
         while (true) {
             write(description + (defaultDescription == null ? "" : " (default " + defaultDescription + ")") + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
 
@@ -134,7 +141,7 @@ public class ConsoleIo {
             }
             int intAnswer = Integer.parseInt(answer);
 
-            Optional<String> error = validator.apply(intAnswer);
+            Optional<String> error = validator.validate(intAnswer);
             if (error.isPresent()) {
                 writeLine(error.get());
             } else {
@@ -143,15 +150,14 @@ public class ConsoleIo {
         }
     }
 
-    public static String askForString(String description, String defaultValue) {
-        return askForString(description, defaultValue, v -> Optional.empty());
+
+    /* Double */
+
+    public static Double askForDouble(String description, Validator<Double> validator) {
+        return askForDouble(description, null, validator);
     }
 
-    public static String askForString(String description, Function<String, Optional<String>> validator) {
-        return askForString(description, null, validator);
-    }
-
-    public static String askForString(String description, String defaultValue, Function<String, Optional<String>> validator) {
+    public static Double askForDouble(String description, Double defaultValue, Validator<Double> validator) {
         while (true) {
             write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or type " + Ansi.PROMPT.apply("e") + " exit: ");
 
@@ -159,7 +165,41 @@ public class ConsoleIo {
             if (answer.equals("e")) throw new AbortedException();
             if (defaultValue != null && answer.isEmpty()) return defaultValue;
 
-            Optional<String> error = validator.apply(answer);
+            if (!answer.matches("^-?\\d+(\\.\\d+)?$")) {
+                writeLine("Answer must be a number, potentially with a decimal separator.", Ansi.ERROR);
+                continue;
+            }
+            double doubleAnswer = Double.parseDouble(answer);
+
+            Optional<String> error = validator.validate(doubleAnswer);
+            if (error.isEmpty()) {
+                return doubleAnswer;
+            } else {
+                writeLine(error.get());
+            }
+        }
+    }
+
+
+    /* String */
+
+    public static String askForString(String description, String defaultValue) {
+        return askForString(description, defaultValue, v -> Optional.empty());
+    }
+
+    public static String askForString(String description, Validator<String> validator) {
+        return askForString(description, null, validator);
+    }
+
+    public static String askForString(String description, String defaultValue, Validator<String> validator) {
+        while (true) {
+            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or type " + Ansi.PROMPT.apply("e") + " exit: ");
+
+            String answer = readLine();
+            if (answer.equals("e")) throw new AbortedException();
+            if (defaultValue != null && answer.isEmpty()) return defaultValue;
+
+            Optional<String> error = validator.validate(answer);
             if (error.isEmpty()) {
                 return answer;
             } else {
@@ -167,6 +207,9 @@ public class ConsoleIo {
             }
         }
     }
+
+
+    /* File */
 
     public static String askForFile(String description) {
         return askForFile(description, null);
@@ -189,11 +232,14 @@ public class ConsoleIo {
         }
     }
 
+
+    /* Advanced settings */
+
     public static void configureAdvancedSettings(String description, List<Setting<?>> settings, Configuration configuration) {
         while (true) {
             List<List<String>> rows = settings.stream().map(setting -> List.of(
                     Ansi.PROMPT.apply(setting.getPromptValue()),
-                    setting.getDescription(),
+                    setting.getName(),
                     setting.valueToString(configuration)
             )).toList();
             writeLine(description + " or type " + Ansi.PROMPT.apply("enter") + " to continue or " + Ansi.PROMPT.apply("e") + " to exit: " + System.lineSeparator() + TableFormatter.format(rows));
@@ -210,6 +256,9 @@ public class ConsoleIo {
             }
         }
     }
+
+
+    /* Other */
 
     public static void onExit() {
         if (shouldPromptUserBeforeExit) { // Skip prompt if running as CLI

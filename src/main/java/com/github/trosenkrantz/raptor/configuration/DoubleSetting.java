@@ -2,17 +2,18 @@ package com.github.trosenkrantz.raptor.configuration;
 
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.Validator;
 
 import java.util.Optional;
 
-public class IntegerSetting extends Setting<Integer> {
-    private IntegerSetting(Builder builder) {
+public class DoubleSetting extends Setting<Double> {
+    public DoubleSetting(Builder builder) {
         super(builder);
     }
 
     @Override
-    public Optional<Integer> read(Configuration configuration) {
-        return configuration.getInt(getParameterKey());
+    public Optional<Double> read(Configuration configuration) {
+        return configuration.getDouble(getParameterKey());
     }
 
     @Override
@@ -22,27 +23,27 @@ public class IntegerSetting extends Setting<Integer> {
 
     @Override
     public void configure(Configuration configuration) {
-        configuration.setInt(
+        configuration.setDouble(
                 getParameterKey(),
                 read(configuration)
-                        .map(value -> ConsoleIo.askForInt(getDescription(), value, getValidator()))
-                        .orElseGet(() -> ConsoleIo.askForInt(getDescription()))
+                        .map(value -> ConsoleIo.askForDouble(getDescription(), value, getValidator()))
+                        .orElseGet(() -> ConsoleIo.askForDouble(getDescription(), getValidator()))
         );
     }
 
-    public static class Builder extends Setting.Builder<Integer, Builder> {
+    public static class Builder extends Setting.Builder<Double, DoubleSetting.Builder> {
         public Builder(String promptValue, String parameterKey, String name, String description) {
             super(promptValue, parameterKey, name, description);
         }
 
         @Override
-        public Builder self() {
+        public DoubleSetting.Builder self() {
             return this;
         }
 
         @Override
-        public IntegerSetting build() {
-            return new IntegerSetting(this);
+        public DoubleSetting build() {
+            return new DoubleSetting(this);
         }
     }
 }
