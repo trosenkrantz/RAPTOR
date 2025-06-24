@@ -12,8 +12,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class LatencyNetworkImpairmentFactory implements NetworkImpairmentFactory {
-    private static final Logger LOGGER = Logger.getLogger(LatencyNetworkImpairmentFactory.class.getName());
+public class LatencyFactory implements NetworkImpairmentFactory {
+    private static final Logger LOGGER = Logger.getLogger(LatencyFactory.class.getName());
 
     public static Setting<Integer> SETTING = new IntegerSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
             .validator(value -> {
@@ -27,7 +27,7 @@ public class LatencyNetworkImpairmentFactory implements NetworkImpairmentFactory
     private final int latency;
     private final ScheduledExecutorService executorService;
 
-    public LatencyNetworkImpairmentFactory(int latency) {
+    public LatencyFactory(int latency) {
         this.latency = latency;
         executorService = Executors.newSingleThreadScheduledExecutor();
     }

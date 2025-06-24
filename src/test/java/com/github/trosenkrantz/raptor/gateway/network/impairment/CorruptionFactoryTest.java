@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class CorruptionNetworkImpairmentFactoryTest {
+class CorruptionFactoryTest {
     @Test
     void zeroChance() {
         // Arrange
@@ -17,16 +17,15 @@ class CorruptionNetworkImpairmentFactoryTest {
         byte[] expected = new byte[]{0, 1, 2, 3};
         double chance = 0;
 
-        CorruptionNetworkImpairmentFactory factory = new CorruptionNetworkImpairmentFactory(chance);
         AtomicReference<byte[]> actual = new AtomicReference<>();
-        Consumer<byte[]> consumer = factory.create(actual::set);
+        Consumer<byte[]> consumer = new CorruptionFactory(chance).create(actual::set);
 
         // Act
         consumer.accept(input);
 
         // Assert
-        assertNotNull(actual.get(), "Consumer should have been called");
-        assertArrayEquals(expected, actual.get(), "Payload should match expected corrupted result");
+        assertNotNull(actual.get());
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -37,16 +36,15 @@ class CorruptionNetworkImpairmentFactoryTest {
         double chance = 0.2;
         Random deterministicRandom = new Random(0L);
 
-        CorruptionNetworkImpairmentFactory factory = new CorruptionNetworkImpairmentFactory(chance, deterministicRandom);
         AtomicReference<byte[]> actual = new AtomicReference<>();
-        Consumer<byte[]> consumer = factory.create(actual::set);
+        Consumer<byte[]> consumer = new CorruptionFactory(chance, deterministicRandom).create(actual::set);
 
         // Act
         consumer.accept(input);
 
         // Assert
-        assertNotNull(actual.get(), "Consumer should have been called");
-        assertArrayEquals(expected, actual.get(), "Payload should match expected corrupted result");
+        assertNotNull(actual.get());
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -56,15 +54,14 @@ class CorruptionNetworkImpairmentFactoryTest {
         byte[] expected = new byte[]{-1, -2, -3, -4};
         double chance = 1;
 
-        CorruptionNetworkImpairmentFactory factory = new CorruptionNetworkImpairmentFactory(chance);
         AtomicReference<byte[]> actual = new AtomicReference<>();
-        Consumer<byte[]> consumer = factory.create(actual::set);
+        Consumer<byte[]> consumer = new CorruptionFactory(chance).create(actual::set);
 
         // Act
         consumer.accept(input);
 
         // Assert
-        assertNotNull(actual.get(), "Consumer should have been called");
-        assertArrayEquals(expected, actual.get(), "Payload should match expected corrupted result");
+        assertNotNull(actual.get());
+        assertArrayEquals(expected, actual.get());
     }
 }

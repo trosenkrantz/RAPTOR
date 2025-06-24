@@ -8,14 +8,14 @@ import java.util.Random;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class CorruptionNetworkImpairmentFactory implements NetworkImpairmentFactory {
-    private static final Logger LOGGER = Logger.getLogger(CorruptionNetworkImpairmentFactory.class.getName());
+public class CorruptionFactory implements NetworkImpairmentFactory {
+    private static final Logger LOGGER = Logger.getLogger(CorruptionFactory.class.getName());
 
-    public static Setting<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption chance", "Chance of bit flips, between 0 and 1")
+    public static Setting<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption", "Chance of bit flips, between 0 and 1")
             .defaultValue(0.0)
             .validator(value -> {
                 if (value < 0 || value > 1) {
-                    return Optional.of("Corruption chance must be between 0 and 1.");
+                    return Optional.of("Value must be between 0 and 1, both included.");
                 }
                 return Optional.empty();
             })
@@ -24,11 +24,11 @@ public class CorruptionNetworkImpairmentFactory implements NetworkImpairmentFact
     private final double chance;
     private final Random random;
 
-    public CorruptionNetworkImpairmentFactory(double chance) {
+    public CorruptionFactory(double chance) {
         this(chance, new Random());
     }
 
-    public CorruptionNetworkImpairmentFactory(double chance, Random random) {
+    public CorruptionFactory(double chance, Random random) {
         this.chance = chance;
         this.random = random;
     }

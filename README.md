@@ -22,15 +22,17 @@ It exchanges data with a system under test, either as a standalone, interactive 
   - Client.
   - server:
     - Multiple concurrent client connections.
-  - With and without TLS (`wss://` and `ws://`)
-  - Text and binary data.
+  - With and without TLS (`wss://` and `ws://`).
+- Gateway between protocols:
+  - UDP multicast and serial port.
+  - Simulate network impairment:
+    - Latency, corruption, and packet loss.
 - Can be used as CLI.
 - Sending capabilities:
-  - Interactively send text or binary data.
-  - Send files.
+  - Interactively send text and binary data.
   - Configure auto-replying (when receiving x, then send y).
     - Text and binary data.
-    - Regex match inputs, even for binary inputs.
+    - Use regular expressions to match input, even for binary input.
     - Define states, running a state machine.
 - Supports various OSs through Java, shell scripts, and .cmd (Windows) scripts.
 - Portable application, can be run from a USB stick.
@@ -46,14 +48,14 @@ It exchanges data with a system under test, either as a standalone, interactive 
      │   ├── conf
      │   └── ...
      ├── libs
-     ├── LICENSE
+     ├── LICENCE
      ├── raptor
      └── ...
      ```
    - Or install Java 21 or newer on your machine.
 3. Run either the `raptor` shell script or `raptor.cmd` script.
 
-RAPTOR will then guide you how to set it up.
+RAPTOR will then guide you how to use it.
 
 ## Encoding
 RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters as-is. To support this, we must input to RAPTOR either:
@@ -122,14 +124,14 @@ For WebSocket auto-replies, `input` is the whole payload data received, either f
 See [replies.json](src/main/distributions/replies.json) for an example.
 
 ## TLS
-RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates nor hostnames.
+RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates.
 
 ## ANSI
 RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument in case our console does not support it.
 
 ## Licence
 
-RAPTOR's source code is licenced under MIT, see [LICENSE](LICENSE) for more details. The release includes the following third-party libraries, which are subject to their own licences:
+RAPTOR's source code is licenced under MIT, see [LICENCE](LICENCE) for more details. The release includes the following third-party libraries, which are subject to their own licences:
 
 | Name                                                                    | License                                                  |
 |-------------------------------------------------------------------------|----------------------------------------------------------|

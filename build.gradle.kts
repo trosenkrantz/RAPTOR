@@ -7,7 +7,7 @@ val distributionsDir = layout.buildDirectory.dir("distributions")
 val runtimesDir = layout.buildDirectory.dir("runtimes")
 
 group = "com.github.trosenkrantz"
-version = "1.5.0"
+version = "1.6.0"
 
 repositories {
     mavenCentral()
@@ -80,7 +80,7 @@ val distributeRuntime = tasks.register<Copy>("distributeRuntime") {
 }
 
 val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
-    from(file("README.md"), file("LICENSE"))
+    from(file("README.md"), file("LICENCE"))
     into(distributionsDir)
 
     filter { line ->

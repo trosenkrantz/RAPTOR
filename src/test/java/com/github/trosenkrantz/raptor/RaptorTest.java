@@ -7,30 +7,32 @@ import org.testcontainers.containers.Network;
 class RaptorTest {
     @Test
     void withBasicCommand() {
-        try (RaptorNetwork network = new RaptorNetwork();
-             Raptor raptor = new Raptor(network)
-                     .withCommand("--mode=broadcast --local-port=50000 --role=receive --service=udp")) {
+        // Arrange
 
-            Assertions.assertEquals(4, raptor.getCommandParts().length);
-            Assertions.assertEquals("--mode=broadcast", raptor.getCommandParts()[0]);
-            Assertions.assertEquals("--local-port=50000", raptor.getCommandParts()[1]);
-            Assertions.assertEquals("--role=receive", raptor.getCommandParts()[2]);
-            Assertions.assertEquals("--service=udp", raptor.getCommandParts()[3]);
-        }
+        // Act
+        String[] actual = Raptor.parseArguments("--service=udp --mode=broadcast --role=receive --local-port=50000");
+
+        // Assert
+        Assertions.assertEquals(4, actual.length);
+        Assertions.assertEquals("--service=udp", actual[0]);
+        Assertions.assertEquals("--mode=broadcast", actual[1]);
+        Assertions.assertEquals("--role=receive", actual[2]);
+        Assertions.assertEquals("--local-port=50000", actual[3]);
     }
 
     @Test
     void withQuotedCommand1() {
-        try (RaptorNetwork network = new RaptorNetwork();
-             Raptor raptor = new Raptor(network)
-                     .withCommand("--mode=broadcast --role=send \"--payload=Hello, World\\!\" --service=udp --remote-port=50000")) {
+        // Arrange
 
-            Assertions.assertEquals(5, raptor.getCommandParts().length);
-            Assertions.assertEquals("--mode=broadcast", raptor.getCommandParts()[0]);
-            Assertions.assertEquals("--role=send", raptor.getCommandParts()[1]);
-            Assertions.assertEquals("--payload=Hello, World\\!", raptor.getCommandParts()[2]);
-            Assertions.assertEquals("--service=udp", raptor.getCommandParts()[3]);
-            Assertions.assertEquals("--remote-port=50000", raptor.getCommandParts()[4]);
-        }
+        // Act
+        String[] actual = Raptor.parseArguments("--service=udp --mode=broadcast --role=send --remote-port=50000 \"--payload=Hello, World\\!\"");
+
+        // Assert
+        Assertions.assertEquals(5, actual.length);
+        Assertions.assertEquals("--service=udp", actual[0]);
+        Assertions.assertEquals("--mode=broadcast", actual[1]);
+        Assertions.assertEquals("--role=send", actual[2]);
+        Assertions.assertEquals("--remote-port=50000", actual[3]);
+        Assertions.assertEquals("--payload=Hello, World\\!", actual[4]);
     }
 }

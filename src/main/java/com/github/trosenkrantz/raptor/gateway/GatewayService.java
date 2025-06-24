@@ -3,9 +3,10 @@ package com.github.trosenkrantz.raptor.gateway;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
-import com.github.trosenkrantz.raptor.gateway.network.impairment.CorruptionNetworkImpairmentFactory;
-import com.github.trosenkrantz.raptor.gateway.network.impairment.LatencyNetworkImpairmentFactory;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.CorruptionFactory;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.LatencyFactory;
 import com.github.trosenkrantz.raptor.gateway.network.impairment.NetworkImpairmentFactory;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.PacketLossFactory;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class GatewayService implements RootService {
 
     @Override
     public String getDescription() {
-        return "Gateway between two protocols (under development)";
+        return "Gateway between two protocols";
     }
 
     @Override
@@ -62,7 +63,7 @@ public class GatewayService implements RootService {
         ConsoleIo.writeLine("---- Configuring network impairment " + direction + " ----");
 
         Configuration directionConfiguration = new Configuration();
-        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyNetworkImpairmentFactory.SETTING, CorruptionNetworkImpairmentFactory.SETTING), directionConfiguration);
+        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING), directionConfiguration);
 
         rootConfiguration.addWithPrefix(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
     }
@@ -102,8 +103,9 @@ public class GatewayService implements RootService {
     private Consumer<byte[]> createNetworkImpairment(Configuration impairmentConfiguration, Endpoint toEndpoint) {
         List<NetworkImpairmentFactory> factories = new ArrayList<>();
 
-        LatencyNetworkImpairmentFactory.SETTING.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyNetworkImpairmentFactory(latency)));
-        CorruptionNetworkImpairmentFactory.SETTING.read(impairmentConfiguration).ifPresent(corruption -> factories.add(new CorruptionNetworkImpairmentFactory(corruption)));
+        LatencyFactory.SETTING.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyFactory(latency)));
+        CorruptionFactory.SETTING.read(impairmentConfiguration).ifPresent(corruption -> factories.add(new CorruptionFactory(corruption)));
+        PacketLossFactory.SETTING.read(impairmentConfiguration).ifPresent(packetLoss -> factories.add(new PacketLossFactory(packetLoss)));
 
         // Each factory needs to next consumer to pass the data to, so combine them in reverse order
         Consumer<byte[]> result = toEndpoint::sendToExternalSystem;

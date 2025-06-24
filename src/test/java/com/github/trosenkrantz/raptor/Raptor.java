@@ -46,7 +46,7 @@ public class Raptor extends GenericContainer<Raptor> {
     /**
      * {@inheritDoc}
      * <p>
-     * This support multiple arguments in {@code cmd} string for easy copy paste.
+     * This support multiple arguments in {@code cmd} string for easy copy-paste.
      * This supports quoted arguments.
      *
      * @param cmd the commands
@@ -56,10 +56,6 @@ public class Raptor extends GenericContainer<Raptor> {
     public Raptor withCommand(String cmd) {
         // The withCommand out of the box does not support quoted arguments, so we parse them ourselves
         return super.withCommand(parseArguments(cmd));
-    }
-
-    public ExecResult execInContainer(String command) throws UnsupportedOperationException, IOException, InterruptedException {
-        return super.execInContainer(parseArguments(command));
     }
 
     public static String[] parseArguments(String cliArgs) {
