@@ -1,5 +1,9 @@
 package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
+import com.github.trosenkrantz.raptor.configuration.IntegerSetting;
+import com.github.trosenkrantz.raptor.configuration.Setting;
+
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -10,6 +14,15 @@ import java.util.logging.Logger;
 
 public class LatencyNetworkImpairmentFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(LatencyNetworkImpairmentFactory.class.getName());
+
+    public static Setting<Integer> SETTING = new IntegerSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
+            .validator(value -> {
+                if (value < 0) {
+                    return Optional.of("Latency must be a non-negative integer.");
+                }
+                return Optional.empty();
+            })
+            .build();
 
     private final int latency;
     private final ScheduledExecutorService executorService;

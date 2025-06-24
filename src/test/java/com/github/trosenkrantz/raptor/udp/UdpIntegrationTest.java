@@ -24,8 +24,8 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
             sender.runRaptor("--service=udp --mode=broadcast --role=send --remote-port=50000 \"--payload=Hello, World\\!\"");
 
             // Assert
-            sender.expectAnyOutputLineContains("sent", "text", "Hello, World!", sender.getRaptorIpAddress(), "5000");
-            receiver.expectAnyOutputLineContains("received", "text", "Hello, World!", sender.getRaptorIpAddress(), "5000");
+            sender.expectAnyOutputLineContains("sent", "text", "Hello, World!", sender.getRaptorIpAddress(), "50000");
+            receiver.expectAnyOutputLineContains("received", "text", "Hello, World!", sender.getRaptorIpAddress(), "50000");
         }
     }
 

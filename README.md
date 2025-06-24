@@ -32,7 +32,7 @@ It exchanges data with a system under test, either as a standalone, interactive 
     - Text and binary data.
     - Regex match inputs, even for binary inputs.
     - Define states, running a state machine.
-- Supports various OSs through Java, Bash, and .cmd (Windows) scripts.
+- Supports various OSs through Java, shell scripts, and .cmd (Windows) scripts.
 - Portable application, can be run from a USB stick.
 - Logging to capture data exchange.
 
@@ -51,7 +51,7 @@ It exchanges data with a system under test, either as a standalone, interactive 
      └── ...
      ```
    - Or install Java 21 or newer on your machine.
-3. Run either the `raptor` bash script or `raptor.cmd` script.
+3. Run either the `raptor` shell script or `raptor.cmd` script.
 
 RAPTOR will then guide you how to set it up.
 

@@ -33,6 +33,9 @@ socat -d -d TCP-LISTEN:50000,reuseaddr,fork PTY,link=/dev/ttyS1,raw &
 socat -d -d PTY,link=/dev/ttyS1,raw TCP:<IP address or hostname of container 1>:50000 &
 ```
 
+We have, however, observed this way of doing socat bridging to be flaky.
+Thus, we do not use it for CI.
+
 ### Parallelisation
 To reduce test execution time, we run integration tests in parallel.
 This is enabled in [junit-platform.properties](./resources/junit-platform.properties).

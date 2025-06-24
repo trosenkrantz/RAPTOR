@@ -62,7 +62,7 @@ public class GatewayService implements RootService {
         ConsoleIo.writeLine("---- Configuring network impairment " + direction + " ----");
 
         Configuration directionConfiguration = new Configuration();
-        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(Settings.LATENCY, Settings.CORRUPTION), directionConfiguration);
+        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyNetworkImpairmentFactory.SETTING, CorruptionNetworkImpairmentFactory.SETTING), directionConfiguration);
 
         rootConfiguration.addWithPrefix(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
     }
@@ -102,8 +102,8 @@ public class GatewayService implements RootService {
     private Consumer<byte[]> createNetworkImpairment(Configuration impairmentConfiguration, Endpoint toEndpoint) {
         List<NetworkImpairmentFactory> factories = new ArrayList<>();
 
-        Settings.LATENCY.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyNetworkImpairmentFactory(latency)));
-        Settings.CORRUPTION.read(impairmentConfiguration).ifPresent(corruption -> factories.add(new CorruptionNetworkImpairmentFactory(corruption)));
+        LatencyNetworkImpairmentFactory.SETTING.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyNetworkImpairmentFactory(latency)));
+        CorruptionNetworkImpairmentFactory.SETTING.read(impairmentConfiguration).ifPresent(corruption -> factories.add(new CorruptionNetworkImpairmentFactory(corruption)));
 
         // Each factory needs to next consumer to pass the data to, so combine them in reverse order
         Consumer<byte[]> result = toEndpoint::sendToExternalSystem;

@@ -33,16 +33,4 @@ class RaptorTest {
             Assertions.assertEquals("--remote-port=50000", raptor.getCommandParts()[4]);
         }
     }
-
-    @Test
-    void withQuotedCommand2() {
-        try (RaptorNetwork network = new RaptorNetwork();
-             Raptor raptor = new Raptor(network)
-                     .withCommand("-c \"socat -d -d TCP-LISTEN:50000,reuseaddr,fork PTY,link=/dev/ttyS1,raw & /app/raptor\"")) {
-
-            Assertions.assertEquals(2, raptor.getCommandParts().length);
-            Assertions.assertEquals("-c", raptor.getCommandParts()[0]);
-            Assertions.assertEquals("socat -d -d TCP-LISTEN:50000,reuseaddr,fork PTY,link=/dev/ttyS1,raw & /app/raptor", raptor.getCommandParts()[1]);
-        }
-    }
 }

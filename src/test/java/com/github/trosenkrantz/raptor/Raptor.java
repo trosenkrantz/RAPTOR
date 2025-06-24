@@ -79,6 +79,12 @@ public class Raptor extends GenericContainer<Raptor> {
         return argsList.toArray(new String[0]);
     }
 
+    /**
+     * Expects that any output line contains all the expected phrases.
+     * This method continues to check the output until the timeout is reached.
+     *
+     * @param expectedPhrases the phrases to check for
+     */
     public void expectAnyOutputLineContains(String... expectedPhrases) {
         List<String> expectedPhrases2 = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
 
@@ -89,6 +95,11 @@ public class Raptor extends GenericContainer<Raptor> {
         return actualLine -> expectedPhrases.stream().allMatch(actualLine::contains);
     }
 
+    /**
+     * Expects an exact number of output lines each contain all the expected phrases.
+     * @param expectedNumber the expected number of output lines to match
+     * @param expectedPhrases the phrases to check for
+     */
     public void expectNumberOfOutputLineContains(int expectedNumber, String... expectedPhrases) {
         List<String> expectedPhrases2 = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
 
@@ -118,7 +129,6 @@ public class Raptor extends GenericContainer<Raptor> {
                 Thread.currentThread().interrupt();
             }
         } while (System.currentTimeMillis() < deadline);
-
 
         Assertions.fail("Timeout waiting for expected outputs. Output:" + System.lineSeparator() +
                 String.join("", capturedLines) + System.lineSeparator() +
@@ -154,7 +164,7 @@ public class Raptor extends GenericContainer<Raptor> {
     }
 
     public Raptor runRaptor(String arguments) throws IOException {
-        writeLineToStdIn("/app/raptor " + arguments);
+        writeLineToStdIn("./raptor " + arguments);
         return this;
     }
 }
