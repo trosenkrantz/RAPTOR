@@ -12,7 +12,6 @@ public class CorruptionFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(CorruptionFactory.class.getName());
 
     public static Setting<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption", "Chance of bit flips, between 0 and 1")
-            .defaultValue(0.0)
             .validator(value -> {
                 if (value < 0 || value > 1) {
                     return Optional.of("Value must be between 0 and 1, both included.");

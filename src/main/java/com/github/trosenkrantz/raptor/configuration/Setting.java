@@ -58,6 +58,10 @@ public abstract class Setting<T> {
         return value.get();
     }
 
+    protected Optional<T> readOrDefault(Configuration configuration) {
+        return read(configuration).or(this::getDefaultValue);
+    }
+
     public abstract String valueToString(Configuration configuration);
 
     public abstract void configure(Configuration configuration);

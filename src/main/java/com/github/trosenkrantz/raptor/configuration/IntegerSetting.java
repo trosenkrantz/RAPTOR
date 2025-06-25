@@ -24,7 +24,7 @@ public class IntegerSetting extends Setting<Integer> {
     public void configure(Configuration configuration) {
         configuration.setInt(
                 getParameterKey(),
-                read(configuration)
+                readOrDefault(configuration)
                         .map(value -> ConsoleIo.askForInt(getDescription(), value, getValidator()))
                         .orElseGet(() -> ConsoleIo.askForInt(getDescription()))
         );

@@ -7,23 +7,22 @@ import com.github.trosenkrantz.raptor.io.Validator;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public class IntervalSetting extends Setting<Interval> {
-    private static final Logger LOGGER = Logger.getLogger(IntervalSetting.class.getName());
+public class IntegerIntervalSetting extends Setting<IntegerInterval> {
+    private static final Logger LOGGER = Logger.getLogger(IntegerIntervalSetting.class.getName());
     private final Validator<Integer> minValidator;
 
-    private IntervalSetting(Builder builder, Validator<Integer> minValidator) {
+    private IntegerIntervalSetting(Builder builder, Validator<Integer> minValidator) {
         super(builder);
         this.minValidator = minValidator;
     }
 
     @Override
-    public Optional<Interval> read(Configuration configuration) {
-
+    public Optional<IntegerInterval> read(Configuration configuration) {
         Optional<Integer> minValue = configuration.getInt(getMinKey());
         Optional<Integer> maxValue = configuration.getInt(getMaxKey());
         if (minValue.isPresent()) {
             if (maxValue.isPresent()) {
-                return Optional.of(new Interval(minValue.get(), maxValue.get()));
+                return Optional.of(new IntegerInterval(minValue.get(), maxValue.get()));
             } else {
                 LOGGER.warning(getMinKey() + " is set but " + getMaxKey() + " is not. ignoring both.");
                 return Optional.empty();
@@ -48,26 +47,26 @@ public class IntervalSetting extends Setting<Interval> {
 
     @Override
     public String valueToString(Configuration configuration) {
-        return read(configuration).map(Interval::toString).orElse(Setting.EMPTY_VALUE_TO_STRING);
+        return read(configuration).map(IntegerInterval::toString).orElse(Setting.EMPTY_VALUE_TO_STRING);
     }
 
     @Override
     public void configure(Configuration configuration) {
-        Optional<Interval> current = read(configuration);
+        Optional<IntegerInterval> current = readOrDefault(configuration);
         int min, max;
         if (current.isPresent()) {
             min = ConsoleIo.askForInt(getDescription() + ", minimum value", current.get().min(), minValidator);
-            max = ConsoleIo.askForInt(getDescription() + ", maximum value", current.get().max(), maxEntered -> getValidator().validate(new Interval(min, maxEntered)));
+            max = ConsoleIo.askForInt(getDescription() + ", maximum value", current.get().max(), maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
         } else {
             min = ConsoleIo.askForInt(getDescription() + ", minimum value", minValidator);
-            max = ConsoleIo.askForInt(getDescription() + ", maximum value", maxEntered -> getValidator().validate(new Interval(min, maxEntered)));
+            max = ConsoleIo.askForInt(getDescription() + ", maximum value", maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
         }
 
         configuration.setInt(getMinKey(), min);
         configuration.setInt(getMaxKey(), max);
     }
 
-    public static class Builder extends Setting.Builder<Interval, Builder> {
+    public static class Builder extends Setting.Builder<IntegerInterval, Builder> {
         private Validator<Integer> minValidator;
 
         public Builder(String promptValue, String parameterKey, String name, String description) {
@@ -80,8 +79,8 @@ public class IntervalSetting extends Setting<Interval> {
         }
 
         @Override
-        public IntervalSetting build() {
-            return new IntervalSetting(this, minValidator);
+        public IntegerIntervalSetting build() {
+            return new IntegerIntervalSetting(this, minValidator);
         }
 
         public Builder minValidator(Validator<Integer> minValidator) {

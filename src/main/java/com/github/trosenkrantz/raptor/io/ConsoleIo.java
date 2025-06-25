@@ -120,7 +120,7 @@ public class ConsoleIo {
 
             Optional<String> error = validator.validate(intAnswer);
             if (error.isPresent()) {
-                writeLine(error.get());
+                writeLine(error.get(), Ansi.ERROR);
             } else {
                 return intAnswer;
             }
@@ -175,7 +175,7 @@ public class ConsoleIo {
             if (error.isEmpty()) {
                 return doubleAnswer;
             } else {
-                writeLine(error.get());
+                writeLine(error.get(), Ansi.ERROR);
             }
         }
     }
@@ -203,7 +203,7 @@ public class ConsoleIo {
             if (error.isEmpty()) {
                 return answer;
             } else {
-                writeLine(error.get());
+                writeLine(error.get(), Ansi.ERROR);
             }
         }
     }

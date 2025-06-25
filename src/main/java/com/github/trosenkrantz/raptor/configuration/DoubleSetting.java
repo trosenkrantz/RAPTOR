@@ -25,7 +25,7 @@ public class DoubleSetting extends Setting<Double> {
     public void configure(Configuration configuration) {
         configuration.setDouble(
                 getParameterKey(),
-                read(configuration)
+                readOrDefault(configuration)
                         .map(value -> ConsoleIo.askForDouble(getDescription(), value, getValidator()))
                         .orElseGet(() -> ConsoleIo.askForDouble(getDescription(), getValidator()))
         );

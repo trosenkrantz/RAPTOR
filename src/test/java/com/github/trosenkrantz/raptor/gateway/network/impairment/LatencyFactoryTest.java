@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
-import com.github.trosenkrantz.raptor.configuration.Interval;
+import com.github.trosenkrantz.raptor.configuration.IntegerInterval;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class LatencyFactoryTest {
         Random random = new Random(0L);
         int tries = 32;
 
-        LatencyFactory latencyFactory = new LatencyFactory(new Interval(min, max), random);
+        LatencyFactory latencyFactory = new LatencyFactory(new IntegerInterval(min, max), random);
 
         // Act and Assert
         for (int i = 0; i < tries; i++) {

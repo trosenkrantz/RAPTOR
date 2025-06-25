@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
-import com.github.trosenkrantz.raptor.configuration.Interval;
-import com.github.trosenkrantz.raptor.configuration.IntervalSetting;
+import com.github.trosenkrantz.raptor.configuration.IntegerInterval;
+import com.github.trosenkrantz.raptor.configuration.IntegerIntervalSetting;
 import com.github.trosenkrantz.raptor.configuration.Setting;
 
 import java.util.Optional;
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class LatencyFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(LatencyFactory.class.getName());
 
-    public static Setting<Interval> SETTING = new IntervalSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
+    public static Setting<IntegerInterval> SETTING = new IntegerIntervalSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
             .minValidator(value -> {
                 if (value < 0) {
                     return Optional.of("Minimum latency must be a non-negative integer.");
@@ -31,15 +31,15 @@ public class LatencyFactory implements NetworkImpairmentFactory {
             })
             .build();
 
-    private final Interval latency;
+    private final IntegerInterval latency;
     private final ScheduledExecutorService executorService;
     private final Random random;
 
-    public LatencyFactory(Interval latency) {
+    public LatencyFactory(IntegerInterval latency) {
         this(latency, new Random());
     }
 
-    public LatencyFactory(Interval latency, Random random) {
+    public LatencyFactory(IntegerInterval latency, Random random) {
         this.latency = latency;
         executorService = Executors.newSingleThreadScheduledExecutor();
         this.random = random;
