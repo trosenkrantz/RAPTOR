@@ -3,10 +3,7 @@ package com.github.trosenkrantz.raptor.gateway;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
-import com.github.trosenkrantz.raptor.gateway.network.impairment.CorruptionFactory;
-import com.github.trosenkrantz.raptor.gateway.network.impairment.LatencyFactory;
-import com.github.trosenkrantz.raptor.gateway.network.impairment.NetworkImpairmentFactory;
-import com.github.trosenkrantz.raptor.gateway.network.impairment.PacketLossFactory;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.*;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
@@ -63,7 +60,7 @@ public class GatewayService implements RootService {
         ConsoleIo.writeLine("---- Configuring network impairment " + direction + " ----");
 
         Configuration directionConfiguration = new Configuration();
-        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING), directionConfiguration);
+        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING, DuplicationFactory.SETTING), directionConfiguration);
 
         rootConfiguration.addWithPrefix(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
     }
@@ -106,6 +103,7 @@ public class GatewayService implements RootService {
         LatencyFactory.SETTING.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyFactory(latency)));
         CorruptionFactory.SETTING.read(impairmentConfiguration).ifPresent(corruption -> factories.add(new CorruptionFactory(corruption)));
         PacketLossFactory.SETTING.read(impairmentConfiguration).ifPresent(packetLoss -> factories.add(new PacketLossFactory(packetLoss)));
+        DuplicationFactory.SETTING.read(impairmentConfiguration).ifPresent(duplication -> factories.add(new DuplicationFactory(duplication)));
 
         // Each factory needs to next consumer to pass the data to, so combine them in reverse order
         Consumer<byte[]> result = toEndpoint::sendToExternalSystem;

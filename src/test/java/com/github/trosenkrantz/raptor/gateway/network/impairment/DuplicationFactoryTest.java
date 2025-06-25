@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
-class PacketLossFactoryTest {
+class DuplicationFactoryTest {
     @Test
     void zeroChance() {
         // Arrange
@@ -17,7 +17,7 @@ class PacketLossFactoryTest {
         double chance = 0;
 
         List<byte[]> actual = new ArrayList<>();
-        Consumer<byte[]> consumer = new PacketLossFactory(chance).create(actual::add);
+        Consumer<byte[]> consumer = new DuplicationFactory(chance).create(actual::add);
 
         List<byte[]> inputs = MessageGenerator.generateMessages(messageCount, messageLength);
 
@@ -37,11 +37,11 @@ class PacketLossFactoryTest {
         Random random = new Random(0L);
         int messageLength = 32;
         int messageCount = 32;
-        int exceptedMessageCount = 26; // Recorded based on deterministic random seed
+        int exceptedMessageCount = 41; // Recorded based on deterministic random seed
         double chance = 0.2;
 
         List<byte[]> actual = new ArrayList<>();
-        Consumer<byte[]> consumer = new PacketLossFactory(chance, random).create(actual::add);
+        Consumer<byte[]> consumer = new DuplicationFactory(chance, random).create(actual::add);
 
         List<byte[]> inputs = MessageGenerator.generateMessages(messageCount, messageLength);
 
@@ -53,15 +53,15 @@ class PacketLossFactoryTest {
     }
 
     @Test
-    void flipAllBits() {
+    void protectsItselfFromInfiniteDuplicates() {
         // Arrange
         int messageLength = 32;
         int messageCount = 32;
-        int exceptedMessageCount = 0;
+        int exceptedMessageCount = messageCount * 9; // 1 original + 8 duplicates per message
         double chance = 1;
 
         List<byte[]> actual = new ArrayList<>();
-        Consumer<byte[]> consumer = new PacketLossFactory(chance).create(actual::add);
+        Consumer<byte[]> consumer = new DuplicationFactory(chance).create(actual::add);
 
         List<byte[]> inputs = MessageGenerator.generateMessages(messageCount, messageLength);
 

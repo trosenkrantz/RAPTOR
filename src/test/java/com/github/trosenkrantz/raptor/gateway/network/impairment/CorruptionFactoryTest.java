@@ -30,7 +30,7 @@ class CorruptionFactoryTest {
     void someChance() {
         // Arrange
         byte[] input = new byte[]{0, 1, 2, 3};
-        byte[] expected = new byte[]{0, 57, 3, 51};
+        byte[] expected = new byte[]{0, 57, 3, 51}; // Recorded based on deterministic random seed
         double chance = 0.2;
         Random random = new Random(0L);
 

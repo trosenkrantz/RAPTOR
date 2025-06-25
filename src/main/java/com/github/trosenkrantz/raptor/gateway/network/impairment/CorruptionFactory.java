@@ -11,10 +11,10 @@ import java.util.logging.Logger;
 public class CorruptionFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(CorruptionFactory.class.getName());
 
-    public static Setting<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption", "Chance of bit flips, between 0 and 1")
+    public static Setting<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption Rate", "Chance of bit flips, between 0 and 1")
             .validator(value -> {
                 if (value < 0 || value > 1) {
-                    return Optional.of("Value must be between 0 and 1, both included.");
+                    return Optional.of("Value must be between 0 and 1, inclusive.");
                 }
                 return Optional.empty();
             })
