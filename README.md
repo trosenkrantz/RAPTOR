@@ -15,7 +15,6 @@ It exchanges data with a system under test, either as a standalone, interactive 
   - With and without TLS.
 - SNMP:
   - GET, SET, and TRAP operations.
-  - Listening and responding.
   - Arbitrary data support trough Basic Encoding Rules (BER) encoding.
 - Serial port.
 - WebSocket:
@@ -23,18 +22,18 @@ It exchanges data with a system under test, either as a standalone, interactive 
   - server:
     - Multiple concurrent client connections.
   - With and without TLS (`wss://` and `ws://`).
-- Gateway between protocols:
+- Gateway between protocols, forwarding traffic:
   - UDP multicast and serial port.
   - Simulate network impairment:
-    - Latency, corruption, and packet loss.
-- Can be used as CLI.
+    - Latency, corruption, packet loss, and duplication.
 - Sending capabilities:
   - Interactively send text and binary data.
   - Configure auto-replying (when receiving x, then send y).
     - Text and binary data.
     - Use regular expressions to match input, even for binary input.
     - Define states, running a state machine.
-- Supports various OSs through Java, shell scripts, and .cmd (Windows) scripts.
+- Arbitrary OS support through Java, shell scripts, and .cmd (Windows) scripts.
+- Can be used as CLI.
 - Portable application, can be run from a USB stick.
 - Logging to capture data exchange.
 
