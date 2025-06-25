@@ -1,8 +1,7 @@
 package com.github.trosenkrantz.raptor.io;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class BytesFormatterTest {
     @Test
@@ -10,10 +9,10 @@ class BytesFormatterTest {
         String input = "Hello, World";
 
         String output = BytesFormatter.escapeCliArgument(input);
-        assertEquals("\"Hello, World\"", output);
+        Assertions.assertEquals("\"Hello, World\"", output);
 
         String reversedInput = BytesFormatter.unescapeCliArgument(output);
-        assertEquals(input, reversedInput);
+        Assertions.assertEquals(input, reversedInput);
     }
 
     @Test
@@ -21,29 +20,29 @@ class BytesFormatterTest {
         String input = "a b c";
 
         String output = BytesFormatter.escapeCliArgument(input);
-        assertEquals("\"a b c\"", output);
+        Assertions.assertEquals("\"a b c\"", output);
 
         String reversedInput = BytesFormatter.unescapeCliArgument(output);
-        assertEquals(input, reversedInput);
+        Assertions.assertEquals(input, reversedInput);
     }
 
     @Test
     public void escapedSpecialCharacters() {
         String input = "Special!@#$%^&*()";
         String output = BytesFormatter.escapeCliArgument(input);
-        assertEquals("Special\\!\\@\\#\\$\\%\\^\\&\\*\\(\\)", output);
+        Assertions.assertEquals("Special\\!\\@\\#\\$\\%\\^\\&\\*\\(\\)", output);
 
         String reversedInput = BytesFormatter.unescapeCliArgument(output);
-        assertEquals(input, reversedInput);
+        Assertions.assertEquals(input, reversedInput);
     }
 
     @Test
     public void escapedSpecialCharactersAndQuote() {
         String input = "! a";
         String output = BytesFormatter.escapeCliArgument(input);
-        assertEquals("\"\\! a\"", output);
+        Assertions.assertEquals("\"\\! a\"", output);
 
         String reversedInput = BytesFormatter.unescapeCliArgument(output);
-        assertEquals(input, reversedInput);
+        Assertions.assertEquals(input, reversedInput);
     }
 }

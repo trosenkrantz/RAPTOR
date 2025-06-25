@@ -1,13 +1,11 @@
 package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CorruptionFactoryTest {
     @Test
@@ -24,8 +22,8 @@ class CorruptionFactoryTest {
         consumer.accept(input);
 
         // Assert
-        assertNotNull(actual.get());
-        assertArrayEquals(expected, actual.get());
+        Assertions.assertNotNull(actual.get());
+        Assertions.assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -34,17 +32,17 @@ class CorruptionFactoryTest {
         byte[] input = new byte[]{0, 1, 2, 3};
         byte[] expected = new byte[]{0, 57, 3, 51};
         double chance = 0.2;
-        Random deterministicRandom = new Random(0L);
+        Random random = new Random(0L);
 
         AtomicReference<byte[]> actual = new AtomicReference<>();
-        Consumer<byte[]> consumer = new CorruptionFactory(chance, deterministicRandom).create(actual::set);
+        Consumer<byte[]> consumer = new CorruptionFactory(chance, random).create(actual::set);
 
         // Act
         consumer.accept(input);
 
         // Assert
-        assertNotNull(actual.get());
-        assertArrayEquals(expected, actual.get());
+        Assertions.assertNotNull(actual.get());
+        Assertions.assertArrayEquals(expected, actual.get());
     }
 
     @Test
@@ -61,7 +59,7 @@ class CorruptionFactoryTest {
         consumer.accept(input);
 
         // Assert
-        assertNotNull(actual.get());
-        assertArrayEquals(expected, actual.get());
+        Assertions.assertNotNull(actual.get());
+        Assertions.assertArrayEquals(expected, actual.get());
     }
 }

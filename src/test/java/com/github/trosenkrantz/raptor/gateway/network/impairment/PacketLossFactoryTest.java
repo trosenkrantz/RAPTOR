@@ -4,14 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class PacketLossFactoryTest {
     @Test
@@ -38,7 +33,7 @@ class PacketLossFactoryTest {
         // Assert
         Assertions.assertEquals(messageCount, actual.size());
         for (int i = 0; i < messageCount; i++) {
-            assertArrayEquals(inputs.get(i), actual.get(i), "Payload with index " + i + " should match expected result");
+            Assertions.assertArrayEquals(inputs.get(i), actual.get(i), "Payload with index " + i + " should match expected result");
         }
     }
 
