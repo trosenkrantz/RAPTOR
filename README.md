@@ -1,10 +1,14 @@
 # RAPTOR
 Rapid Assessment and Protocol-based Testing of Operational Responders (RAPTOR) is a tool for analysing and testing systems that interface through low-level networking protocols.
 
-It exchanges data with a system under test, either as a standalone, interactive console application or scripted through command line arguments. This makes it useful for:
+It exchanges data with systems, either as a standalone, interactive console application or scripted through command line arguments. It is useful for:
 
 - Experimenting with unfamiliar systems by using RAPTOR to interact with them.
-- Testing systems by configuring RAPTOR to simulate other systems we may not have easy access to.
+![](https://img.plantuml.biz/plantuml/png/JOun2i9044NxESMGIejSG4HYOM6bR4ndC-nEDWkRMPWTGMzleWYsZyVxlwj6QeyvG-RHq0fgYfDXIChUKX4WRqNn9349iyAAIM9cRDpnUhkuksnyaLeoRnkaYkvV6MIaEUL4Ylsh6iyVPG3uzN3VjWTqkCEp6EioLi5zuR10VlffIN75G4RGiOJrwni0)
+- Testing integrations by using RAPTOR to simulate systems we may not have access to.
+![](https://img.plantuml.biz/plantuml/png/JO-n3i8m34JtV8NL2OR-04Ae3CoWjDrOhCQaaL9NYbsf_3r9kh3UdT_vEb5CkYtHHFeew0ef-5d1XKIJXfKDJhec64YKaYaYiey4JV_DoW8ZEphi1b2W7uV_aBs_XgTzyqd2iaNKm1vepoJ62589vtfdZJage6rlXGAN2XK8hEGJrb-AVYq1c-t7FisvXWGSAfgEs9KTFm00)
+- Testing distributed systems by using RAPTOR as a gateway to simulate middleware and network impairment we may not have access to.
+![](https://img.plantuml.biz/plantuml/png/ROz12i8m44NtSugXArrqKPSYqkG2IipIpT2ECT0ca8n8RsyJGGJTVVvxds7wB9JaCKymyKrG8YRlxeAZJpo8Zm5ea9ZGSXPEI1bj1mLHS1DZSrdMVaRL5AI-YL5dUpBNi74a_AHbMnNpPwmhqR-NTW2smxOzei9z1HaK7afXmBo31bt2Ad-KdiDOFde1)
 
 ## Capabilities
 - UDP:
