@@ -27,7 +27,8 @@ It exchanges data with systems, either as a standalone, interactive console appl
     - Multiple concurrent client connections.
   - With and without TLS (`wss://` and `ws://`).
 - Gateway between protocols, forwarding traffic:
-  - UDP multicast and serial port.
+  - UDP multicast, TCP, and serial port.
+  - Mix of protocols.
   - Simulate network impairment:
     - Latency, corruption, packet loss, and duplication.
 - Sending capabilities:
