@@ -1,7 +1,6 @@
 package com.github.trosenkrantz.raptor.tcp;
 
-import com.github.trosenkrantz.raptor.*;
-import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
+import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
@@ -10,45 +9,30 @@ import com.github.trosenkrantz.raptor.tls.TlsVersion;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLServerSocket;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public class TcpService implements RootService {
-    private static final Logger LOGGER = Logger.getLogger(TcpService.class.getName());
+public class TcpUtility {
+    private static final Logger LOGGER = Logger.getLogger(TcpUtility.class.getName());
 
     public static final String PARAMETER_REPLY_FILE = "reply-file";
-    private static final String PARAMETER_REMOTE_HOST = "remote-host";
-    private static final String PARAMETER_LOCAL_PORT = "local-port";
-    private static final String PARAMETER_REMOTE_PORT = "remote-port";
+    public static final String PARAMETER_REMOTE_HOST = "remote-host";
+    public static final String PARAMETER_LOCAL_PORT = "local-port";
+    public static final String PARAMETER_REMOTE_PORT = "remote-port";
 
-    private static final String DEFAULT_HOST = "localhost";
-    private static final int DEFAULT_PORT = 50000;
+    public static final String DEFAULT_HOST = "localhost";
+    public static final int DEFAULT_PORT = 50000;
 
     private static boolean shutDown;
 
-    @Override
-    public String getPromptValue() {
-        return "t";
-    }
-
-    @Override
-    public String getParameterKey() {
-        return "tcp";
-    }
-
-    @Override
-    public String getDescription() {
-        return "TCP";
-    }
-
-    @Override
-    public void configure(Configuration configuration) throws Exception {
+    public static void configureConnectivity(Configuration configuration) {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
@@ -68,31 +52,9 @@ public class TcpService implements RootService {
         }
 
         TlsUtility.configureTls(configuration);
-
-        configureWhatToSend(configuration);
     }
 
-    private static void configureWhatToSend(Configuration configuration) throws IOException {
-        ConsoleIo.write("What data to send to the remote system? ");
-        SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
-        configuration.setEnum(sendStrategy);
-
-        if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "replies.json");
-
-            // Load state machine immediately to provide early feedback
-            StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
-
-            configuration.setString(PARAMETER_REPLY_FILE, path);
-        }
-    }
-
-    @Override
-    public void run(Configuration configuration) throws Exception {
-        TcpSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
-        sendStrategy.load(configuration);
-
+    public static void connectAndStartSendingAndReceiving(Configuration configuration, TcpSendStrategy sendStrategy) throws Exception {
         try {
             switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
@@ -120,7 +82,7 @@ public class TcpService implements RootService {
                     }
                 }
             }
-        } catch (SocketException e) {
+        } catch (Exception e) {
             if ("Socket closed".equals(e.getMessage())) {
                 LOGGER.info("Socket closed normally.");
                 // Ignore exception
@@ -169,7 +131,7 @@ public class TcpService implements RootService {
     private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy) throws IOException {
         LOGGER.info("Local socket at " + socket.getLocalSocketAddress() + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
 
-        Consumer<byte[]> onInput = sendStrategy.initialise(socket, () -> shutDown = true);
+        Consumer<byte[]> onInput = sendStrategy.start(socket, () -> shutDown = true);
 
         InputStream in = socket.getInputStream();
         byte[] buffer = new byte[1024];
@@ -183,5 +145,4 @@ public class TcpService implements RootService {
 
         LOGGER.info("Socket closed normally.");
     }
-
 }

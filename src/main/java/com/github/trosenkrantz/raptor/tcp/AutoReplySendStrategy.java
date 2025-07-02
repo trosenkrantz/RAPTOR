@@ -20,11 +20,11 @@ class AutoReplySendStrategy implements TcpSendStrategy {
     @Override
     public void load(Configuration configuration) throws IOException {
         // Read state machine immediately to provide early feedback
-        stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(TcpService.PARAMETER_REPLY_FILE));
+        stateMachineConfiguration = StateMachineConfiguration.readFromFile(configuration.requireString(TcpUtility.PARAMETER_REPLY_FILE));
     }
 
     @Override
-    public Consumer<byte[]> initialise(Socket socket, Runnable shutDownAction) throws IOException {
+    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) throws IOException {
         OutputStream out = socket.getOutputStream();
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
             try {

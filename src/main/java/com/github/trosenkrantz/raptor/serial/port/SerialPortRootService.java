@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class SerialPortService implements RootService {
+public class SerialPortRootService implements RootService {
     @Override
     public String getPromptValue() {
         return "sp";

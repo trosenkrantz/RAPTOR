@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Raptor extends GenericContainer<Raptor> {
     private static final long TIMEOUT_MS = 8000L;
@@ -93,7 +94,8 @@ public class Raptor extends GenericContainer<Raptor> {
 
     /**
      * Expects an exact number of output lines each contain all the expected phrases.
-     * @param expectedNumber the expected number of output lines to match
+     *
+     * @param expectedNumber  the expected number of output lines to match
      * @param expectedPhrases the phrases to check for
      */
     public void expectNumberOfOutputLineContains(int expectedNumber, String... expectedPhrases) {
@@ -128,8 +130,11 @@ public class Raptor extends GenericContainer<Raptor> {
 
         Assertions.fail("Timeout waiting for expected outputs. Output:" + System.lineSeparator() +
                 String.join("", capturedLines) + System.lineSeparator() +
-                "Other RAPTORs output:" + System.lineSeparator() +
-                String.join(System.lineSeparator(), network.getContainers().stream().filter(container -> !equals(container)).map(Raptor::getOutput).toList()));
+                network.getContainers().stream()
+                        .filter(container -> !equals(container))
+                        .map(Raptor::getOutput)
+                        .map(output ->  System.lineSeparator() + "Another RAPTOR's output:" + System.lineSeparator() + output)
+                        .collect(Collectors.joining()));
     }
 
     public synchronized String getOutput() {

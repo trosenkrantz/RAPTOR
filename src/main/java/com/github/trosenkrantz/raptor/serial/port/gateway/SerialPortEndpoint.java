@@ -25,7 +25,7 @@ public class SerialPortEndpoint implements Endpoint {
                     return broker; // When serial port receives data, pass to broker
                 });
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Failed creating or receiving serial port.", e);
+                LOGGER.log(Level.SEVERE, "Failed creating serial port or receiving data on it.", e);
             } finally {
                 // Receiving is blocking, so we inform endpoint closed afterwards
                 onEndpointClosed.run();

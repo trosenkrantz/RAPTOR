@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import java.util.concurrent.Semaphore;
 
 public abstract class RaptorIntegrationTest {
-    private static final Semaphore SEMAPHORE = new Semaphore(2); // Limit to 2 concurrent test-cases
+    private static final Semaphore SEMAPHORE = new Semaphore(Integer.getInteger("concurrent.integration.test.cases")); // Limit concurrent test-cases
 
     @BeforeEach
     public void acquire() throws InterruptedException {

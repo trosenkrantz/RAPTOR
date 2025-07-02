@@ -157,6 +157,13 @@ val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
 tasks.test {
     dependsOn(buildDockerImage) // For integration tests
     useJUnitPlatform()
+
+    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors() / 2)
+    systemProperty("concurrent.integration.test.cases", concurrentIntegrationTestCases)
+
+    doFirst {
+        println("Running with $concurrentIntegrationTestCases concurrent test-cases for integration testing.")
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {

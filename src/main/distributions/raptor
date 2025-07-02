@@ -1,8 +1,10 @@
 #!/bin/sh
 
+BASE_DIR=$(dirname "$0")
+
 # Check if there is a JRE in the "java" directory
-if [ -x "./java/bin/java" ]; then
-    JAVA_EXEC="./java/bin/java"
+if [ -x "$BASE_DIR/java/bin/java" ]; then
+    JAVA_EXEC="$BASE_DIR/java/bin/java"
 else
     # Check if java is in the PATH
     if ! command -v java > /dev/null 2>&1; then
@@ -15,11 +17,10 @@ fi
 
 case "$(uname 2>/dev/null || echo unknown)" in
     CYGWIN* | MSYS* | MINGW*) # Windows
-        BASE_DIR=$(cygpath -w "$(dirname "$0")")
+        BASE_DIR=$(cygpath -w "$BASE_DIR") # Convert to Windows path
         CLASS_SEPARATOR=";"
     ;;
     *) # Assume Unix-like
-        BASE_DIR=$(dirname "$0")
         CLASS_SEPARATOR=":"
     ;;
 esac

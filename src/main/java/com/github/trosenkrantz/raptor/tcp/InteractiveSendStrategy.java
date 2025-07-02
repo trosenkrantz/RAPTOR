@@ -15,7 +15,7 @@ class InteractiveSendStrategy implements TcpSendStrategy {
     private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
 
     @Override
-    public Consumer<byte[]> initialise(Socket socket, Runnable shutDownAction) {
+    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) {
         Thread.ofVirtual().start(() -> {
                     try {
                         Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
