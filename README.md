@@ -59,8 +59,6 @@ It exchanges data with systems, either as a standalone, interactive console appl
    - Or install Java 21 or newer on your machine.
 3. Run either the `raptor` shell script or `raptor.cmd` script.
 
-RAPTOR will then guide you how to use it.
-
 ## Encoding
 RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters as-is. To support this, we must input to RAPTOR either:
 - Printable ASCII characters (except `"` and `\`) as-is, e.g., `abc`.

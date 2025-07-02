@@ -4,7 +4,6 @@ import com.github.trosenkrantz.raptor.AbortedException;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
-import com.github.trosenkrantz.raptor.configuration.DoubleSetting;
 import com.github.trosenkrantz.raptor.configuration.Setting;
 
 import java.io.Console;
@@ -12,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,26 +56,31 @@ public class ConsoleIo {
     }
 
     public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass) {
-        return askForOptions(getPromptOptions(enumClass), null);
+        return askForOptions(getPromptOptions(enumClass), null, false);
     }
 
     public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass, T defaultValue) {
-        return askForOptions(getPromptOptions(enumClass), new PromptOption<>(defaultValue.getPromptValue(), defaultValue.getDescription(), defaultValue));
+        return askForOptions(getPromptOptions(enumClass), new PromptOption<>(defaultValue.getPromptValue(), defaultValue.getDescription(), defaultValue), false);
     }
 
-    public static <T> T askForOptions(List<PromptOption<T>> options) {
-        return askForOptions(options, null);
+    public static <T> T askForOptions(List<PromptOption<T>> options, boolean showAbout) {
+        return askForOptions(options, null, showAbout);
     }
 
-    public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue) {
+    public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue, boolean showAbout) {
         while (true) {
             List<List<String>> rows = options.stream().map(option -> List.of(Ansi.PROMPT.apply(option.promptValue()), option.description())).collect(Collectors.toList());
-            rows.add(List.of(Ansi.PROMPT.apply("e"), Ansi.EXIT.apply("Exit")));
+            if (showAbout) rows.add(List.of(Ansi.PROMPT.apply("a"), Ansi.LESS_IMPORTANT.apply("About")));
+            rows.add(List.of(Ansi.PROMPT.apply("e"), Ansi.LESS_IMPORTANT.apply("Exit")));
 
             String defaultString = defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")";
             writeLine("Choose between" + defaultString + ":" + System.lineSeparator() + TableFormatter.format(rows));
 
             String answer = readLine();
+            if (showAbout && answer.equals("a")) {
+                AboutWriter.write();
+                continue;
+            }
             if (answer.equals("e")) throw new AbortedException();
             if (defaultValue != null && answer.isEmpty()) return defaultValue.value();
 

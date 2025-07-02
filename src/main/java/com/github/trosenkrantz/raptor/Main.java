@@ -37,7 +37,7 @@ public class Main {
     }
 
     private static void configure(Collection<RootService> services, Configuration configuration) throws Exception {
-        RootService rootService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList());
+        RootService rootService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList(), true);
 
         configuration.setString("service", rootService.getParameterKey());
         rootService.configure(configuration);

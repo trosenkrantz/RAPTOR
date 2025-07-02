@@ -48,7 +48,7 @@ public class GatewayService implements RootService {
     private static void configureEndpoint(Configuration rootConfiguration, String endpointName) {
         ConsoleIo.writeLine("---- Configuring endpoint " + endpointName + " ----");
 
-        EndpointService service = ConsoleIo.askForOptions(ENDPOINT_SERVICE_OPTIONS);
+        EndpointService service = ConsoleIo.askForOptions(ENDPOINT_SERVICE_OPTIONS, false);
         Configuration endpointConfiguration = new Configuration();
         endpointConfiguration.setString(PARAMETER_ENDPOINT, service.getParameterKey());
         service.configureEndpoint(endpointConfiguration);
