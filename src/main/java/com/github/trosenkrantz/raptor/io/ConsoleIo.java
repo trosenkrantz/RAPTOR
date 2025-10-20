@@ -9,6 +9,7 @@ import com.github.trosenkrantz.raptor.configuration.Setting;
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,6 +47,14 @@ public class ConsoleIo {
         return result;
     }
 
+    private static String getDefaultString(String defaultDescription) {
+        return "Type " + Ansi.PROMPT.apply("enter") + " for " + defaultDescription;
+    }
+
+    private static String getExitString() {
+        return "Type " + Ansi.PROMPT.apply("e") + " to exit";
+    }
+
 
     /* Enum */
 
@@ -73,8 +82,10 @@ public class ConsoleIo {
             if (showAbout) rows.add(List.of(Ansi.PROMPT.apply("a"), Ansi.LESS_IMPORTANT.apply("About")));
             rows.add(List.of(Ansi.PROMPT.apply("e"), Ansi.LESS_IMPORTANT.apply("Exit")));
 
-            String defaultString = defaultValue == null ? "" : " (default " + defaultValue.promptValue() + ")";
-            writeLine("Choose between" + defaultString + ":" + System.lineSeparator() + TableFormatter.format(rows));
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add("Choose between");
+            if (defaultValue != null) prefixes.add(getDefaultString(defaultValue.promptValue()));
+            writeLine(String.join(". ", prefixes) + ":" + System.lineSeparator() + TableFormatter.format(rows));
 
             String answer = readLine();
             if (showAbout && answer.equals("a")) {
@@ -110,7 +121,7 @@ public class ConsoleIo {
 
     public static int askForInt(String description, Validator<Integer> validator) {
         while (true) {
-            write(description + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
+            write(description + ". " + getExitString() + ": ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -132,7 +143,11 @@ public class ConsoleIo {
 
     public static Optional<Integer> askForOptionalInt(String description, String defaultDescription, Validator<Integer> validator) {
         while (true) {
-            write(description + (defaultDescription == null ? "" : " (default " + defaultDescription + ")") + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultDescription != null) prefixes.add(getDefaultString(defaultDescription));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
             if (answer.isEmpty()) return Optional.empty();
@@ -146,7 +161,7 @@ public class ConsoleIo {
 
             Optional<String> error = validator.validate(intAnswer);
             if (error.isPresent()) {
-                writeLine(error.get());
+                writeLine(error.get(), Ansi.ERROR);
             } else {
                 return Optional.of(intAnswer);
             }
@@ -162,7 +177,11 @@ public class ConsoleIo {
 
     public static Double askForDouble(String description, Double defaultValue, Validator<Double> validator) {
         while (true) {
-            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or type " + Ansi.PROMPT.apply("e") + " exit: ");
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultValue != null) prefixes.add(getDefaultString(String.valueOf(defaultValue)));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -196,7 +215,11 @@ public class ConsoleIo {
 
     public static String askForString(String description, String defaultValue, Validator<String> validator) {
         while (true) {
-            write(description + (defaultValue == null ? "" : " (default " + defaultValue + ")") + " or type " + Ansi.PROMPT.apply("e") + " exit: ");
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultValue != null) prefixes.add(getDefaultString(defaultValue));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -220,7 +243,11 @@ public class ConsoleIo {
 
     public static String askForFile(String description, String defaultPath) {
         while (true) {
-            write(description + (defaultPath == null ? "" : " (default " + defaultPath + ")") + " or type " + Ansi.PROMPT.apply("e") + " to exit: ");
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultPath != null) prefixes.add(getDefaultString(defaultPath));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
             if (answer.equals("e")) throw new AbortedException();
@@ -245,7 +272,13 @@ public class ConsoleIo {
                     setting.getName(),
                     setting.valueToString(configuration)
             )).toList();
-            writeLine(description + " or type " + Ansi.PROMPT.apply("enter") + " to continue or " + Ansi.PROMPT.apply("e") + " to exit: " + System.lineSeparator() + TableFormatter.format(rows));
+
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            prefixes.add("Type " + Ansi.PROMPT.apply("enter") + " to continue");
+            prefixes.add(getExitString());
+
+            writeLine(String.join(". ", prefixes) + ": " + System.lineSeparator() + TableFormatter.format(rows));
 
             String answer = readLine();
             if (answer.isEmpty()) return; // User chosen to continue

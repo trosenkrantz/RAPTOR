@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class DuplicationFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(DuplicationFactory.class.getName());
 
-    public static final Setting<Double> SETTING = new DoubleSetting.Builder("d", "duplication", "Duplication Rate", "Chance of duplicating a message, between 0 and 1. If duplicated, this chance applies again, recursively")
+    public static final Setting<Double> SETTING = new DoubleSetting.Builder("d", "duplication", "Duplication Chance", "Chance of duplicating a message, between 0 and 1. If duplicated, this chance applies again, recursively")
         .validator(value -> {
             if (value < 0 || value >= 1) {
                 return Optional.of("Value must be between 0 (inclusive) and 1 (exclusive).");

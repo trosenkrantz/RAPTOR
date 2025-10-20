@@ -33,7 +33,7 @@ public class GatewayService implements RootService {
 
     @Override
     public String getDescription() {
-        return "Gateway between two protocols";
+        return "Gateway between two systems";
     }
 
     @Override

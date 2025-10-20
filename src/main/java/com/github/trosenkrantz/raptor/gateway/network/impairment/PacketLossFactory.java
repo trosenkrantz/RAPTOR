@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class PacketLossFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(PacketLossFactory.class.getName());
 
-    public static Setting<Double> SETTING = new DoubleSetting.Builder("p", "packet-loss", "Packet loss", "Chance of packet loss, between 0 and 1")
+    public static Setting<Double> SETTING = new DoubleSetting.Builder("p", "packet-loss", "Packet loss Rate", "Chance of packet loss, between 0 and 1")
             .validator(value -> {
                 if (value < 0 || value > 1) {
                     return Optional.of("Value must be between 0 and 1, inclusive.");
