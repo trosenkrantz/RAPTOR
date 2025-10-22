@@ -24,12 +24,12 @@ public class IntegerIntervalSetting extends Setting<IntegerInterval> {
             if (maxValue.isPresent()) {
                 return Optional.of(new IntegerInterval(minValue.get(), maxValue.get()));
             } else {
-                LOGGER.warning(getMinKey() + " is set but " + getMaxKey() + " is not. ignoring both.");
+                LOGGER.warning(getMinKey() + " is set but " + getMaxKey() + " is not. Ignoring both.");
                 return Optional.empty();
             }
         } else {
             if (maxValue.isPresent()) {
-                LOGGER.warning(getMaxKey() + " is set but " + getMinKey() + " is not. ignoring both.");
+                LOGGER.warning(getMaxKey() + " is set but " + getMinKey() + " is not. Ignoring both.");
                 return Optional.empty();
             } else {
                 return Optional.empty();

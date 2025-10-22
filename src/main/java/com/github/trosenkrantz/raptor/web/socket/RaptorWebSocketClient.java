@@ -1,7 +1,6 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -9,6 +8,7 @@ import javax.net.ssl.SSLParameters;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,8 +20,8 @@ public class RaptorWebSocketClient extends WebSocketClient {
 
     private Consumer<byte[]> onInput;
 
-    public RaptorWebSocketClient(URI serverUri, WebSocketSendStrategy sendStrategy) {
-        super(serverUri);
+    public RaptorWebSocketClient(URI serverUri, WebSocketSendStrategy sendStrategy, Map<String, String> extraHeaders) {
+        super(serverUri, extraHeaders);
         this.sendStrategy = sendStrategy;
     }
 

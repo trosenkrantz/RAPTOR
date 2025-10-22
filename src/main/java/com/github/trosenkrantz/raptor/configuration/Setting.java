@@ -5,6 +5,10 @@ import com.github.trosenkrantz.raptor.io.Validator;
 
 import java.util.Optional;
 
+/**
+ * Something to be configured by a user as well as stored in and read from the CLI configuration.
+ * @param <T> Type for what the settings model
+ */
 public abstract class Setting<T> {
     public static String EMPTY_VALUE_TO_STRING = "N/A";
 
@@ -48,6 +52,11 @@ public abstract class Setting<T> {
         return validator;
     }
 
+    /**
+     * Read the value for this setting from the configuration.
+     * @param configuration Configuration to read from
+     * @return Optional setting value, empty if not set
+     */
     public abstract Optional<T> read(Configuration configuration);
 
     public T readAndRequire(Configuration configuration) {
@@ -62,6 +71,11 @@ public abstract class Setting<T> {
         return read(configuration).or(this::getDefaultValue);
     }
 
+    /**
+     * Used to display the value of this setting to the user.
+     * @param configuration Configuration to read from
+     * @return String representation of the setting value
+     */
     public abstract String valueToString(Configuration configuration);
 
     public abstract void configure(Configuration configuration);

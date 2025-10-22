@@ -51,7 +51,7 @@ public class ConsoleIo {
         return "Type " + Ansi.PROMPT.apply("enter") + " for " + defaultDescription;
     }
 
-    private static String getExitString() {
+    public static String getExitString() {
         return "Type " + Ansi.PROMPT.apply("e") + " to exit";
     }
 
@@ -204,6 +204,10 @@ public class ConsoleIo {
 
 
     /* String */
+
+    public static String askForString(String description) {
+        return askForString(description, null, v -> Optional.empty());
+    }
 
     public static String askForString(String description, String defaultValue) {
         return askForString(description, defaultValue, v -> Optional.empty());

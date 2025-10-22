@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.web.socket;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
+import com.github.trosenkrantz.raptor.configuration.StringToStringMapSetting;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
@@ -17,7 +18,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class WebSocketService implements RootService {
@@ -28,6 +31,9 @@ public class WebSocketService implements RootService {
 
     private static final int DEFAULT_PORT = 50000;
     private static final String DEFAULT_URI = "ws://localhost:" + DEFAULT_PORT + "/socket";
+
+    public static final StringToStringMapSetting EXTRA_HEADERSSetting = new StringToStringMapSetting.Builder("h", "headers", "Extra HTTP headers", "Extra HTTP headers to include in the WebSocket handshake request")
+            .build();
 
     @Override
     public String getPromptValue() {
@@ -52,6 +58,8 @@ public class WebSocketService implements RootService {
         switch (role) {
             case CLIENT -> {
                 configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
+
+                EXTRA_HEADERSSetting.configure(configuration);
             }
             case SERVER -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
@@ -87,7 +95,8 @@ public class WebSocketService implements RootService {
         switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
                 String uri = configuration.requireString(PARAMETER_URI);
-                WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy);
+                Map<String, String> extraHeaders = EXTRA_HEADERSSetting.read(configuration).orElse(new HashMap<>());
+                WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy, extraHeaders);
                 if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
                     client.setSocketFactory(TlsUtility.loadSslContext(configuration).getSocketFactory());
                 }

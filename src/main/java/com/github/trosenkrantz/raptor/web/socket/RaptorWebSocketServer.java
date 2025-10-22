@@ -32,7 +32,13 @@ public class RaptorWebSocketServer extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-        LOGGER.info("Local socket at " + webSocket.getLocalSocketAddress() + " connected to remote socket at " + webSocket.getRemoteSocketAddress() + ".");
+        StringBuilder toLog = new StringBuilder("Local socket at " + webSocket.getLocalSocketAddress() + " connected to remote socket at " + webSocket.getRemoteSocketAddress() + ". Headers:");
+        clientHandshake.iterateHttpFields().forEachRemaining(headerName -> {
+            String headerValue = clientHandshake.getFieldValue(headerName);
+            toLog.append(System.lineSeparator()).append(headerName).append(": ").append(headerValue);
+        });
+
+        LOGGER.info(toLog.toString());
         onInput.put(webSocket.getRemoteSocketAddress(), sendStrategy.initialise(webSocket, () -> {
             try {
                 stop();
