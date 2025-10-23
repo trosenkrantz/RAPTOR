@@ -45,7 +45,7 @@ public class LoggingConfigurator {
         FileHandler fileHandler;
         fileHandler = new FileHandler(logFileName);
         fileHandler.setFormatter(new FileFormatter());
-        fileHandler.setLevel(Level.INFO);
+        fileHandler.setLevel(Level.ALL);
         return fileHandler;
     }
 

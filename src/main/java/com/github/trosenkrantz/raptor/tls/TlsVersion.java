@@ -27,6 +27,10 @@ public enum TlsVersion implements PromptEnum {
         return this.description;
     }
 
+    /**
+     * Java specific ID for TLS version, e.g. "TLSv1.2"
+     * @return ID of the TLS version
+     */
     public String getId() {
         return id;
     }

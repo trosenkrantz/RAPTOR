@@ -266,6 +266,27 @@ public class ConsoleIo {
         }
     }
 
+    public static Optional<String> askForOptionalFile(String description, String defaultDescription) {
+        while (true) {
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultDescription != null) prefixes.add(getDefaultString(defaultDescription));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
+
+            String answer = readLine();
+            if (answer.isEmpty()) return Optional.empty();
+            if (answer.equals("e")) throw new AbortedException();
+
+            Path path = Path.of(answer);
+            if (Files.exists(path)) {
+                return Optional.of(answer);
+            } else {
+                writeLine("Cannot find " + path + ".", Ansi.ERROR);
+            }
+        }
+    }
+
 
     /* Advanced settings */
 

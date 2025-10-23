@@ -60,13 +60,15 @@ public class WebSocketService implements RootService {
                 configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
 
                 EXTRA_HEADERSSetting.configure(configuration);
+
+                TlsUtility.configureTls(configuration, false);
             }
             case SERVER -> {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
+
+                TlsUtility.configureTls(configuration, true);
             }
         }
-
-        TlsUtility.configureTls(configuration);
 
         configureSendStrategy(configuration);
     }

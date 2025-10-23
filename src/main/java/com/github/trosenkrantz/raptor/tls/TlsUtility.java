@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.tls;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -25,34 +26,50 @@ public class TlsUtility {
     private TlsUtility() {
     }
 
-    public static void configureTls(Configuration configuration) {
+    /**
+     * Prompts the user to configure TLS.
+     * @param configuration The configuration to set the TLS parameters in.
+     * @param requireKeyStore If true, the user will be required to provide a key store path. This is needed for server-side TLS.
+     */
+    public static void configureTls(Configuration configuration, boolean requireKeyStore) {
         TlsVersion tlsVersion = ConsoleIo.askForOptions(TlsVersion.class, TlsVersion.NONE);
         configuration.setEnum(tlsVersion);
+
         if (tlsVersion != TlsVersion.NONE) {
-            String keyStorePath = ConsoleIo.askForFile("Absolute or relate path to key store (PKCS #12 or JKS)", "." + File.separator + "KeyStore.p12");
-            configuration.setString(PARAMETER_KEY_STORE, keyStorePath);
+            Optional<String> keyStorePathOptional = configureKeyStorePath(requireKeyStore);
+            keyStorePathOptional.ifPresent(keyStorePath -> {
+                configuration.setString(PARAMETER_KEY_STORE, keyStorePath);
 
-            String keyStorePassword = ConsoleIo.askForString("Password of key store", pw -> {
-                try {
-                    loadKeyStore(keyStorePath, pw); // Validate by trying to load
-                    return Optional.empty();
-                } catch (Exception e) {
-                    return Optional.of("Failed loading key store with password. " + e.getMessage());
-                }
+                String keyStorePassword = ConsoleIo.askForString("Password of key store", pw -> {
+                    try {
+                        loadKeyStore(keyStorePath, pw); // Validate by trying to load
+                        return Optional.empty();
+                    } catch (Exception e) {
+                        return Optional.of("Failed loading key store with password. " + e.getMessage());
+                    }
+                });
+                configuration.setString(PARAMETER_KEY_STORE_PASSWORD, keyStorePassword);
+
+                configuration.setString(
+                        PARAMETER_KEY_PASSWORD,
+                        ConsoleIo.askForString("Password of key", keyStorePassword, pw -> {
+                            try {
+                                loadKey(keyStorePath, keyStorePassword, pw, false); // Validate by trying to load
+                                return Optional.empty();
+                            } catch (Exception e) {
+                                return Optional.of("Failed loading key with password. " + e.getMessage());
+                            }
+                        })
+                );
             });
-            configuration.setString(PARAMETER_KEY_STORE_PASSWORD, keyStorePassword);
+        }
+    }
 
-            configuration.setString(
-                    PARAMETER_KEY_PASSWORD,
-                    ConsoleIo.askForString("Password of key", keyStorePassword, pw -> {
-                        try {
-                            loadKey(keyStorePath, keyStorePassword, pw, false); // Validate by trying to load
-                            return Optional.empty();
-                        } catch (Exception e) {
-                            return Optional.of("Failed loading key with password. " + e.getMessage());
-                        }
-                    })
-            );
+    private static Optional<String> configureKeyStorePath(boolean requireKeyStore) {
+        if (requireKeyStore) {
+            return Optional.of(ConsoleIo.askForFile("Absolute or relate path to key store (PKCS #12 or JKS)", "." + File.separator + "KeyStore.p12"));
+        } else {
+            return ConsoleIo.askForOptionalFile("Absolute or relate path to key store (PKCS #12 or JKS)", "no key store");
         }
     }
 
@@ -83,15 +100,21 @@ public class TlsUtility {
     }
 
     public static SSLContext loadSslContext(Configuration configuration) throws Exception {
-        KeyManagerFactory factory = loadKey(
-                configuration.requireString(PARAMETER_KEY_STORE),
-                configuration.requireString(PARAMETER_KEY_STORE_PASSWORD),
-                configuration.requireString(PARAMETER_KEY_PASSWORD),
-                true
-        );
+        KeyManager[] keyManagers;
+        Optional<String> keyStorePathOptional = configuration.getString(PARAMETER_KEY_STORE);
+        if (keyStorePathOptional.isPresent()) {
+            keyManagers = loadKey(
+                    configuration.requireString(PARAMETER_KEY_STORE),
+                    configuration.requireString(PARAMETER_KEY_STORE_PASSWORD),
+                    configuration.requireString(PARAMETER_KEY_PASSWORD),
+                    true
+            ).getKeyManagers();
+        } else {
+            keyManagers = null; // Configure to not use TLS key, so making Java skip
+        }
 
         SSLContext sslContext = SSLContext.getInstance(configuration.requireEnum(TlsVersion.class).getId());
-        sslContext.init(factory.getKeyManagers(), new TrustManager[]{new AllTrustingTrustManager()}, new SecureRandom());
+        sslContext.init(keyManagers, new TrustManager[]{new AllTrustingTrustManager()}, new SecureRandom());
 
         return sslContext;
     }

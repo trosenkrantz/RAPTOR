@@ -45,13 +45,16 @@ public class TcpUtility {
                         "arbitrary ephemeral port",
                         IpPortValidator.VALIDATOR
                 ).ifPresent(port -> configuration.setInt(PARAMETER_LOCAL_PORT, port));
+
+                TlsUtility.configureTls(configuration, false);
             }
             case SERVER -> {
                 configuration.setInt(PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("Port of local server socket to create", DEFAULT_PORT, IpPortValidator.VALIDATOR));
+
+                TlsUtility.configureTls(configuration, true);
             }
         }
 
-        TlsUtility.configureTls(configuration);
     }
 
     public static void connectAndStartSendingAndReceiving(Configuration configuration, TcpSendStrategy sendStrategy) throws Exception {
