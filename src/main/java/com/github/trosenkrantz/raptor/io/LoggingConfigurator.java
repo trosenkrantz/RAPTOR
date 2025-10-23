@@ -23,7 +23,11 @@ public class LoggingConfigurator {
         rootLogger.addHandler(getFileHandler(logFileName));
         rootLogger.addHandler(getConsoleHandler());
 
-        rootLogger.setLevel(Level.INFO);
+        rootLogger.setLevel(Level.WARNING); // Only show warnings and above from libraries
+
+        // Enable all logging for own application
+        Logger myLogger = Logger.getLogger("com.github.trosenkrantz.raptor");
+        myLogger.setLevel(Level.ALL);
 
         logVersion();
         ConsoleIo.writeLine("Logging to " + logFileName + "." + System.lineSeparator());
@@ -55,5 +59,4 @@ public class LoggingConfigurator {
         consoleHandler.setLevel(Level.INFO);
         return consoleHandler;
     }
-
 }

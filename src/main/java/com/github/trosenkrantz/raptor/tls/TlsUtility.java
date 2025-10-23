@@ -13,8 +13,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class TlsUtility {
     private static final Logger LOGGER = Logger.getLogger(TlsUtility.class.getName());
@@ -91,12 +93,23 @@ public class TlsUtility {
                     throw new RuntimeException(e);
                 }
             }).toList();
-            LOGGER.info("Using " + certificates.size() + " certificates: " + certificates);
+            LOGGER.info("Using " + certificateChainToInfoString(certificates) + ".");
+            LOGGER.fine("Detailed certificates information: " + certificates);
         }
 
         KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         factory.init(keyStore, keyPassword.toCharArray());
         return factory;
+    }
+
+    public static String certificateChainToInfoString(List<Certificate> certificates) {
+        return "chain of " + certificates.size() + " certificate" + (certificates.size() == 1 ? "" : "s") + ": [" + certificates.stream().map(certificate -> {
+            if (certificate instanceof X509Certificate x509) {
+                return "subject '" + x509.getSubjectX500Principal().getName() + "' issuer '" + x509.getIssuerX500Principal().getName() + "'";
+            } else {
+                return "unknown certificate type " + certificate.getType();
+            }
+        }).collect(Collectors.joining(", ")) + "]";
     }
 
     public static SSLContext loadSslContext(Configuration configuration) throws Exception {
