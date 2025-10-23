@@ -7,7 +7,7 @@ val distributionsDir = layout.buildDirectory.dir("distributions")
 val runtimesDir = layout.buildDirectory.dir("runtimes")
 
 group = "com.github.trosenkrantz"
-version = "1.6.0"
+version = "1.7.0"
 
 repositories {
     mavenCentral()
@@ -42,8 +42,7 @@ dependencies {
 
     // For testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testImplementation("org.testcontainers:testcontainers:1.20.6")
-    testImplementation("org.testcontainers:junit-jupiter:1.20.6")
+    testImplementation("org.testcontainers:testcontainers:2.0.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("org.slf4j:slf4j-nop:2.0.7") // testcontainers use SLF4J, route to NOP to ignore
 
