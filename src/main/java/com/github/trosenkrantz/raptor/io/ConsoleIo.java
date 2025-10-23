@@ -257,6 +257,7 @@ public class ConsoleIo {
             if (answer.equals("e")) throw new AbortedException();
             if (defaultPath != null && answer.isEmpty()) answer = defaultPath;
 
+            answer = stripQuotes(answer);
             Path path = Path.of(answer);
             if (Files.exists(path)) {
                 return answer;
@@ -264,6 +265,13 @@ public class ConsoleIo {
                 writeLine("Cannot find " + path + ".", Ansi.ERROR);
             }
         }
+    }
+
+    private static String stripQuotes(String answer) {
+        if (answer.length() >= 2 && ((answer.startsWith("\"") && answer.endsWith("\"")) || (answer.startsWith("'") && answer.endsWith("'")))) {
+            answer = answer.substring(1, answer.length() - 1);
+        }
+        return answer;
     }
 
     public static Optional<String> askForOptionalFile(String description, String defaultDescription) {
@@ -278,6 +286,7 @@ public class ConsoleIo {
             if (answer.isEmpty()) return Optional.empty();
             if (answer.equals("e")) throw new AbortedException();
 
+            answer = stripQuotes(answer);
             Path path = Path.of(answer);
             if (Files.exists(path)) {
                 return Optional.of(answer);
