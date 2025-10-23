@@ -4,7 +4,6 @@ import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 
@@ -79,6 +78,21 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             client.writeLineToStdIn(binaryMessage);
             client.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
             server.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
+        }
+    }
+
+    @Test
+    public void usingExtraHeader() throws IOException {
+        try (RaptorNetwork network = new RaptorNetwork();
+             Raptor server = new Raptor(network);
+             Raptor client = new Raptor(network)) {
+            network.startAll();
+
+            server.runRaptor("--service=web-socket --role=server --port=50000 --tls-version=none --send-strategy=none");
+            server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
+
+            client.runRaptor("--service=web-socket --role=client --uri=ws\\://" + server.getRaptorHostname() + "\\:50000 --headers=\\{\\\"abc\\\"\\:\\\"def\\\"\\} --tls-version=none --send-strategy=none"); // Client connects to server
+            server.expectNumberOfOutputLineContains(1, "abc", "def");
         }
     }
 }
