@@ -32,7 +32,7 @@ public class WebSocketService implements RootService {
     private static final int DEFAULT_PORT = 50000;
     private static final String DEFAULT_URI = "ws://localhost:" + DEFAULT_PORT + "/socket";
 
-    public static final StringToStringMapSetting EXTRA_HEADERSSetting = new StringToStringMapSetting.Builder("h", "headers", "Extra HTTP headers", "Extra HTTP headers to include in the WebSocket handshake request")
+    public static final StringToStringMapSetting EXTRA_HEADERS_SETTING = new StringToStringMapSetting.Builder("h", "headers", "Extra HTTP headers", "Extra HTTP headers to include in the WebSocket handshake request")
             .build();
 
     @Override
@@ -59,7 +59,7 @@ public class WebSocketService implements RootService {
             case CLIENT -> {
                 configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
 
-                EXTRA_HEADERSSetting.configure(configuration);
+                EXTRA_HEADERS_SETTING.configure(configuration);
 
                 TlsUtility.configureTls(configuration, false);
             }
@@ -97,7 +97,7 @@ public class WebSocketService implements RootService {
         switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
                 String uri = configuration.requireString(PARAMETER_URI);
-                Map<String, String> extraHeaders = EXTRA_HEADERSSetting.read(configuration).orElse(new HashMap<>());
+                Map<String, String> extraHeaders = EXTRA_HEADERS_SETTING.read(configuration).orElse(new HashMap<>());
                 WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy, extraHeaders);
                 if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
                     client.setSocketFactory(TlsUtility.loadSslContext(configuration).getSocketFactory());

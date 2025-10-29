@@ -7,14 +7,12 @@ import com.github.trosenkrantz.raptor.AbortedException;
 import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.io.TableFormatter;
-import com.github.trosenkrantz.raptor.io.Validator;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static com.github.trosenkrantz.raptor.io.ConsoleIo.getExitString;
 
 public class StringToStringMapSetting extends Setting<Map<String, String>> {
     private static final Logger LOGGER = Logger.getLogger(StringToStringMapSetting.class.getName());

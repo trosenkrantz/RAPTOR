@@ -5,6 +5,11 @@ import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A configuration of key-value parameters.
+ * A parameter can represent either a flag (no value) or a primitive value.
+ * When we need a complex value, we JSON to encode as a string.
+ */
 public class Configuration {
     public static final String DEFAULT_PREFIX = "--";
     public static final String KEY_SEPARATOR = "-";
