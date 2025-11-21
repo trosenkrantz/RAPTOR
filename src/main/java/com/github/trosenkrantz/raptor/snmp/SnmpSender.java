@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class SnmpSender {
     private static final Logger LOGGER = Logger.getLogger(SnmpSender.class.getName());
 
-    public static void run(Configuration configuration, int retries, long timeout, PDU pdu) throws IOException {
+    public static void run(Configuration configuration, PDU pdu) throws IOException {
         DefaultUdpTransportMapping transport = new DefaultUdpTransportMapping();
         try (Snmp snmp = new Snmp(transport)) {
             transport.listen();
@@ -24,8 +24,6 @@ public class SnmpSender {
             target.setCommunity(new OctetString("private"));
             UdpAddress address = new UdpAddress(configuration.requireString(SnmpService.PARAMETER_HOST) + "/" + configuration.requireString(SnmpService.PARAMETER_PORT));
             target.setAddress(address);
-            target.setRetries(retries);
-            target.setTimeout(timeout);
             target.setVersion(configuration.requireEnum(Version.class).getSnmpValue());
 
             // Send the request
