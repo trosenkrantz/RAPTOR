@@ -18,12 +18,13 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Client and server.
   - With and without TLS.
 - SNMP:
+  - Version 1 and 2c.
   - GET, SET, and TRAP operations.
   - Arbitrary data support trough Basic Encoding Rules (BER) encoding.
 - Serial port.
 - WebSocket:
   - Client.
-  - server:
+  - Server:
     - Multiple concurrent client connections.
   - With and without TLS (`wss://` and `ws://`).
 - Gateway between two systems, forwarding traffic:
@@ -36,7 +37,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Configure auto-replying (when receiving x, then send y).
     - Text and binary data.
     - Use regular expressions to match input, even for binary input.
-    - Define states, running a state machine.
+    - Define an arbitrary state machine.
 - Arbitrary OS support through Java, shell scripts, and .cmd (Windows) scripts.
 - Can be used as CLI.
 - Portable application, can be run from a USB stick.
