@@ -1,13 +1,13 @@
 package com.github.trosenkrantz.raptor.snmp;
 
 import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.snmp4j.CommandResponder;
 import org.snmp4j.Snmp;
 import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 
 public class SnmpListener {
@@ -20,7 +20,8 @@ public class SnmpListener {
 
             LOGGER.info("Listening to requests at " + address + "...");
             snmp.listen();
-            new CountDownLatch(1).await(); // Wait indefinitely to let agent run
+
+            ConsoleIo.promptUserToExit();
         }
     }
 }
