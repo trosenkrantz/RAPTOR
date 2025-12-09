@@ -14,6 +14,11 @@ public class Configuration {
     public static final String DEFAULT_PREFIX = "--";
     public static final String KEY_SEPARATOR = "-";
 
+    /**
+     * Storage of parameters.
+     * We store keys without the {@link #DEFAULT_PREFIX}.
+     * We represent flags by a null value
+     */
     private final Map<String, String> parameters;
 
     /**
@@ -33,18 +38,25 @@ public class Configuration {
      * @param args CLI arguments
      */
     public Configuration(String[] args) {
-        this(Arrays.stream(args).map(arg -> {
-            arg = BytesFormatter.unescapeCliArgument(arg);
+        this(cliArgumentsToParameters(args));
+    }
 
-            if (!arg.startsWith(DEFAULT_PREFIX)) {
-                throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing " + DEFAULT_PREFIX + " prefix");
-            }
-            if (!arg.contains("=")) {
-                return new String[]{arg.substring(2), ""};
-            }
+    private static Map<String, String> cliArgumentsToParameters(String[] args) {
+        Map<String, String> map = new LinkedHashMap<>();
 
-            return arg.substring(2).split("=", 2);
-        }).collect(Collectors.toMap(parts -> parts[0], parts -> parts[1], (existing, replacement) -> existing, LinkedHashMap::new)));
+        for (String raw : args) {
+            String arg = BytesFormatter.unescapeCliArgument(raw);
+            if (!arg.startsWith(DEFAULT_PREFIX)) throw new IllegalArgumentException("Failed to parse argument " + arg + " due to missing " + DEFAULT_PREFIX + " prefix");
+
+            if (!arg.contains("=")) { // If flag
+                map.putIfAbsent(arg.substring(2), null);
+            } else { // If parameter with value
+                String[] parts = arg.substring(2).split("=", 2);
+                map.putIfAbsent(parts[0], parts[1]);
+            }
+        }
+
+        return map;
     }
 
     private Configuration(final Map<String, String> parameters) {
@@ -85,6 +97,10 @@ public class Configuration {
 
     public Configuration copy() {
         return new Configuration(parameters);
+    }
+
+    public boolean hasParameter(final String key) {
+        return parameters.containsKey(key);
     }
 
     /* String */
@@ -185,12 +201,18 @@ public class Configuration {
         setString(key, String.valueOf(value));
     }
 
+
     /* Other */
 
     @Override
     public String toString() {
         return parameters.entrySet().stream()
-                .map(parameter -> BytesFormatter.escapeCliArgument(DEFAULT_PREFIX + parameter.getKey() + "=" + parameter.getValue()))
+                .map(parameter -> BytesFormatter.escapeCliArgument(DEFAULT_PREFIX + parameterToString(parameter)))
                 .collect(Collectors.joining(" "));
+    }
+
+    private static String parameterToString(Map.Entry<String, String> parameter) {
+        if (parameter.getValue() == null) return parameter.getKey();
+        else return parameter.getKey() + "=" + parameter.getValue();
     }
 }

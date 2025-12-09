@@ -22,7 +22,7 @@ public enum Ansi {
     }
 
     public static void configure(Configuration configuration) {
-        enabled = configuration.getString("no-ansi").isEmpty();
+        enabled = !configuration.hasParameter("no-ansi");
     }
 
     public String apply(String message) {
