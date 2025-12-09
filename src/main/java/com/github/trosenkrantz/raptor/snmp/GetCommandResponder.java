@@ -5,10 +5,7 @@ import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import org.snmp4j.CommandResponder;
-import org.snmp4j.CommandResponderEvent;
-import org.snmp4j.MessageException;
-import org.snmp4j.PDU;
+import org.snmp4j.*;
 import org.snmp4j.mp.StatusInformation;
 import org.snmp4j.smi.*;
 
@@ -30,23 +27,23 @@ public class GetCommandResponder implements CommandResponder {
 
     @Override
     public <A extends Address> void processPdu(CommandResponderEvent<A> event) {
-        PDU pdu = event.getPDU();
-        if (pdu == null) {
+        PDU requestPdu = event.getPDU();
+        if (requestPdu == null) {
             LOGGER.info("Received null PDU from " + event.getPeerAddress() + ".");
             return;
         }
 
-        if (pdu.getType() != PDU.GET) {
-            LOGGER.info("Received non-GET PDU " + pdu + " from " + event.getPeerAddress() + ".");
+        if (requestPdu.getType() != PDU.GET) {
+            LOGGER.info("Received non-GET PDU " + requestPdu + " from " + event.getPeerAddress() + ".");
             return;
         }
 
         PDU responsePDU = new PDU();
         responsePDU.setType(PDU.RESPONSE);
-        responsePDU.setRequestID(pdu.getRequestID());
+        responsePDU.setRequestID(requestPdu.getRequestID());
 
         synchronized (this) {
-            for (VariableBinding binding : pdu.getVariableBindings()) {
+            for (VariableBinding binding : requestPdu.getVariableBindings()) {
                 stateMachine.onInput(binding.getOid().toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
                 responsePDU.add(new VariableBinding(binding.getOid(), extractOutputVariable()));
                 stateMachine.resetInputBuffer();
@@ -54,7 +51,7 @@ public class GetCommandResponder implements CommandResponder {
             }
         }
 
-        LOGGER.info("Received PDU: " + pdu + " from " + event.getPeerAddress() + ", responding with PDU " + responsePDU + ".");
+        LOGGER.info("Received " + SnmpUtility.pduToString(event, requestPdu) + " from " + event.getPeerAddress() + ", responding with " + SnmpUtility.pduToString(event, responsePDU) + ".");
 
         try {
             event.getMessageDispatcher().returnResponsePdu(

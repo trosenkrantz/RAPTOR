@@ -18,15 +18,17 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 public class SnmpService implements RootService {
-    private static final String DEFAULT_HOST = "localhost";
-    private static final String DEFAULT_OID = "1.2.3.4";
-    private static final String DEFAULT_VARIABLE = "\\\\x04\\\\x05Hello";
-
     public static final String PARAMETER_HOST = "host";
     public static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_OID = "oid";
+    public static final String PARAMETER_COMMUNITY = "community";
     public static final String PARAMETER_REPLY_FILE = "reply-file";
-    public static final String PARAMETER_VARIABLE = "variable";
+    public static final String PARAMETER_VARIABLE = "variable";;
+
+    private static final String DEFAULT_HOST = "localhost";
+    private static final String DEFAULT_OID = "1.2.3.4";
+    private static final String DEFAULT_COMMUNITY = "private";
+    private static final String DEFAULT_VARIABLE = "\\\\x04\\\\x05Hello";
 
     @Override
     public String getPromptValue() {
@@ -54,12 +56,14 @@ public class SnmpService implements RootService {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to request", DEFAULT_OID));
+                configuration.setString(PARAMETER_COMMUNITY,  ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
             }
             case SET_REQUEST -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to set", DEFAULT_OID));
+                configuration.setString(PARAMETER_COMMUNITY,  ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
             }
             case RESPOND -> {
@@ -83,6 +87,7 @@ public class SnmpService implements RootService {
                 configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Manager IP port to send to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT)));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of TRAP to send", DEFAULT_OID));
+                configuration.setString(PARAMETER_COMMUNITY,  ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
             }
             case LISTEN -> {
@@ -138,18 +143,21 @@ public class SnmpService implements RootService {
     }
 
     private static PDU createPdu(Configuration configuration) {
-        if (configuration.requireEnum(Version.class) == Version.V1) {
-            PDUv1 result = new PDUv1();
+        return switch (configuration.requireEnum(Version.class)) {
+            case V1 -> {
+                PDUv1 result = new PDUv1();
 
-            result.setEnterprise(new OID("1.2.3"));
-            result.setGenericTrap(PDUv1.ENTERPRISE_SPECIFIC);
-            result.setSpecificTrap(1);
-            result.setAgentAddress(new IpAddress("127.0.0.1"));
+                result.setEnterprise(new OID("1.2.3"));
+                result.setGenericTrap(PDUv1.ENTERPRISE_SPECIFIC);
+                result.setSpecificTrap(1);
+                result.setAgentAddress(new IpAddress("127.0.0.1"));
 
-            return result;
-        } else {
-            return new PDU();
-        }
+                yield result;
+            }
+            case V2C -> {
+                yield new PDU();
+            }
+        };
     }
 
     public static Variable toVariable(byte[] output) throws IOException {

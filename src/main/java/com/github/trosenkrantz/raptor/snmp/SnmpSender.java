@@ -21,14 +21,15 @@ public class SnmpSender {
 
             // Target setup
             CommunityTarget<Address> target = new CommunityTarget<>();
-            target.setCommunity(new OctetString("private"));
+            target.setCommunity(new OctetString(configuration.requireString(SnmpService.PARAMETER_COMMUNITY)));
             UdpAddress address = new UdpAddress(configuration.requireString(SnmpService.PARAMETER_HOST) + "/" + configuration.requireString(SnmpService.PARAMETER_PORT));
             target.setAddress(address);
-            target.setVersion(configuration.requireEnum(Version.class).getSnmpValue());
+            Version version = configuration.requireEnum(Version.class);
+            target.setVersion(version.getSnmpValue());
 
             // Send the request
             ResponseEvent<Address> responseEvent = snmp.send(pdu, target);
-            String sentMessage = "Sent PDU: " + pdu + " to " + address + ".";
+            String sentMessage = "Sent " + SnmpUtility.pduToString(pdu, version.toString()) + " to " + address + ".";
             if (responseEvent != null && responseEvent.getResponse() != null) {
                 LOGGER.info(sentMessage + " Received response: " + responseEvent.getResponse());
             } else {

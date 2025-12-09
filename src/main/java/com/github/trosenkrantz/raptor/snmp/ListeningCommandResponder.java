@@ -18,6 +18,6 @@ public class ListeningCommandResponder implements CommandResponder {
             return;
         }
 
-        LOGGER.info("Received PDU " + pdu + " from " + event.getPeerAddress() + ".");
+        LOGGER.info("Received " + SnmpUtility.pduToString(event, pdu) + " from " + event.getPeerAddress() + ".");
     }
 }
