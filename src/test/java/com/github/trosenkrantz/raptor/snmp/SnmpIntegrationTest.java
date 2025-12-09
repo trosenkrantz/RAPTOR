@@ -20,11 +20,11 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
             receiver.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             // Act
-            sender.runRaptor("--service=snmp --role=trap --host=" + receiver.getRaptorHostname() + " --port=162 --version=v2c --oid=1.2.3.4 --variable=\\\\x04\\\\x05Hello");
+            sender.runRaptor("--service=snmp --role=trap --host=" + receiver.getRaptorHostname() + " --port=162 --version=v2c --oid=1.2.3.4 --community=private --variable=\\\\x04\\\\x05Hello");
 
             // Assert
-            sender.expectAnyOutputLineContains("Sent PDU", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "Hello", "162");
-            receiver.expectAnyOutputLineContains("Received PDU", "TRAP", "1.2.3.4", sender.getRaptorIpAddress(), "Hello");
+            sender.expectAnyOutputLineContains("Sent", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "Hello", "162");
+            receiver.expectAnyOutputLineContains("Received", "TRAP", "1.2.3.4", sender.getRaptorIpAddress(), "Hello");
         }
     }
 
@@ -40,11 +40,11 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
             receiver.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             // Act
-            sender.runRaptor("--service=snmp --role=trap --host=" + receiver.getRaptorHostname() + " --port=162 --version=v1 --oid=1.2.3.4 --variable=\\\\x04\\\\x05Hello");
+            sender.runRaptor("--service=snmp --role=trap --host=" + receiver.getRaptorHostname() + " --port=162 --version=v1 --oid=1.2.3.4 --community=private --variable=\\\\x04\\\\x05Hello");
 
             // Assert
-            sender.expectAnyOutputLineContains("Sent PDU", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "162");
-            receiver.expectAnyOutputLineContains("Received PDU", "TRAP", "1.2.3.4", sender.getRaptorIpAddress());
+            sender.expectAnyOutputLineContains("Sent", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "162");
+            receiver.expectAnyOutputLineContains("Received", "TRAP", "1.2.3.4", sender.getRaptorIpAddress());
         }
     }
 
@@ -60,11 +60,11 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
             receiver.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             // Act
-            sender.runRaptor("--service=snmp --role=trap --host=" + receiver.getRaptorIpAddress() + " --port=162 --version=v2c --oid=1.2.3.4 --variable=\\\\x04\\\\x05Hello");
+            sender.runRaptor("--service=snmp --role=trap --host=" + receiver.getRaptorIpAddress() + " --port=162 --version=v2c --oid=1.2.3.4 --community=private --variable=\\\\x04\\\\x05Hello");
 
             // Assert
-            sender.expectAnyOutputLineContains("Sent PDU", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "Hello", "162");
-            receiver.expectAnyOutputLineContains("Received PDU", "TRAP", "1.2.3.4", sender.getRaptorIpAddress(), "Hello");
+            sender.expectAnyOutputLineContains("Sent", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "Hello", "162");
+            receiver.expectAnyOutputLineContains("Received", "TRAP", "1.2.3.4", sender.getRaptorIpAddress(), "Hello");
         }
     }
 }
