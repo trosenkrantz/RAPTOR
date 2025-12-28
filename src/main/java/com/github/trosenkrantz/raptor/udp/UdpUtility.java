@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.udp;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CheckedPredicate;
 

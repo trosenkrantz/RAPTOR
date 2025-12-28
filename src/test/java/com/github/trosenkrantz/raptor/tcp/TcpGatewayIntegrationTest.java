@@ -20,15 +20,49 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             // Start gateway with two TCO server sockets
-            gateway.runRaptor("--service=gateway --a-endpoint=tcp --a-role=server --a-local-port=50000 --a-tls-version=none --b-endpoint=tcp --b-role=server --b-local-port=50001 --b-tls-version=none");
+            gateway.runConfiguration("""
+                    {
+                      "service": "gateway",
+                      "a": {
+                        "endpoint": "tcp",
+                        "role": "server",
+                        "local-port": 50000,
+                        "tlsVersion": "none"
+                      },
+                      "b": {
+                        "endpoint": "tcp",
+                        "role": "server",
+                        "local-port": 50001,
+                        "tlsVersion": "none"
+                      }
+                    }
+                    """);
 
             // Wait for the gateway to start listening on both ports
             gateway.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
             gateway.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50001");
 
             // Start systems which will connect to the gateway
-            system1.runRaptor("--service=tcp --role=client --remote-host=" + gateway.getRaptorHostname() + " --remote-port=50000 --tls-version=none --send-strategy=interactive");
-            system2.runRaptor("--service=tcp --role=client --remote-host=" + gateway.getRaptorHostname() + " --remote-port=50001 --tls-version=none --send-strategy=interactive");
+            system1.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """, gateway.getRaptorHostname()));
+            system2.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50001,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """, gateway.getRaptorHostname()));
             gateway.expectNumberOfOutputLineContains(1, "connected", system1.getRaptorIpAddress(), "50000");
             gateway.expectNumberOfOutputLineContains(1, "connected", system2.getRaptorIpAddress(), "50001");
             system1.expectNumberOfOutputLineContains(1, "connected", gateway.getRaptorIpAddress(), "50000");
@@ -64,15 +98,49 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             // Start system1 and system2
-            system1.runRaptor("--service=tcp --role=server --local-port=50000 --tls-version=none --send-strategy=interactive");
-            system2.runRaptor("--service=tcp --role=server --local-port=50000 --tls-version=none --send-strategy=interactive");
+            system1.runConfiguration("""
+                    {
+                      "service": "tcp",
+                      "role": "server",
+                      "local-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """);
+            system2.runConfiguration("""
+                    {
+                      "service": "tcp",
+                      "role": "server",
+                      "local-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """);
 
             // Wait for both systems to start listening
             system1.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
             system2.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
 
             // Start gateway with two TCP client sockets which will connect to the systems
-            gateway.runRaptor("--service=gateway --a-endpoint=tcp --a-role=client --a-remote-host=" + system1.getRaptorHostname() + " --a-remote-port=50000 --a-tls-version=none --b-endpoint=tcp --b-role=client --b-remote-host=" + system2.getRaptorHostname() + " --b-remote-port=50000 --b-tls-version=none");
+            gateway.runConfiguration(String.format("""
+                    {
+                      "service": "gateway",
+                      "a": {
+                        "endpoint": "tcp",
+                        "role": "client",
+                        "remote-host": "%s",
+                        "remote-port": 50000,
+                        "tlsVersion": "none"
+                      },
+                      "b": {
+                        "endpoint": "tcp",
+                        "role": "client",
+                        "remote-host": "%s",
+                        "remote-port": 50000,
+                        "tlsVersion": "none"
+                      }
+                    }
+                    """, system1.getRaptorHostname(), system2.getRaptorHostname()));
             gateway.expectNumberOfOutputLineContains(1, "connected", system1.getRaptorIpAddress(), "50000");
             gateway.expectNumberOfOutputLineContains(1, "connected", system2.getRaptorIpAddress(), "50000");
             system1.expectNumberOfOutputLineContains(1, "connected", gateway.getRaptorIpAddress(), "50000");
@@ -109,21 +177,72 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             // Start system1
-            system1.runRaptor("--service=tcp --role=server --local-port=50000 --tls-version=none --send-strategy=interactive");
+            system1.runConfiguration("""
+                    {
+                      "service": "tcp",
+                      "role": "server",
+                      "local-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """);
             system1.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
 
             // Start gateway1
-            gateway1.runRaptor("--service=gateway --a-endpoint=tcp --a-role=client --a-remote-host=" + system1.getRaptorHostname() + " --a-remote-port=50000 --a-tls-version=none --b-endpoint=tcp --b-role=server --b-local-port=50000 --b-tls-version=none");
+            gateway1.runConfiguration(String.format("""
+                    {
+                      "service": "gateway",
+                      "a": {
+                        "endpoint": "tcp",
+                        "role": "client",
+                        "remote-host": "%s",
+                        "remote-port": 50000,
+                        "tlsVersion": "none"
+                      },
+                      "b": {
+                        "endpoint": "tcp",
+                        "role": "server",
+                        "local-port": 50000,
+                        "tlsVersion": "none"
+                      }
+                    }
+                    """, system1.getRaptorHostname()));
             gateway1.expectNumberOfOutputLineContains(1, "connected", system1.getRaptorIpAddress(), "50000");
             gateway1.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
 
             // Start gateway1
-            gateway2.runRaptor("--service=gateway --a-endpoint=tcp --a-role=client --a-remote-host=" + gateway1.getRaptorHostname() + " --a-remote-port=50000 --a-tls-version=none --b-endpoint=tcp --b-role=server --b-local-port=50000 --b-tls-version=none");
+            gateway2.runConfiguration(String.format("""
+                    {
+                      "service": "gateway",
+                      "a": {
+                        "endpoint": "tcp",
+                        "role": "client",
+                        "remote-host": "%s",
+                        "remote-port": 50000,
+                        "tlsVersion": "none"
+                      },
+                      "b": {
+                        "endpoint": "tcp",
+                        "role": "server",
+                        "local-port": 50000,
+                        "tlsVersion": "none"
+                      }
+                    }
+                    """, gateway1.getRaptorHostname()));
             gateway2.expectNumberOfOutputLineContains(1, "connected", gateway1.getRaptorIpAddress(), "50000");
             gateway2.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
 
             // Start system2
-            system2.runRaptor("--service=tcp --role=client --remote-host=" + gateway2.getRaptorHostname() + " --remote-port=50000 --tls-version=none --send-strategy=interactive");
+            system2.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """, gateway2.getRaptorHostname()));
             system2.expectNumberOfOutputLineContains(1, "connected", gateway2.getRaptorIpAddress(), "50000");
 
             // System1 sends a text message

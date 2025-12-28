@@ -2,16 +2,11 @@ package com.github.trosenkrantz.raptor.serial.port;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.github.trosenkrantz.raptor.AbortedException;
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.web.socket.WebSocketSendStrategy;
-import com.github.trosenkrantz.raptor.web.socket.WebSocketService;
-import org.java_websocket.WebSocket;
 
-import java.io.IOException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

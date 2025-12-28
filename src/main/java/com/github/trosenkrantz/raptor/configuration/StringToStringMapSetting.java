@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.trosenkrantz.raptor.AbortedException;
-import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 

@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import org.java_websocket.WebSocket;
 
 import java.io.IOException;

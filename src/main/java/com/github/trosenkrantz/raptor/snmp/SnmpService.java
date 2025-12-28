@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.snmp;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
@@ -53,21 +53,21 @@ public class SnmpService implements RootService {
         switch (role) {
             case GET_REQUEST -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to request", DEFAULT_OID));
                 configuration.setString(PARAMETER_COMMUNITY,  ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
             }
             case SET_REQUEST -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of MIB variable to set", DEFAULT_OID));
                 configuration.setString(PARAMETER_COMMUNITY,  ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
             }
             case RESPOND -> {
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Local IP port to set up socket for and for managers to send requests to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT)));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for managers to send requests to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
 
                 String path = ConsoleIo.askForFile("Absolute or relative path to the auto-reply file", "." + File.separator + "snmp-replies.json");
 
@@ -84,14 +84,14 @@ public class SnmpService implements RootService {
             }
             case TRAP -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of manager to send trap to", DEFAULT_HOST));
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Manager IP port to send to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT)));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Manager IP port to send to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setString(PARAMETER_OID, ConsoleIo.askForString("OID of TRAP to send", DEFAULT_OID));
                 configuration.setString(PARAMETER_COMMUNITY,  ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 configuration.setString(PARAMETER_VARIABLE, ConsoleIo.askForString("Variable as escaped string of BER encoding", DEFAULT_VARIABLE));
             }
             case LISTEN -> {
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("Local IP port to set up socket for and for agent to send traps to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT)));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for agent to send traps to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT));
             }
         }
     }

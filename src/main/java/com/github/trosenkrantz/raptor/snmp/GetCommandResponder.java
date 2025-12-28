@@ -1,10 +1,9 @@
 package com.github.trosenkrantz.raptor.snmp;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.snmp4j.*;
 import org.snmp4j.mp.StatusInformation;
 import org.snmp4j.smi.*;

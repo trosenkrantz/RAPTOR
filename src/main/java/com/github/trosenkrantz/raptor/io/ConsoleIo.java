@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.io;
 
 import com.github.trosenkrantz.raptor.AbortedException;
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.configuration.Setting;

@@ -19,14 +19,50 @@ class CorruptionIntegrationTest {
             network.startAll();
 
             // Arrange
-            receiver.runRaptor("--service=udp --mode=multicast --role=receive --remote-address=224.0.2.1 --local-port=50000");
-            gateway.runRaptor("--service=gateway --a-endpoint=udp --a-mode=multicast --a-remote-address=224.0.2.0 --a-port=50000 --b-endpoint=udp --b-mode=multicast --b-remote-address=224.0.2.1 --b-port=50000 --a-to-b-corruption=1.0"); // Flip all bits to get a deterministic test
+            receiver.runConfiguration("""
+                    {
+                      "service": "udp",
+                      "mode": "multicast",
+                      "role": "receive",
+                      "remote-address": "224.0.2.1",
+                      "local-port": 50000
+                    }
+                    """);
+            gateway.runConfiguration("""
+                    {
+                      "service": "gateway",
+                      "a": {
+                        "endpoint": "udp",
+                        "mode": "multicast",
+                        "remote-address": "224.0.2.0",
+                        "port": 50000
+                      },
+                      "b": {
+                        "endpoint": "udp",
+                        "mode": "multicast",
+                        "remote-address": "224.0.2.1",
+                        "port": 50000
+                      },
+                      "a-to-b": {
+                        "corruption": 1.0
+                      }
+                    }
+                    """); // Flip all bits to get a deterministic test
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
             gateway.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
 
             // Act
             String originalBinaryMessage = "\\\\x00\\\\x01\\\\x02\\\\x03";
-            sender.runRaptor("--service=udp --mode=multicast --role=send --remote-address=224.0.2.0 --remote-port=50000 \"--payload=" + originalBinaryMessage + "\"");
+            sender.runConfiguration(String.format("""
+                    {
+                      "service": "udp",
+                      "mode": "multicast",
+                      "role": "send",
+                      "remote-address": "224.0.2.0",
+                      "remote-port": 50000,
+                      "payload": "%s"
+                    }
+                    """, originalBinaryMessage));
 
             // Assert
             String expectedReceivedBinaryMessage = "\\\\xff\\\\xfe\\\\xfd\\\\xfc";

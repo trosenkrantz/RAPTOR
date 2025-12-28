@@ -6,6 +6,7 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.images.builder.Transferable;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -24,6 +25,8 @@ public class Raptor extends GenericContainer<Raptor> {
 
     private final List<String> stdoutLines = new ArrayList<>();
     private final RaptorNetwork network;
+
+//    private int configurationIndex = 0;
 
     public Raptor(final RaptorNetwork network) {
         super("raptor:latest");
@@ -164,8 +167,16 @@ public class Raptor extends GenericContainer<Raptor> {
         }
     }
 
+    @Deprecated
     public Raptor runRaptor(String arguments) throws IOException {
         writeLineToStdIn("./raptor " + arguments);
+        return this;
+    }
+
+    public Raptor runConfiguration(String json) throws IOException {
+        copyFileToContainer(Transferable.of(json), "/app/config.json");
+        writeLineToStdIn("./raptor");
+
         return this;
     }
 }

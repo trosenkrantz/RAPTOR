@@ -1,8 +1,6 @@
 package com.github.trosenkrantz.raptor.configuration;
 
-import com.github.trosenkrantz.raptor.Configuration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.io.Validator;
 
 import java.util.Optional;
 

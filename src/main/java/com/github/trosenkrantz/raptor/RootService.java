@@ -1,5 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
+import com.github.trosenkrantz.raptor.configuration.Configuration;
+
 /**
  * Object that can be run independently by RAPTOR.
  */

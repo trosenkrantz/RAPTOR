@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.io;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import java.util.Arrays;
 
 public enum Ansi {
     ERROR("\u001B[31m"), // Red
@@ -21,8 +21,8 @@ public enum Ansi {
         return enabled;
     }
 
-    public static void configure(Configuration configuration) {
-        enabled = !configuration.hasParameter("no-ansi");
+    public static void configure(String[] args) {
+        enabled = !Arrays.asList(args).contains("--no-ansi");
     }
 
     public String apply(String message) {

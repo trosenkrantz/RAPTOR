@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.gateway;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.gateway.network.impairment.*;
@@ -49,7 +49,7 @@ public class GatewayService implements RootService {
         ConsoleIo.writeLine("---- Configuring endpoint " + endpointName + " ----");
 
         EndpointService service = ConsoleIo.askForOptions(ENDPOINT_SERVICE_OPTIONS, false);
-        Configuration endpointConfiguration = new Configuration();
+        Configuration endpointConfiguration = Configuration.empty();
         endpointConfiguration.setString(PARAMETER_ENDPOINT, service.getParameterKey());
         service.configureEndpoint(endpointConfiguration);
 
@@ -59,7 +59,7 @@ public class GatewayService implements RootService {
     private static void configureNetworkImpairment(Configuration rootConfiguration, String direction) {
         ConsoleIo.writeLine("---- Configuring network impairment " + direction + " ----");
 
-        Configuration directionConfiguration = new Configuration();
+        Configuration directionConfiguration = Configuration.empty();
         ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING, DuplicationFactory.SETTING), directionConfiguration);
 
         rootConfiguration.addWithPrefix(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);

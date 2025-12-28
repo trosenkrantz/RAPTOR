@@ -18,11 +18,28 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
              Raptor client2 = new Raptor(network)) {
             network.startAll();
 
-            server.runRaptor("--service=tcp --role=server --local-port=50000 --tls-version=none --send-strategy=none");
+            server.runConfiguration("""
+                    {
+                      "service": "tcp",
+                      "role": "server",
+                      "local-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
-            client1.runRaptor("--service=tcp --role=client --remote-host=" + server.getRaptorHostname() + " --remote-port=50000 --tls-version=none --send-strategy=none");
+            client1.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client1.getRaptorIpAddress(), "50000");
             client1.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
 
@@ -32,7 +49,16 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
             server.expectNumberOfOutputLineContains(2, "waiting for client to connect", "50000");
 
             // Other client connects to the server again
-            client2.runRaptor("--service=tcp --role=client --remote-host=" + server.getRaptorHostname() + " --remote-port=50000 --tls-version=none --send-strategy=none");
+            client2.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client2.getRaptorIpAddress(), "50000");
             client2.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
         }
@@ -45,10 +71,28 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
              Raptor client = new Raptor(network)) {
             network.startAll();
 
-            server.runRaptor("--service=tcp --role=server --local-port=50000 --tls-version=none --send-strategy=none");
+            server.runConfiguration("""
+                    {
+                      "service": "tcp",
+                      "role": "server",
+                      "local-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
-            client.runRaptor("--service=tcp --role=client --remote-host=" + server.getRaptorIpAddress() + " --remote-port=50000 --tls-version=none --send-strategy=none"); // Client connects to server
+            // Client connects to server
+            client.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorIpAddress()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
             client.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
         }
@@ -61,10 +105,28 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
              Raptor client = new Raptor(network)) {
             network.startAll();
 
-            server.runRaptor("--service=tcp --role=server --local-port=50000 --tls-version=none --send-strategy=interactive");
+            server.runConfiguration("""
+                    {
+                      "service": "tcp",
+                      "role": "server",
+                      "local-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
-            client.runRaptor("--service=tcp --role=client --remote-host=" + server.getRaptorHostname() + " --remote-port=50000 --tls-version=none --send-strategy=interactive"); // Client connects to server
+            // Client connects to server
+            client.runConfiguration(String.format("""
+                    {
+                      "service": "tcp",
+                      "role": "client",
+                      "remote-host": "%s",
+                      "remote-port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """, server.getRaptorHostname()));
             String serverAddress = server.getRaptorIpAddress();
             String clientAddress = client.getRaptorIpAddress();
             server.expectNumberOfOutputLineContains(1, "connected", serverAddress, clientAddress, "50000");

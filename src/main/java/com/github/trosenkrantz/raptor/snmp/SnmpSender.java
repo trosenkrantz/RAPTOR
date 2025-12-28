@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.snmp;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -22,7 +22,7 @@ public class SnmpSender {
             // Target setup
             CommunityTarget<Address> target = new CommunityTarget<>();
             target.setCommunity(new OctetString(configuration.requireString(SnmpService.PARAMETER_COMMUNITY)));
-            UdpAddress address = new UdpAddress(configuration.requireString(SnmpService.PARAMETER_HOST) + "/" + configuration.requireString(SnmpService.PARAMETER_PORT));
+            UdpAddress address = new UdpAddress(configuration.requireString(SnmpService.PARAMETER_HOST) + "/" + configuration.requireInt(SnmpService.PARAMETER_PORT));
             target.setAddress(address);
             Version version = configuration.requireEnum(Version.class);
             target.setVersion(version.getSnmpValue());

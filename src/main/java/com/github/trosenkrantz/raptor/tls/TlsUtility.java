@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.tls;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import javax.net.ssl.KeyManager;

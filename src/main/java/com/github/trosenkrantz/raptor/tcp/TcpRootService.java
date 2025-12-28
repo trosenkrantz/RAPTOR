@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.*;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.*;

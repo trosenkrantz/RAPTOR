@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.gateway;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.RaptorService;
 
 import java.io.IOException;

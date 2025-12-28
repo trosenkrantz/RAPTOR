@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.serial.port;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 

@@ -1,19 +1,16 @@
 package com.github.trosenkrantz.raptor.tcp.gateway;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.gateway.DelayedConsumer;
 import com.github.trosenkrantz.raptor.gateway.Endpoint;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.serial.port.SerialPortUtility;
 import com.github.trosenkrantz.raptor.tcp.TcpSendStrategy;
 import com.github.trosenkrantz.raptor.tcp.TcpUtility;
-import com.github.trosenkrantz.raptor.udp.UdpUtility;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.*;
-import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;

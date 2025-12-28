@@ -1,10 +1,9 @@
 package com.github.trosenkrantz.raptor.tcp.gateway;
 
-import com.github.trosenkrantz.raptor.Configuration;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.gateway.Endpoint;
 import com.github.trosenkrantz.raptor.gateway.EndpointService;
 import com.github.trosenkrantz.raptor.tcp.TcpUtility;
-import com.github.trosenkrantz.raptor.udp.gateway.EndpointMode;
 
 import java.io.IOException;
 import java.util.function.Consumer;
