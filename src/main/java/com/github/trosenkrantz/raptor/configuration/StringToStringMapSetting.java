@@ -1,8 +1,5 @@
 package com.github.trosenkrantz.raptor.configuration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.trosenkrantz.raptor.AbortedException;
 import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
@@ -14,26 +11,21 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class StringToStringMapSetting extends Setting<Map<String, String>> {
-    private static final Logger LOGGER = Logger.getLogger(StringToStringMapSetting.class.getName());
-
     private StringToStringMapSetting(Builder builder) {
         super(builder);
     }
 
     @Override
     public Optional<Map<String, String>> read(Configuration configuration) {
-        Optional<String> rawValue = configuration.getString(getParameterKey());
-        if (rawValue.isEmpty()) {
+        Optional<Configuration> optionalMapConfiguration = configuration.getSubConfiguration(getParameterKey());
+        if (optionalMapConfiguration.isEmpty()) {
             return Optional.empty();
         }
 
-        try {
-            return Optional.of(new ObjectMapper().readValue(rawValue.get(), new TypeReference<>() {
-            }));
-        } catch (JsonProcessingException e) {
-            LOGGER.warning("Failed reading JSON. " + e.getMessage() + ". Ignoring the JSON value.");
-            return Optional.empty();
-        }
+        Map<String, String> result = new HashMap<>();
+        Configuration mapConfiguration = optionalMapConfiguration.get();
+        mapConfiguration.keys().forEach(key -> result.put(key, mapConfiguration.requireString(key)));
+        return Optional.of(result);
     }
 
     @Override
@@ -42,6 +34,8 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
     }
 
     private static String valueToString(Map<String, String> map) {
+        if (map.isEmpty()) return Setting.EMPTY_VALUE_TO_STRING;
+
         return map.entrySet().stream().map(
                 entry -> entry.getKey() + ": " + entry.getValue()
         ).collect(Collectors.joining(System.lineSeparator()));
@@ -55,23 +49,22 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
             ConsoleIo.writeLine("Configuring " + getDescription() + ". Current value: " + System.lineSeparator() + valueToString(current) + System.lineSeparator() + "Type " + Ansi.PROMPT.apply("a") + " to add or modify. Type " + Ansi.PROMPT.apply("enter") + " to continue. " + ConsoleIo.getExitString() + ":");
             String answer = ConsoleIo.readLine();
 
-            if (answer.equals("a")) {
-                String key = ConsoleIo.askForString("Key to configure");
-                String value = ConsoleIo.askForString("Value for " + key);
-                current.put(key, value);
-                continue;
-            }
-            if (answer.isEmpty()) { // User chosen to continue
-                try {
-                    configuration.setString(getParameterKey(), new ObjectMapper().writeValueAsString(current));
-                } catch (JsonProcessingException e) {
-                    LOGGER.warning("Failed writing JSON. " + e.getMessage());
+            switch (answer) {
+                case "a" -> {
+                    String key = ConsoleIo.askForString("Key to configure");
+                    String value = ConsoleIo.askForString("Value for " + key);
+                    current.put(key, value);
                 }
-                return;
-            }
-            if (answer.equals("e")) throw new AbortedException();
+                case "" -> { // User chosen to finish configuring this setting
+                    Configuration mapConfiguration = Configuration.empty();
+                    current.forEach(mapConfiguration::setString);
+                    configuration.setSubConfiguration(getParameterKey(), mapConfiguration);
 
-            ConsoleIo.writeLine("Unrecognised answer.", Ansi.ERROR);
+                    return;
+                }
+                case "e" -> throw new AbortedException();
+                default -> ConsoleIo.writeLine("Unrecognised answer.", Ansi.ERROR); // And do another iteration
+            }
         }
     }
 

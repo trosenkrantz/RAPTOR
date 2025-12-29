@@ -17,26 +17,26 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             server.runConfiguration("""
-            {
-              "service": "web-socket",
-              "role": "server",
-              "port": 50000,
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """);
+                    {
+                      "service": "web-socket",
+                      "role": "server",
+                      "port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
             client1.runConfiguration(String.format("""
-            {
-              "service": "web-socket",
-              "role": "client",
-              "uri": "ws://%s:50000",
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """, server.getRaptorHostname()));
+                    {
+                      "service": "web-socket",
+                      "role": "client",
+                      "uri": "ws://%s:50000",
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client1.getRaptorIpAddress(), "50000");
             client1.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
 
@@ -46,14 +46,14 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
 
             // Other client connects to the server again
             client2.runConfiguration(String.format("""
-            {
-              "service": "web-socket",
-              "role": "client",
-              "uri": "ws://%s:50000",
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """, server.getRaptorHostname()));
+                    {
+                      "service": "web-socket",
+                      "role": "client",
+                      "uri": "ws://%s:50000",
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client2.getRaptorIpAddress(), "50000");
             client2.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
         }
@@ -67,26 +67,26 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             server.runConfiguration("""
-            {
-              "service": "web-socket",
-              "role": "server",
-              "port": 50000,
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """);
+                    {
+                      "service": "web-socket",
+                      "role": "server",
+                      "port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
             client.runConfiguration(String.format("""
-            {
-              "service": "web-socket",
-              "role": "client",
-              "uri": "ws://%s:50000",
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """, server.getRaptorIpAddress()));
+                    {
+                      "service": "web-socket",
+                      "role": "client",
+                      "uri": "ws://%s:50000",
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorIpAddress()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
             client.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
         }
@@ -100,26 +100,26 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             server.runConfiguration("""
-            {
-              "service": "web-socket",
-              "role": "server",
-              "port": 50000,
-              "tlsVersion": "none",
-              "sendStrategy": "interactive"
-            }
-            """);
+                    {
+                      "service": "web-socket",
+                      "role": "server",
+                      "port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
             client.runConfiguration(String.format("""
-            {
-              "service": "web-socket",
-              "role": "client",
-              "uri": "ws://%s:50000",
-              "tlsVersion": "none",
-              "sendStrategy": "interactive"
-            }
-            """, server.getRaptorHostname()));
+                    {
+                      "service": "web-socket",
+                      "role": "client",
+                      "uri": "ws://%s:50000",
+                      "tlsVersion": "none",
+                      "sendStrategy": "interactive"
+                    }
+                    """, server.getRaptorHostname()));
             String serverAddress = server.getRaptorIpAddress();
             String clientAddress = client.getRaptorIpAddress();
             server.expectNumberOfOutputLineContains(1, "connected", serverAddress, clientAddress, "50000");
@@ -147,27 +147,29 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             server.runConfiguration("""
-            {
-              "service": "web-socket",
-              "role": "server",
-              "port": 50000,
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """);
+                    {
+                      "service": "web-socket",
+                      "role": "server",
+                      "port": 50000,
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
             client.runConfiguration(String.format("""
-            {
-              "service": "web-socket",
-              "role": "client",
-              "uri": "ws://%s:50000",
-              "headers": "{\\"abc\\":\\"def\\"}",
-              "tlsVersion": "none",
-              "sendStrategy": "none"
-            }
-            """, server.getRaptorHostname())); // TODO Convert headers to native JSON
+                    {
+                      "service": "web-socket",
+                      "role": "client",
+                      "uri": "ws://%s:50000",
+                      "headers" : {
+                        "abc" : "def"
+                      },
+                      "tlsVersion": "none",
+                      "sendStrategy": "none"
+                    }
+                    """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "abc", "def");
         }
     }

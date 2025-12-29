@@ -64,7 +64,7 @@ public class WebSocketService implements RootService {
                 TlsUtility.configureTls(configuration, false);
             }
             case SERVER -> {
-                configuration.setString(PARAMETER_PORT, String.valueOf(ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT)));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT));
 
                 TlsUtility.configureTls(configuration, true);
             }

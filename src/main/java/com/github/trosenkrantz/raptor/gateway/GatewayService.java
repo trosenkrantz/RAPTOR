@@ -53,7 +53,7 @@ public class GatewayService implements RootService {
         endpointConfiguration.setString(PARAMETER_ENDPOINT, service.getParameterKey());
         service.configureEndpoint(endpointConfiguration);
 
-        rootConfiguration.addWithPrefix(endpointName.toLowerCase(Locale.ROOT), endpointConfiguration);
+        rootConfiguration.setSubConfiguration(endpointName.toLowerCase(Locale.ROOT), endpointConfiguration);
     }
 
     private static void configureNetworkImpairment(Configuration rootConfiguration, String direction) {
@@ -62,7 +62,7 @@ public class GatewayService implements RootService {
         Configuration directionConfiguration = Configuration.empty();
         ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING, DuplicationFactory.SETTING), directionConfiguration);
 
-        rootConfiguration.addWithPrefix(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
+        rootConfiguration.setSubConfiguration(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
     }
 
     @Override
@@ -73,11 +73,11 @@ public class GatewayService implements RootService {
         DelayedConsumer<byte[]> fromAConsumer = new DelayedConsumer<>();
         DelayedConsumer<byte[]> fromBConsumer = new DelayedConsumer<>();
 
-        Endpoint endpointA = createEndpoint(configuration.extractWithPrefix("a"), fromAConsumer);
-        Endpoint endpointB = createEndpoint(configuration.extractWithPrefix("b"), fromBConsumer);
+        Endpoint endpointA = createEndpoint(configuration.requireSubConfiguration("a"), fromAConsumer);
+        Endpoint endpointB = createEndpoint(configuration.requireSubConfiguration("b"), fromBConsumer);
 
-        Consumer<byte[]> impairmentAToB = createNetworkImpairment(configuration.extractWithPrefix("a-to-b"), endpointB);
-        Consumer<byte[]> impairmentBToA = createNetworkImpairment(configuration.extractWithPrefix("b-to-a"), endpointA);
+        Consumer<byte[]> impairmentAToB = createNetworkImpairment(configuration.getSubConfiguration("a-to-b").orElse(Configuration.empty()), endpointB);
+        Consumer<byte[]> impairmentBToA = createNetworkImpairment(configuration.getSubConfiguration("b-to-a").orElse(Configuration.empty()), endpointA);
 
         // Now that endpoints and impairments are created, we can start processing the data, flushing the buffers
         fromAConsumer.setDelegate(impairmentAToB); // When receiving data from A, pass to impairment a-to-b
@@ -105,7 +105,7 @@ public class GatewayService implements RootService {
         PacketLossFactory.SETTING.read(impairmentConfiguration).ifPresent(packetLoss -> factories.add(new PacketLossFactory(packetLoss)));
         DuplicationFactory.SETTING.read(impairmentConfiguration).ifPresent(duplication -> factories.add(new DuplicationFactory(duplication)));
 
-        // Each factory needs to next consumer to pass the data to, so combine them in reverse order
+        // Each factory needs the next consumer to pass the data to, so combine them in reverse order
         Consumer<byte[]> result = toEndpoint::sendToExternalSystem;
         for (int i = factories.size() - 1; i >= 0; i--) {
             result = factories.get(i).create(result);

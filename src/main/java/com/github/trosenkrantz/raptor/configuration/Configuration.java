@@ -5,14 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Configuration {
@@ -40,21 +36,6 @@ public class Configuration {
         return Optional.of(new Configuration(mapper, (ObjectNode) node, List.of()));
     }
 
-//    public static Configuration fromPath(Path path) throws IOException {
-//        File configFile = path.toFile();
-//        if (!configFile.exists()) {
-//            throw new IllegalArgumentException("Configuration file " + path.toAbsolutePath() + " does not exist.");
-//        }
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        JsonNode node = mapper.readTree(configFile);
-//        if (!node.isObject()) {
-//            throw new IllegalArgumentException("Configuration file " + path.toAbsolutePath() + " is not a JSON object.");
-//        }
-//
-//        return new Configuration(mapper, (ObjectNode) node, List.of());
-//    }
-
     private Configuration(ObjectMapper mapper, ObjectNode root, List<String> path) {
         this.mapper = mapper;
         this.root = root;
@@ -62,18 +43,17 @@ public class Configuration {
     }
 
     /**
-     * Add all parameters from a configuration to this configuration prefixing the keys to add.
-     * The keys of the added parameters will be {@code <prefix>-<key of original parameter}.
+     * Add all parameters from a configuration to this configuration under a specified key.
      *
-     * @param prefix        prefix to add
+     * @param key        key to add
      * @param configuration configuration to copy from
      */
-    public void addWithPrefix(String prefix, Configuration configuration) { // TODO Rename to setSubConfiguration?
-        if (root.get(prefix) != null) {
-            LOGGER.warning("Overwriting sub-configuration with path " + pathToString(prefix) + ".");
+    public void setSubConfiguration(String key, Configuration configuration) {
+        if (root.get(key) != null) {
+            LOGGER.warning("Overwriting sub-configuration with path " + pathToString(key) + ".");
         }
 
-        root.putObject(prefix).setAll(configuration.root);
+        root.putObject(key).setAll(configuration.root);
     }
 
     private String pathToString(String key) {
@@ -83,26 +63,27 @@ public class Configuration {
     }
 
     /**
-     * Extract all parameters from this configuration that have a key starting with the given prefix.
-     * The returned configuration will have the prefix and '-' removed from the keys.
+     * Extract the part of this configuration that have a given key.
      *
-     * @param prefix prefix to filter with
+     * @param key key to filter with
      * @return a new configuration containing only the matching parameters
      */
-    public Configuration extractWithPrefix(String prefix) { // TODO Rename to getSubConfiguration?
+    public Optional<Configuration> getSubConfiguration(String key) {
         List<String> nextPath = new ArrayList<>(path);
-        nextPath.add(prefix);
+        nextPath.add(key);
 
-        JsonNode nextNode = root.get(prefix);
+        JsonNode nextNode = root.get(key);
         if (nextNode == null) {
-            LOGGER.warning("Extracting empty sub-configuration with path " + pathToString(prefix) + ".");
-            return new Configuration(mapper, mapper.createObjectNode(), nextPath);
+            return Optional.empty();
         } else if (!nextNode.isObject()) {
-            LOGGER.warning("Extracting sub-configuration with path " + pathToString(prefix) + " that is not an object.");
-            return new Configuration(mapper, mapper.createObjectNode(), nextPath);
+            throw new IllegalArgumentException("Sub-configuration with path " + pathToString(key) + " is not a JSON object.");
         }
 
-        return new Configuration(mapper, nextNode.deepCopy(), nextPath);
+        return Optional.of(new Configuration(mapper, nextNode.deepCopy(), nextPath));
+    }
+
+    public Configuration requireSubConfiguration(String key) {
+        return getSubConfiguration(key).orElseThrow(() -> new IllegalArgumentException("Sub-configuration with path " + pathToString(key) + " does not exist."));
     }
 
     public Configuration copy() {
@@ -111,6 +92,17 @@ public class Configuration {
 
     public boolean hasParameter(String key) {
         return root.has(key);
+    }
+
+    /**
+     * Get the top level keys in this configuration.
+     *
+     * @return keys in this configuration scope
+     */
+    public List<String> keys() {
+        List<String> keys = new ArrayList<>();
+        root.fieldNames().forEachRemaining(keys::add);
+        return keys;
     }
 
 
@@ -125,7 +117,7 @@ public class Configuration {
     }
 
     public String requireString(String key) {
-        return getString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + pathToString(key) + " not set"));
+        return getString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + pathToString(key) + " not set."));
     }
 
     public void setString(String key, String value) {
