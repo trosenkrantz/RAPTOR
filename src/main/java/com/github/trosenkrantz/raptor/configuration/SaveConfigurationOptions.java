@@ -3,8 +3,8 @@ package com.github.trosenkrantz.raptor.configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 
 public enum SaveConfigurationOptions implements PromptEnum {
-    SAVE("s", "[S]ave configuration to run it later"),
-    SAVE_AND_OPEN("o", "Save configuration and [o]pen it in a text editor to edit it");
+    RUN("r", "[R]un configuration without saving it"),
+    SAVE_AND_OPEN("s", "[S]ave and open configuration to edit it");
 
     private final String promptValue;
     private final String description;

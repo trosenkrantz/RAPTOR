@@ -112,19 +112,19 @@ RAPTOR checks for matching inputs in the order of appearance. It ignores simple 
 ### TCP and Serial Port
 For TCP and serial port auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
 
-See [replies.json](src/main/distributions/replies.json) for an example.
+See [replies.json](src/main/resources/com/github/trosenkrantz/raptor/replies.json) for an example.
 
 ### SNMP
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
 If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
 
-See [snmp-replies.json](src/main/distributions/snmp-replies.json) for an example.
+See [snmp-replies.json](src/main/resources/com/github/trosenkrantz/raptor/snmp-replies.json) for an example.
 
 ### WebSocket
 For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
 
-See [replies.json](src/main/distributions/replies.json) for an example.
+See [replies.json](src/main/resources/com/github/trosenkrantz/raptor/replies.json) for an example.
 
 ## TLS
 RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates.

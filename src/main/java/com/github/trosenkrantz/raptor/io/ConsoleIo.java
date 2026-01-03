@@ -65,24 +65,29 @@ public class ConsoleIo {
     }
 
     public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass) {
-        return askForOptions(getPromptOptions(enumClass), null, false);
+        return askForOptions(null, enumClass);
+    }
+
+    public static <T extends Enum<T> & PromptEnum> T askForOptions(String description, Class<T> enumClass) {
+        return askForOptions(description, getPromptOptions(enumClass), null, false);
     }
 
     public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass, T defaultValue) {
-        return askForOptions(getPromptOptions(enumClass), new PromptOption<>(defaultValue.getPromptValue(), defaultValue.getDescription(), defaultValue), false);
+        return askForOptions(null, getPromptOptions(enumClass), new PromptOption<>(defaultValue.getPromptValue(), defaultValue.getDescription(), defaultValue), false);
     }
 
     public static <T> T askForOptions(List<PromptOption<T>> options, boolean showAbout) {
-        return askForOptions(options, null, showAbout);
+        return askForOptions(null, options, null, showAbout);
     }
 
-    public static <T> T askForOptions(List<PromptOption<T>> options, PromptOption<T> defaultValue, boolean showAbout) {
+    public static <T> T askForOptions(String description, List<PromptOption<T>> options, PromptOption<T> defaultValue, boolean showAbout) {
         while (true) {
             List<List<String>> rows = options.stream().map(option -> List.of(Ansi.PROMPT.apply(option.promptValue()), option.description())).collect(Collectors.toList());
             if (showAbout) rows.add(List.of(Ansi.PROMPT.apply("a"), Ansi.LESS_IMPORTANT.apply("About")));
             rows.add(List.of(Ansi.PROMPT.apply("e"), Ansi.LESS_IMPORTANT.apply("Exit")));
 
             List<String> prefixes = new ArrayList<>();
+            if (description != null) prefixes.add(description);
             prefixes.add("Choose between");
             if (defaultValue != null) prefixes.add(getDefaultString(defaultValue.promptValue()));
             writeLine(String.join(". ", prefixes) + ":" + System.lineSeparator() + TableFormatter.format(rows));

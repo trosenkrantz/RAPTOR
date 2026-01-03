@@ -13,7 +13,7 @@ class AutoReplySendStrategy implements SerialPortSendStrategy {
     @Override
     public Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction) throws IOException {
         StateMachine stateMachine = new StateMachine(
-                StateMachineConfiguration.readFromFile(configuration.requireString(WebSocketService.PARAMETER_REPLY_FILE)),
+                StateMachineConfiguration.fromConfiguration(configuration),
                 payload -> SerialPortUtility.writeToPort(port, payload)
         );
 

@@ -1,11 +1,17 @@
 package com.github.trosenkrantz.raptor.configuration;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.trosenkrantz.raptor.io.JsonUtility;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -19,7 +25,7 @@ public class Configuration {
     private final List<String> path; // logical prefix path
 
     public static Configuration empty() {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonUtility.buildMapper();
         return new Configuration(mapper, mapper.createObjectNode(), List.of());
     }
 
@@ -27,13 +33,24 @@ public class Configuration {
         Path path = Path.of("config.json");
         if (!Files.exists(path)) return Optional.empty();
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonUtility.buildMapper();
         JsonNode node = mapper.readTree(path.toFile());
         if (!node.isObject()) {
             throw new IllegalArgumentException("Configuration file " + path.toAbsolutePath() + " is not a JSON object.");
         }
 
         return Optional.of(new Configuration(mapper, (ObjectNode) node, List.of()));
+    }
+
+    public static Configuration fromStream(final InputStream inputStream) throws IOException {
+        ObjectMapper mapper = JsonUtility.buildMapper();
+
+        JsonNode node = mapper.readTree(inputStream);
+        if (!node.isObject()) {
+            throw new IllegalArgumentException("Configuration file loaded from stream is not a JSON object.");
+        }
+
+        return new Configuration(mapper, (ObjectNode) node, List.of());
     }
 
     private Configuration(ObjectMapper mapper, ObjectNode root, List<String> path) {
@@ -175,6 +192,22 @@ public class Configuration {
     }
 
 
+    /* Complex objects */
+
+    public <T> T getObject(String key, Class<T> clazz) {
+        JsonNode node = root.get(key);
+        if (node == null) {
+            throw new IllegalArgumentException("Parameter " + pathToString(key) + " not set.");
+        }
+
+        try {
+            return mapper.treeToValue(node, clazz);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Failed to deserialize parameter " + pathToString(key) + " into " + clazz.getSimpleName() + ".", e);
+        }
+    }
+
+
     /* Utility */
 
     private static String enumToCamelCase(Enum<?> value) {
@@ -208,9 +241,12 @@ public class Configuration {
     /* Other */
 
     public String toJson() {
+        DefaultPrettyPrinter printer = new DefaultPrettyPrinter()
+                .withArrayIndenter(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+
         try {
             return mapper
-                    .writerWithDefaultPrettyPrinter()
+                    .writer(printer)
                     .writeValueAsString(root);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Failed to convert configuration to JSON.", e);

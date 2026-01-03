@@ -1,20 +1,20 @@
 package com.github.trosenkrantz.raptor.io;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import java.util.regex.Pattern;
 
 public class JsonUtility {
-    private static final Pattern COMMENTS_PATTERN = Pattern.compile("(//.*?$)|(/\\*.*?\\*/)", Pattern.DOTALL | Pattern.MULTILINE);
-
     /**
-     * Remove simple line and block comments.
-     * <p>
-     * We use Jackson ObjectMapper to parse JSON.
-     * It does not support comments, so wrap JSON in this method before parsing.
+     * Build a mapper that ignores simple line and block comments.
      *
-     * @param value JSON string to process
-     * @return result
+     * @return the mapper
      */
-    public static String removeComments(final String value) {
-        return COMMENTS_PATTERN.matcher(value).replaceAll("");
+    public static ObjectMapper buildMapper() {
+        return JsonMapper.builder()
+                .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
+                .build();
     }
 }

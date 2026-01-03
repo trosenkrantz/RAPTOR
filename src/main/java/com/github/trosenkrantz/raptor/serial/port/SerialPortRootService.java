@@ -37,13 +37,7 @@ public class SerialPortRootService implements RootService {
         configuration.setEnum(sendStrategy);
 
         if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "replies.json");
-
-            // Load state machine immediately to provide early feedback
-            StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
-
-            configuration.setString(SerialPortUtility.PARAMETER_REPLY_FILE, path);
+            StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.REPLIES_PATH);
         }
     }
 

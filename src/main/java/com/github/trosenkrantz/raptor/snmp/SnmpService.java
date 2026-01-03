@@ -22,7 +22,6 @@ public class SnmpService implements RootService {
     public static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_OID = "oid";
     public static final String PARAMETER_COMMUNITY = "community";
-    public static final String PARAMETER_REPLY_FILE = "reply-file";
     public static final String PARAMETER_VARIABLE = "variable";;
 
     private static final String DEFAULT_HOST = "localhost";
@@ -46,7 +45,7 @@ public class SnmpService implements RootService {
     }
 
     @Override
-    public void configure(Configuration configuration) {
+    public void configure(Configuration configuration) throws IOException {
         Role role = ConsoleIo.askForOptions(Role.class);
         configuration.setEnum(role);
 
@@ -69,18 +68,7 @@ public class SnmpService implements RootService {
             case RESPOND -> {
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for managers to send requests to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
 
-                String path = ConsoleIo.askForFile("Absolute or relative path to the auto-reply file", "." + File.separator + "snmp-replies.json");
-
-                // Load state machine immediately to provide early feedback
-                try {
-                    StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-                    ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
-                } catch (IOException e) {
-                    ConsoleIo.writeLine("Failed reading file.");
-                    throw new UncheckedIOException(e);
-                }
-
-                configuration.setString(PARAMETER_REPLY_FILE, path);
+                StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.SNMP_REPLIES_PATH);
             }
             case TRAP -> {
                 configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of manager to send trap to", DEFAULT_HOST));

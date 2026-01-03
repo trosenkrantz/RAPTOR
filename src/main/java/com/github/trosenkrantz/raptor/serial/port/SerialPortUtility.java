@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 public class SerialPortUtility {
     public static final String PARAMETER_PORT = "port";
     public static final String PARAMETER_BAUD_RATE = "baud-rate";
-    public static final String PARAMETER_REPLY_FILE = "reply-file";
     public static final String PARAMETER_DATA_BITS = "data-bits";
     private static final Logger LOGGER = Logger.getLogger(SerialPortUtility.class.getName());
     

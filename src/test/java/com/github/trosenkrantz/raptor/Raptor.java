@@ -167,12 +167,6 @@ public class Raptor extends GenericContainer<Raptor> {
         }
     }
 
-    @Deprecated
-    public Raptor runRaptor(String arguments) throws IOException {
-        writeLineToStdIn("./raptor " + arguments);
-        return this;
-    }
-
     public Raptor runConfiguration(String json) throws IOException {
         copyFileToContainer(Transferable.of(json), "/app/config.json");
         writeLineToStdIn("./raptor");

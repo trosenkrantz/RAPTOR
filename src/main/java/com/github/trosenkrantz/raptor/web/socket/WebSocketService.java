@@ -27,7 +27,6 @@ public class WebSocketService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(WebSocketService.class.getName());
     private static final String PARAMETER_URI = "uri";
     private static final String PARAMETER_PORT = "port";
-    public static final String PARAMETER_REPLY_FILE = "reply-file";
 
     private static final int DEFAULT_PORT = 50000;
     private static final String DEFAULT_URI = "ws://localhost:" + DEFAULT_PORT + "/socket";
@@ -79,13 +78,7 @@ public class WebSocketService implements RootService {
         configuration.setEnum(sendStrategy);
 
         if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
-            String path = ConsoleIo.askForFile("Absolute or relative file path", "." + File.separator + "replies.json");
-
-            // Load state machine immediately to provide early feedback
-            StateMachineConfiguration stateMachine = StateMachineConfiguration.readFromFile(path);
-            ConsoleIo.writeLine("Parsed file with " + stateMachine.states().size() + " states and " + stateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
-
-            configuration.setString(PARAMETER_REPLY_FILE, path);
+            StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.REPLIES_PATH);
         }
     }
 
