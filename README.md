@@ -39,7 +39,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
     - Use regular expressions to match input, even for binary input.
     - Define an arbitrary state machine.
 - Arbitrary OS support through Java, shell scripts, and .cmd (Windows) scripts.
-- Can be used as CLI.
+- Support scripted and automated execution.
 - Portable application, can be run from a USB stick.
 - Logging to capture data exchange.
 
@@ -69,15 +69,24 @@ RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters
 
 RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste. Additionally, RAPTOR can convert between files and this encoding.
 
-## CLI
+## Configuration
 
-Starting RAPTOR without arguments will prompt us to configure it. After configuration, it will output and log the configuration as CLI arguments, escaped and quoted as needed, e.g.:
+By default, starting RAPTOR will prompt us to configure a runtime, e.g., sending a UDP packet. When configured, we can either run the configuration immediately or save the configuration.
+
+Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` directory:
 ```
-Using arguments:
---service=udp --mode=unicast --role=send --destination-address=localhost --destination-port=50000 "--payload=Hello, World\!"
+configs
+├── tcp-server
+│   ├── config.json
+│   ├── run
+│   └── run.cmd
+├── udp-multicast-send
+│   ├── config.json
+│   ├── run
+│   └── run.cmd
 ```
 
-We can now run RAPTOR with the arguments directly without user interaction.
+RAPTOR also creates `run` and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
 
 ## Auto-Reply
 
