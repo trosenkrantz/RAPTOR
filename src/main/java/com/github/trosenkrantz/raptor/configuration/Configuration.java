@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.JsonUtility;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class Configuration {
     }
 
     public static Optional<Configuration> fromSavedFile() throws IOException {
-        Path path = Path.of("config.json");
+        Path path = Path.of(ConfigurationStorage.CONFIGURATION_FILE_NAME);
         if (!Files.exists(path)) return Optional.empty();
 
         ObjectMapper mapper = JsonUtility.buildMapper();
@@ -39,6 +40,8 @@ public class Configuration {
         if (!node.isObject()) {
             throw new IllegalArgumentException("Configuration file " + path.toAbsolutePath() + " is not a JSON object.");
         }
+
+        LOGGER.info("Loaded configuration at: " + path.toAbsolutePath());
 
         return Optional.of(new Configuration(mapper, (ObjectNode) node, List.of()));
     }
@@ -63,7 +66,7 @@ public class Configuration {
     /**
      * Add all parameters from a configuration to this configuration under a specified key.
      *
-     * @param key        key to add
+     * @param key           key to add
      * @param configuration configuration to copy from
      */
     public void setSubConfiguration(String key, Configuration configuration) {

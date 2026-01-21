@@ -18,10 +18,10 @@ public class GatewayService implements RootService {
     private static final String PARAMETER_ENDPOINT = "endpoint";
     private static final Collection<EndpointService> ENDPOINT_SERVICES = EndpointServiceFactory.createServices();
     private static final List<PromptOption<EndpointService>> ENDPOINT_SERVICE_OPTIONS = ENDPOINT_SERVICES.stream().map(endpoint -> new PromptOption<>(endpoint.getPromptValue(), endpoint.getDescription(), endpoint)).toList();
-    public static final String PARAMETER_A_TO_B_NAME = "A to B";
-    public static final String PARAMETER_A_TO_B_KEY = "aToB";
-    public static final String PARAMETER_B_TO_A_NAME = "B to A";
-    public static final String PARAMETER_B_TO_A_KEY = "BToA";
+    private static final String PARAMETER_A_TO_B_NAME = "A to B";
+    private static final String PARAMETER_A_TO_B_KEY = "aToB";
+    private static final String PARAMETER_B_TO_A_NAME = "B to A";
+    private static final String PARAMETER_B_TO_A_KEY = "BToA";
 
     private CountDownLatch shouldFinish;
 

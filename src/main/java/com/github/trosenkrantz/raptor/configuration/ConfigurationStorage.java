@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class ConfigurationStorage {
+    public static final String CONFIGURATION_FILE_NAME = "config.json";
+
     private static final Logger LOGGER = Logger.getLogger(ConfigurationStorage.class.getName());
 
     public static Path saveConfiguration(Configuration configuration) throws IOException {
@@ -30,7 +32,8 @@ public class ConfigurationStorage {
 
         Files.createDirectories(configurationDirPath); // Create parent dirs
 
-        Path configurationFilePath = Files.writeString(configurationDirPath.resolve("config.json"), configuration.toJson());// Copy configuration
+        Path configurationFilePath = Files.writeString(configurationDirPath.resolve(CONFIGURATION_FILE_NAME), configuration.toJson());
+        ConsoleIo.writeLine("Saved configuration to: " + configurationFilePath.toAbsolutePath());
 
         // Copy shell script
         try (InputStream in = ConfigurationStorage.class.getResourceAsStream("/com/github/trosenkrantz/raptor/run")) {
