@@ -88,7 +88,7 @@ public class BytesFormatter {
                     case 'n' -> "\n";
                     case 'r' -> "\r";
                     case 't' -> "\t";
-                    case '\"' -> "\\\"";
+                    case '\"' -> "\"";
                     case '\\' -> "\\";
                     default -> "\\" + nextChar;
                 });

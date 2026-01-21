@@ -45,4 +45,14 @@ class BytesFormatterTest {
         String reversedInput = BytesFormatter.unescapeCliArgument(output);
         Assertions.assertEquals(input, reversedInput);
     }
+
+    @Test
+    public void canEncodeAndDecodeEachByte() {
+        for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
+            byte[] input = new byte[]{(byte) i};
+            String encoded = BytesFormatter.bytesToFullyEscapedString(input);
+            byte[] output = BytesFormatter.fullyEscapedStringToBytes(encoded);
+            Assertions.assertArrayEquals(input, output, "Failed for value " + i + ".");
+        }
+    }
 }
