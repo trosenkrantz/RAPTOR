@@ -25,8 +25,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
-                      "remote-address": "224.0.2.1",
-                      "local-port": 50000
+                      "remoteAddress": "224.0.2.1",
+                      "localPort": 50000
                     }
                     """);
             gateway.runConfiguration("""
@@ -35,13 +35,13 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
-                        "remote-address": "224.0.2.0",
+                        "remoteAddress": "224.0.2.0",
                         "port": 50000
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
-                        "remote-address": "224.0.2.1",
+                        "remoteAddress": "224.0.2.1",
                         "port": 50000
                       }
                     }
@@ -55,8 +55,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "send",
-                      "remote-address": "224.0.2.0",
-                      "remote-port": 50000,
+                      "remoteAddress": "224.0.2.0",
+                      "remotePort": 50000,
                       "payload": "Hello, World!"
                     }
                     """);
@@ -90,8 +90,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "receive",
-              "remote-address": "224.0.2.1",
-              "local-port": 50001
+              "remoteAddress": "224.0.2.1",
+              "localPort": 50001
             }
             """);
             receiverB.runConfiguration("""
@@ -99,8 +99,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "receive",
-              "remote-address": "224.0.2.2",
-              "local-port": 50002
+              "remoteAddress": "224.0.2.2",
+              "localPort": 50002
             }
             """);
             gateway.runConfiguration("""
@@ -109,13 +109,13 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "a": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.1",
+                "remoteAddress": "224.0.2.1",
                 "port": 50001
               },
               "b": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.2",
+                "remoteAddress": "224.0.2.2",
                 "port": 50002
               }
             }
@@ -130,8 +130,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "send",
-              "remote-address": "224.0.2.1",
-              "remote-port": 50001,
+              "remoteAddress": "224.0.2.1",
+              "remotePort": 50001,
               "payload": "Hello, World! 1"
             }
             """);
@@ -140,8 +140,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "send",
-              "remote-address": "224.0.2.2",
-              "remote-port": 50002,
+              "remoteAddress": "224.0.2.2",
+              "remotePort": 50002,
               "payload": "Hello, World! 2"
             }
             """);
@@ -181,8 +181,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "receive",
-              "remote-address": "224.0.2.2",
-              "local-port": 50000
+              "remoteAddress": "224.0.2.2",
+              "localPort": 50000
             }
             """);
             gateway1.runConfiguration("""
@@ -191,13 +191,13 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "a": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.0",
+                "remoteAddress": "224.0.2.0",
                 "port": 50000
               },
               "b": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.1",
+                "remoteAddress": "224.0.2.1",
                 "port": 50000
               }
             }
@@ -208,13 +208,13 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "a": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.1",
+                "remoteAddress": "224.0.2.1",
                 "port": 50000
               },
               "b": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.2",
+                "remoteAddress": "224.0.2.2",
                 "port": 50000
               }
             }
@@ -229,8 +229,8 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "send",
-              "remote-address": "224.0.2.0",
-              "remote-port": 50000,
+              "remoteAddress": "224.0.2.0",
+              "remotePort": 50000,
               "payload": "Hello, World!"
             }
             """);

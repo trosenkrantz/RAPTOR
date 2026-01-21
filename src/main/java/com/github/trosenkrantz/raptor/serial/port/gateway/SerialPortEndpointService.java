@@ -16,7 +16,7 @@ public class SerialPortEndpointService implements EndpointService {
 
     @Override
     public String getParameterKey() {
-        return "serial-port";
+        return "serialPort";
     }
 
     @Override

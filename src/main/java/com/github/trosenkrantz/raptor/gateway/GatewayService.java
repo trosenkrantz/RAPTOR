@@ -18,6 +18,10 @@ public class GatewayService implements RootService {
     private static final String PARAMETER_ENDPOINT = "endpoint";
     private static final Collection<EndpointService> ENDPOINT_SERVICES = EndpointServiceFactory.createServices();
     private static final List<PromptOption<EndpointService>> ENDPOINT_SERVICE_OPTIONS = ENDPOINT_SERVICES.stream().map(endpoint -> new PromptOption<>(endpoint.getPromptValue(), endpoint.getDescription(), endpoint)).toList();
+    public static final String PARAMETER_A_TO_B_NAME = "A to B";
+    public static final String PARAMETER_A_TO_B_KEY = "aToB";
+    public static final String PARAMETER_B_TO_A_NAME = "B to A";
+    public static final String PARAMETER_B_TO_A_KEY = "BToA";
 
     private CountDownLatch shouldFinish;
 
@@ -41,8 +45,8 @@ public class GatewayService implements RootService {
         configureEndpoint(configuration, "A");
         configureEndpoint(configuration, "B");
 
-        configureNetworkImpairment(configuration, "A to B");
-        configureNetworkImpairment(configuration, "B to A");
+        configureNetworkImpairment(configuration, PARAMETER_A_TO_B_NAME, PARAMETER_A_TO_B_KEY);
+        configureNetworkImpairment(configuration, PARAMETER_B_TO_A_NAME, PARAMETER_B_TO_A_KEY);
     }
 
     private static void configureEndpoint(Configuration rootConfiguration, String endpointName) {
@@ -56,13 +60,13 @@ public class GatewayService implements RootService {
         rootConfiguration.setSubConfiguration(endpointName.toLowerCase(Locale.ROOT), endpointConfiguration);
     }
 
-    private static void configureNetworkImpairment(Configuration rootConfiguration, String direction) {
-        ConsoleIo.writeLine("---- Configuring network impairment " + direction + " ----");
+    private static void configureNetworkImpairment(Configuration rootConfiguration, String directionName, String directionKey) {
+        ConsoleIo.writeLine("---- Configuring network impairment " + directionName + " ----");
 
         Configuration directionConfiguration = Configuration.empty();
         ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING, DuplicationFactory.SETTING), directionConfiguration);
 
-        rootConfiguration.setSubConfiguration(direction.toLowerCase(Locale.ROOT).replaceAll(" ", "-"), directionConfiguration);
+        rootConfiguration.setSubConfiguration(directionKey, directionConfiguration);
     }
 
     @Override
@@ -76,12 +80,12 @@ public class GatewayService implements RootService {
         Endpoint endpointA = createEndpoint(configuration.requireSubConfiguration("a"), fromAConsumer);
         Endpoint endpointB = createEndpoint(configuration.requireSubConfiguration("b"), fromBConsumer);
 
-        Consumer<byte[]> impairmentAToB = createNetworkImpairment(configuration.getSubConfiguration("a-to-b").orElse(Configuration.empty()), endpointB);
-        Consumer<byte[]> impairmentBToA = createNetworkImpairment(configuration.getSubConfiguration("b-to-a").orElse(Configuration.empty()), endpointA);
+        Consumer<byte[]> impairmentAToB = createNetworkImpairment(configuration.getSubConfiguration(PARAMETER_A_TO_B_KEY).orElse(Configuration.empty()), endpointB);
+        Consumer<byte[]> impairmentBToA = createNetworkImpairment(configuration.getSubConfiguration(PARAMETER_B_TO_A_KEY).orElse(Configuration.empty()), endpointA);
 
         // Now that endpoints and impairments are created, we can start processing the data, flushing the buffers
-        fromAConsumer.setDelegate(impairmentAToB); // When receiving data from A, pass to impairment a-to-b
-        fromBConsumer.setDelegate(impairmentBToA); // When receiving data from B, pass to impairment b-to-a
+        fromAConsumer.setDelegate(impairmentAToB); // When receiving data from A, pass to impairment A to B
+        fromBConsumer.setDelegate(impairmentBToA); // When receiving data from B, pass to impairment B to A
 
         Thread.ofVirtual().start(() -> {
             ConsoleIo.promptUserToExit();

@@ -26,13 +26,13 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "a": {
                         "endpoint": "tcp",
                         "role": "server",
-                        "local-port": 50000,
+                        "localPort": 50000,
                         "tlsVersion": "none"
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "server",
-                        "local-port": 50001,
+                        "localPort": 50001,
                         "tlsVersion": "none"
                       }
                     }
@@ -47,8 +47,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "client",
-                      "remote-host": "%s",
-                      "remote-port": 50000,
+                      "remoteHost": "%s",
+                      "remotePort": 50000,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }
@@ -57,8 +57,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "client",
-                      "remote-host": "%s",
-                      "remote-port": 50001,
+                      "remoteHost": "%s",
+                      "remotePort": 50001,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }
@@ -102,7 +102,7 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "server",
-                      "local-port": 50000,
+                      "localPort": 50000,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }
@@ -111,7 +111,7 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "server",
-                      "local-port": 50000,
+                      "localPort": 50000,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }
@@ -128,15 +128,15 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "a": {
                         "endpoint": "tcp",
                         "role": "client",
-                        "remote-host": "%s",
-                        "remote-port": 50000,
+                        "remoteHost": "%s",
+                        "remotePort": 50000,
                         "tlsVersion": "none"
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "client",
-                        "remote-host": "%s",
-                        "remote-port": 50000,
+                        "remoteHost": "%s",
+                        "remotePort": 50000,
                         "tlsVersion": "none"
                       }
                     }
@@ -181,7 +181,7 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "server",
-                      "local-port": 50000,
+                      "localPort": 50000,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }
@@ -195,14 +195,14 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "a": {
                         "endpoint": "tcp",
                         "role": "client",
-                        "remote-host": "%s",
-                        "remote-port": 50000,
+                        "remoteHost": "%s",
+                        "remotePort": 50000,
                         "tlsVersion": "none"
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "server",
-                        "local-port": 50000,
+                        "localPort": 50000,
                         "tlsVersion": "none"
                       }
                     }
@@ -217,14 +217,14 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "a": {
                         "endpoint": "tcp",
                         "role": "client",
-                        "remote-host": "%s",
-                        "remote-port": 50000,
+                        "remoteHost": "%s",
+                        "remotePort": 50000,
                         "tlsVersion": "none"
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "server",
-                        "local-port": 50000,
+                        "localPort": 50000,
                         "tlsVersion": "none"
                       }
                     }
@@ -237,8 +237,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "client",
-                      "remote-host": "%s",
-                      "remote-port": 50000,
+                      "remoteHost": "%s",
+                      "remotePort": 50000,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }

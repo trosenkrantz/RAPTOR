@@ -18,7 +18,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
 
             server.runConfiguration("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
@@ -30,7 +30,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             // Client connects to server
             client1.runConfiguration(String.format("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
@@ -47,7 +47,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             // Other client connects to the server again
             client2.runConfiguration(String.format("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
@@ -68,7 +68,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
 
             server.runConfiguration("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
@@ -80,7 +80,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             // Client connects to server
             client.runConfiguration(String.format("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
@@ -101,7 +101,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
 
             server.runConfiguration("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
@@ -113,7 +113,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             // Client connects to server
             client.runConfiguration(String.format("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
@@ -148,7 +148,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
 
             server.runConfiguration("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
@@ -160,7 +160,7 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
             // Client connects to server
             client.runConfiguration(String.format("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "headers" : {

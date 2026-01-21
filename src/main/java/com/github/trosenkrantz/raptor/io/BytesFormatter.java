@@ -14,7 +14,6 @@ import java.util.HexFormat;
  */
 public class BytesFormatter {
     public static final String DEFAULT_FULLY_ESCAPED_STRING = "Hello, World!";
-    private static final String REGEX_CLI_ARGUMENTS_TO_ESCAPE = "([!\"#$%&'()*:;<>?@\\[\\]^`{|}~\\[\\]])";
 
     public static String bytesToFullyEscapedString(byte[] input) {
         if (isText(input)) {
@@ -134,27 +133,5 @@ public class BytesFormatter {
 
     private static boolean isHex(char c) {
         return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
-    }
-
-    public static String escapeCliArgument(String argument) {
-        // Escape special characters for Bash and .cmd usage
-        argument = argument.replaceAll(REGEX_CLI_ARGUMENTS_TO_ESCAPE, "\\\\$1");
-
-
-        if (argument.contains(" ")) {
-            return "\"" + argument + "\""; // Wrap in quotes to handle spaces
-        } else {
-            return argument;
-        }
-    }
-
-    public static String unescapeCliArgument(String argument) {
-        // Remove the wrapping quotes
-        if (argument.startsWith("\"") && argument.endsWith("\"")) {
-            argument = argument.substring(1, argument.length() - 1);
-        }
-
-        // Unescape special characters
-        return argument.replaceAll("\\\\" + REGEX_CLI_ARGUMENTS_TO_ESCAPE, "$1");
     }
 }

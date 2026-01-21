@@ -19,7 +19,7 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service" : "tcp",
                       "role" : "server",
-                      "local-port" : 50000,
+                      "localPort" : 50000,
                       "tlsVersion" : "none",
                       "sendStrategy" : "autoReply",
                       "replies" : {
@@ -57,8 +57,8 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                     {
                       "service": "tcp",
                       "role": "client",
-                      "remote-host": "%s",
-                      "remote-port": 50000,
+                      "remoteHost": "%s",
+                      "remotePort": 50000,
                       "tlsVersion": "none",
                       "sendStrategy": "interactive"
                     }

@@ -22,10 +22,9 @@ import java.util.logging.Logger;
 public class TcpUtility {
     private static final Logger LOGGER = Logger.getLogger(TcpUtility.class.getName());
 
-    public static final String PARAMETER_REPLY_FILE = "reply-file";
-    public static final String PARAMETER_REMOTE_HOST = "remote-host";
-    public static final String PARAMETER_LOCAL_PORT = "local-port";
-    public static final String PARAMETER_REMOTE_PORT = "remote-port";
+    public static final String PARAMETER_REMOTE_HOST = "remoteHost";
+    public static final String PARAMETER_LOCAL_PORT = "localPort";
+    public static final String PARAMETER_REMOTE_PORT = "remotePort";
 
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 50000;

@@ -17,7 +17,7 @@ public class WebSocketAutoReplyIntegrationTest extends RaptorIntegrationTest {
 
             server.runConfiguration("""
                     {
-                      "service" : "web-socket",
+                      "service" : "webSocket",
                       "role" : "server",
                       "port" : 50000,
                       "tlsVersion" : "none",
@@ -55,7 +55,7 @@ public class WebSocketAutoReplyIntegrationTest extends RaptorIntegrationTest {
             // Client connects to server
             client.runConfiguration(String.format("""
                     {
-                      "service": "web-socket",
+                      "service": "webSocket",
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",

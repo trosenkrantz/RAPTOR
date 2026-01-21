@@ -14,9 +14,9 @@ import java.util.logging.Logger;
 public class UdpUtility {
     private static final Logger LOGGER = Logger.getLogger(UdpUtility.class.getName());
 
-    public static final String PARAMETER_LOCAL_PORT = "local-port";
-    public static final String PARAMETER_REMOTE_PORT = "remote-port";
-    public static final String PARAMETER_REMOTE_ADDRESS = "remote-address";
+    public static final String PARAMETER_LOCAL_PORT = "localPort";
+    public static final String PARAMETER_REMOTE_PORT = "remotePort";
+    public static final String PARAMETER_REMOTE_ADDRESS = "remoteAddress";
     public static final String PARAMETER_PAYLOAD = "payload";
     public static final String DEFAULT_ADDRESS = "localhost";
     public static final int DEFAULT_PORT = 50000;

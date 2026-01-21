@@ -17,7 +17,7 @@ public class SerialPortRootService implements RootService {
 
     @Override
     public String getParameterKey() {
-        return "serial-port";
+        return "serialPort";
     }
 
     @Override

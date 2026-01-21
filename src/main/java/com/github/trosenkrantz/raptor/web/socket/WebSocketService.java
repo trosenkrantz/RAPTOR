@@ -41,7 +41,7 @@ public class WebSocketService implements RootService {
 
     @Override
     public String getParameterKey() {
-        return "web-socket";
+        return "webSocket";
     }
 
     @Override

@@ -24,7 +24,7 @@ public class MixedGatewayIntegrationTest {
             {
               "service": "tcp",
               "role": "server",
-              "local-port": 50000,
+              "localPort": 50000,
               "tlsVersion": "none",
               "sendStrategy": "interactive"
             }
@@ -38,14 +38,14 @@ public class MixedGatewayIntegrationTest {
               "a": {
                 "endpoint": "tcp",
                 "role": "client",
-                "remote-host": "%s",
-                "remote-port": 50000,
+                "remoteHost": "%s",
+                "remotePort": 50000,
                 "tlsVersion": "none"
               },
               "b": {
                 "endpoint": "udp",
                 "mode": "multicast",
-                "remote-address": "224.0.2.0",
+                "remoteAddress": "224.0.2.0",
                 "port": 50000
               }
             }
@@ -58,8 +58,8 @@ public class MixedGatewayIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "receive",
-              "remote-address": "224.0.2.0",
-              "local-port": 50000
+              "remoteAddress": "224.0.2.0",
+              "localPort": 50000
             }
             """);
             system2Receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
@@ -79,8 +79,8 @@ public class MixedGatewayIntegrationTest {
               "service": "udp",
               "mode": "multicast",
               "role": "send",
-              "remote-address": "224.0.2.0",
-              "remote-port": 50000,
+              "remoteAddress": "224.0.2.0",
+              "remotePort": 50000,
               "payload": "%s"
             }
             """, binaryMessage));

@@ -24,8 +24,8 @@ class CorruptionIntegrationTest {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
-                      "remote-address": "224.0.2.1",
-                      "local-port": 50000
+                      "remoteAddress": "224.0.2.1",
+                      "localPort": 50000
                     }
                     """);
             gateway.runConfiguration("""
@@ -34,16 +34,16 @@ class CorruptionIntegrationTest {
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
-                        "remote-address": "224.0.2.0",
+                        "remoteAddress": "224.0.2.0",
                         "port": 50000
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
-                        "remote-address": "224.0.2.1",
+                        "remoteAddress": "224.0.2.1",
                         "port": 50000
                       },
-                      "a-to-b": {
+                      "aToB": {
                         "corruption": 1.0
                       }
                     }
@@ -58,8 +58,8 @@ class CorruptionIntegrationTest {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "send",
-                      "remote-address": "224.0.2.0",
-                      "remote-port": 50000,
+                      "remoteAddress": "224.0.2.0",
+                      "remotePort": 50000,
                       "payload": "%s"
                     }
                     """, originalBinaryMessage));

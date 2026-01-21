@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 public class UdpEndpointService implements EndpointService {
     public static final String PARAMETER_MODE = "mode";
     public static final String PARAMETER_PORT = "port";
-    public static final String PARAMETER_LOCAL_SEND_PORT = "local-send-port";
+    public static final String PARAMETER_LOCAL_SEND_PORT = "localSendPort";
 
     @Override
     public String getPromptValue() {

@@ -22,7 +22,7 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service" : "udp",
                       "mode" : "broadcast",
                       "role" : "receive",
-                      "local-port" : 50000
+                      "localPort" : 50000
                     }
                     """);
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive"); // Wait until ready to receive
@@ -33,7 +33,7 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service" : "udp",
                       "mode" : "broadcast",
                       "role" : "send",
-                      "remote-port" : 50000,
+                      "remotePort" : 50000,
                       "payload" : "Hello, World!"
                     }
                     """);
@@ -57,8 +57,8 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service" : "udp",
                       "mode" : "multicast",
                       "role" : "receive",
-                      "remote-address" : "224.0.2.0",
-                      "local-port" : 50000
+                      "remoteAddress" : "224.0.2.0",
+                      "localPort" : 50000
                     }
                     """);
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive"); // Wait until ready to receive
@@ -69,8 +69,8 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service" : "udp",
                       "mode" : "multicast",
                       "role" : "send",
-                      "remote-address" : "224.0.2.0",
-                      "remote-port" : 50000,
+                      "remoteAddress" : "224.0.2.0",
+                      "remotePort" : 50000,
                       "payload" : "Hello, World!"
                     }
                     """);
@@ -94,7 +94,7 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service": "udp",
                       "mode": "unicast",
                       "role": "receive",
-                      "local-port": 50000
+                      "localPort": 50000
                     }
                     """);
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
@@ -105,8 +105,8 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service": "udp",
                       "mode": "unicast",
                       "role": "send",
-                      "remote-address": "%s",
-                      "remote-port": 50000,
+                      "remoteAddress": "%s",
+                      "remotePort": 50000,
                       "payload": "Hello, World!"
                     }
                     """, receiver.getRaptorHostname()));
@@ -130,7 +130,7 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service": "udp",
                       "mode": "unicast",
                       "role": "receive",
-                      "local-port": 50000
+                      "localPort": 50000
                     }
                     """);
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
@@ -141,8 +141,8 @@ public class UdpIntegrationTest extends RaptorIntegrationTest {
                       "service": "udp",
                       "mode": "unicast",
                       "role": "send",
-                      "remote-address": "%s",
-                      "remote-port": 50000,
+                      "remoteAddress": "%s",
+                      "remotePort": 50000,
                       "payload": "Hello, World!"
                     }
                     """, receiver.getRaptorIpAddress()));

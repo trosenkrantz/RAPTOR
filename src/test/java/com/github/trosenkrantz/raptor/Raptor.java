@@ -48,38 +48,6 @@ public class Raptor extends GenericContainer<Raptor> {
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * This support multiple arguments in {@code cmd} string for easy copy-paste.
-     * This supports quoted arguments.
-     *
-     * @param cmd the commands
-     * @return this
-     */
-    @Override
-    public Raptor withCommand(String cmd) {
-        // The withCommand out of the box does not support quoted arguments, so we parse them ourselves
-        return super.withCommand(parseArguments(cmd));
-    }
-
-    public static String[] parseArguments(String cliArgs) {
-        List<String> argsList = new ArrayList<>();
-
-        String regex = "\"([^\"]*)\"|(\\S+)";
-
-        var matcher = Pattern.compile(regex).matcher(cliArgs);
-        while (matcher.find()) {
-            if (matcher.group(1) != null) {
-                argsList.add(matcher.group(1)); // Double-quoted content without the quotes
-            } else {
-                argsList.add(matcher.group(2)); // Unquoted argument
-            }
-        }
-
-        return argsList.toArray(new String[0]);
-    }
-
-    /**
      * Expects that any output line contains all the expected phrases.
      * This method continues to check the output until the timeout is reached.
      *

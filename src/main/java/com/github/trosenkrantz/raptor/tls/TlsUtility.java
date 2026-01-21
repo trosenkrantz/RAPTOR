@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 public class TlsUtility {
     private static final Logger LOGGER = Logger.getLogger(TlsUtility.class.getName());
 
-    private static final String PARAMETER_KEY_STORE = "key-store";
-    private static final String PARAMETER_KEY_STORE_PASSWORD = "key-store-password";
-    private static final String PARAMETER_KEY_PASSWORD = "key-password";
+    private static final String PARAMETER_KEY_STORE = "keyStore";
+    private static final String PARAMETER_KEY_STORE_PASSWORD = "keyStorePassword";
+    private static final String PARAMETER_KEY_PASSWORD = "keyPassword";
 
     private TlsUtility() {
     }
