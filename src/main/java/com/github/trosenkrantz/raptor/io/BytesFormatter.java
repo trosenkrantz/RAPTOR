@@ -51,17 +51,30 @@ public class BytesFormatter {
         }
     }
 
-    public static String bytesToFullyEscapedTextString(byte[] bytes) {
+    public static String bytesToFullyEscapedTextString(byte[] input) {
         StringBuilder builder = new StringBuilder();
-        for (byte b : bytes) {
-            char c = (char) b;
-            builder.append(switch (c) {
+
+        int length = input.length;
+        for (int i = 0; i < length; i++) {
+            char currentChar = (char) input[i];
+
+            builder.append(switch (currentChar) {
                 case '\n' -> "\\n";
                 case '\r' -> "\\r";
                 case '\t' -> "\\t";
                 case '\"' -> "\\\"";
-                case '\\' -> "\\\\";
-                default -> String.valueOf(c);
+                case '\\' -> {
+                    // If this backslash could start a hex escape, force escaping the backslash
+                    if (i + 3 < length
+                            && input[i + 1] == 'x'
+                            && isHex((char) input[i + 2])
+                            && isHex((char) input[i + 3])) {
+                        yield "\\\\x5c"; // Hex escape backslash
+                    } else {
+                        yield  "\\\\";
+                    }
+                }
+                default -> String.valueOf(currentChar);
             });
         }
         return builder.toString();
