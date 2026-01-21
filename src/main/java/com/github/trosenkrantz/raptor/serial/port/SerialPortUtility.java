@@ -28,7 +28,10 @@ public class SerialPortUtility {
 
     public static void configureConnectivity(Configuration configuration) {
         // Configure port
-        List<String> portNames = Arrays.stream(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName).toList();
+        List<String> portNames = Arrays.stream(SerialPort.getCommPorts())
+                .map(SerialPort::getSystemPortName)
+                .sorted()
+                .toList();
         LOGGER.info("Available ports on this machine: " + String.join(", ", portNames));
         String defaultPort = portNames.isEmpty() ? DEFAULT_PORT : portNames.getFirst();
         configuration.setString(PARAMETER_PORT, ConsoleIo.askForString("port name", defaultPort));
