@@ -24,8 +24,10 @@ class ConsoleFormatter extends Formatter {
 
         if (record.getLevel().equals(Level.SEVERE)) {
             return Ansi.ERROR.apply(string);
+        } else if (record.getLevel().equals(Level.WARNING)) {
+            return Ansi.WARNING.apply(string);
+        } else {
+            return builder.toString();
         }
-
-        return builder.toString();
     }
 }

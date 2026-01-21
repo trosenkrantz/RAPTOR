@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 public enum Ansi {
     ERROR("\u001B[31m"), // Red
+    WARNING("\u001B[33m"), // Yellow
     PROMPT("\u001B[36m"), // Cyan
     LESS_IMPORTANT("\u001B[90m"); // Grey
 

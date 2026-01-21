@@ -48,8 +48,17 @@ public class UdpUtility {
 
     public static MulticastSocket createMulticastSocket(Configuration configuration) throws IOException {
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
-        if (port.isPresent()) return new MulticastSocket(port.get());
-        else return new MulticastSocket();
+        MulticastSocket socket = new MulticastSocket(null);
+        socket.setReuseAddress(true);
+
+        // Bind to an IPv4 wildcard address to force an IPv4-only multicast socket
+        if (port.isPresent()) {
+            socket.bind(new InetSocketAddress(Inet4Address.getByName("0.0.0.0"), port.get()));
+        } else {
+            socket.bind(new InetSocketAddress(Inet4Address.getByName("0.0.0.0"), 0));
+        }
+
+        return socket;
     }
 
     public static AllReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {

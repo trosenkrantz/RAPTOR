@@ -9,8 +9,10 @@ import com.github.trosenkrantz.raptor.io.IpPortValidator;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class UdpRootService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
@@ -86,8 +88,13 @@ public class UdpRootService implements RootService {
             case MULTICAST -> {
                 try (MulticastSocket socket = UdpUtility.createMulticastSocket(configuration)) {
                     for (NetworkInterface networkInterface : UdpUtility.getAllMulticastCapableInterfaces()) {
-                        socket.setNetworkInterface(networkInterface);
-                        UdpUtility.send(configuration, InetAddress.getByName(configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS)), socket, true, payload);
+                        try {
+                            LOGGER.fine("Using network interface " + networkInterfaceToString(networkInterface) + ".");
+                            socket.setNetworkInterface(networkInterface);
+                            UdpUtility.send(configuration, InetAddress.getByName(configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS)), socket, true, payload);
+                        } catch (IOException e) {
+                            LOGGER.warning("Failed sending on network interface " + networkInterfaceToString(networkInterface) + ".");
+                        }
                     }
                 }
             }
@@ -111,6 +118,18 @@ public class UdpRootService implements RootService {
                 }
             }
         }
+    }
+
+    private static String networkInterfaceToString(NetworkInterface networkInterface) {
+        String addresses = Collections.list(networkInterface.getInetAddresses()).stream()
+                .map(a -> a.getHostAddress()
+                        + " ("
+                        + (a.isLinkLocalAddress() ? "link-local " : "")
+                        + (a instanceof Inet6Address ? "IPv6" : "IPv4")
+                        + ")")
+                .collect(Collectors.joining(", "));
+
+        return networkInterface.getDisplayName() + " with addresses [" + addresses + "]";
     }
 
     private static void runReceive(Configuration configuration) throws IOException {
