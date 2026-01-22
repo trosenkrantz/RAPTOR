@@ -11,6 +11,7 @@ import java.net.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -93,7 +94,7 @@ public class UdpRootService implements RootService {
                             socket.setNetworkInterface(networkInterface);
                             UdpUtility.send(configuration, InetAddress.getByName(configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS)), socket, true, payload);
                         } catch (IOException e) {
-                            LOGGER.warning("Failed sending on network interface " + networkInterfaceToString(networkInterface) + ".");
+                            LOGGER.log(Level.WARNING, "Failed sending on network interface " + networkInterfaceToString(networkInterface) + ".", e);
                         }
                     }
                 }
