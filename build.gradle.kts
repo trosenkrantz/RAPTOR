@@ -7,7 +7,7 @@ val distributionsDir = layout.buildDirectory.dir("distributions")
 val runtimesDir = layout.buildDirectory.dir("runtimes")
 
 group = "com.github.trosenkrantz"
-version = "1.7.1"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
@@ -149,8 +149,7 @@ tasks.register<Exec>("debug") {
 
 val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
     dependsOn(tasks.assemble)
-    workingDir(distributionsDir)
-    commandLine("docker", "build", "-f", "${projectDir}/src/main/docker/Dockerfile", "-t", "raptor:latest", projectDir)
+    commandLine("docker", "build", "-q", "-f", "./src/main/docker/Dockerfile", "-t", "raptor:latest", ".")
 }
 
 tasks.test {
