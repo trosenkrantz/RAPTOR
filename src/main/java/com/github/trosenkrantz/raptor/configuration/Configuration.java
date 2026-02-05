@@ -243,49 +243,6 @@ public class Configuration {
         }
     }
 
-    public <T> T toObject(Class<T> clazz) {
-        try {
-            return mapper.treeToValue(root, clazz);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Failed to deserialize configuration into " + clazz.getSimpleName(), e);
-        }
-    }
-
-    public void setObject(String key, Object value) {
-        root.set(key, mapper.valueToTree(value));
-    }
-
-    public <T> Optional<List<T>> getObjectList(String key, Class<T> clazz) {
-        JsonNode node = root.get(key);
-
-        if (node == null) return Optional.empty();
-        if (!node.isArray()) {
-            throw new IllegalArgumentException("Parameter " + pathToString(key) + " is not a JSON array.");
-        }
-
-        List<T> result = new ArrayList<>();
-
-        for (JsonNode element : node) {
-            try {
-                result.add(mapper.treeToValue(element, clazz));
-            } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException("Failed to deserialize element " + pathToString(key) + " into " + clazz.getSimpleName(), e);
-            }
-        }
-
-        return Optional.of(result);
-    }
-
-    public <T> void setObjectList(String key, List<T> values) {
-        ArrayNode array = mapper.createArrayNode();
-
-        for (T value : values) {
-            array.add(mapper.valueToTree(value));
-        }
-
-        root.set(key, array);
-    }
-
 
     /* Utility */
 

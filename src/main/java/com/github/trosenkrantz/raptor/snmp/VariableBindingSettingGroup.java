@@ -28,7 +28,7 @@ public class VariableBindingSettingGroup implements SettingGroup<VariableBinding
     }
 
     @Override
-    public String configurationToString(Configuration configuration) {
+    public String valueToString(Configuration configuration) {
         return OID_SETTING.valueToString(configuration) + ": " + VARIABLE_SETTING.valueToString(configuration);
     }
 

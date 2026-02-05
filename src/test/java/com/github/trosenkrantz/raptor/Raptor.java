@@ -26,8 +26,6 @@ public class Raptor extends GenericContainer<Raptor> {
     private final List<String> stdoutLines = new ArrayList<>();
     private final RaptorNetwork network;
 
-//    private int configurationIndex = 0;
-
     public Raptor(final RaptorNetwork network) {
         super("raptor:latest");
 

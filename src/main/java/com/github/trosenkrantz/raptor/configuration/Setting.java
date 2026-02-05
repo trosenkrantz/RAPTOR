@@ -73,10 +73,11 @@ public abstract class Setting<T> {
     }
 
     /**
-     * Used to display the value of this setting to the user.
+     * Gets a string representation of the value of this setting given a configuration.
+     * Used to display the value to the user.
      *
      * @param configuration Configuration to read from
-     * @return String representation of the setting value
+     * @return String representation of the value
      */
     public abstract String valueToString(Configuration configuration);
 

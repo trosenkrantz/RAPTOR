@@ -15,7 +15,7 @@ public class StringSetting extends Setting<String> {
     }
 
     @Override
-    public String valueToString(Configuration configuration) { // TODO Rename to configurationToString?
+    public String valueToString(Configuration configuration) {
         return read(configuration).orElse(Setting.EMPTY_VALUE_TO_STRING);
     }
 

@@ -38,18 +38,7 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
     @Override
     public String valueToString(Configuration configuration) {
         return configurationToString(configuration.getSubConfigurationArray(getParameterKey()));
-//        return read(configuration).map(this::valueToString).orElse(Setting.EMPTY_VALUE_TO_STRING);
     }
-
-//    private String valueToString(List<T> value) {
-//        if (value.isEmpty()) {
-//            return Setting.EMPTY_VALUE_TO_STRING;
-//        }
-//
-//        return value.stream()
-//                .map(group::valueToString)
-//                .collect(Collectors.joining(System.lineSeparator()));
-//    }
 
     private String configurationToString(List<Configuration> itemConfigurations) {
         if (itemConfigurations.isEmpty()) {
@@ -57,7 +46,7 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
         }
 
         return itemConfigurations.stream()
-                .map(group::configurationToString)
+                .map(group::valueToString)
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 

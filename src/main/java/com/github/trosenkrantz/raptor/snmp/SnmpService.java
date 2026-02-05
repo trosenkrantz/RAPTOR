@@ -13,8 +13,6 @@ import org.snmp4j.smi.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Optional;
 
 public class SnmpService implements RootService {
     public static final String PARAMETER_HOST = "host";
@@ -91,20 +89,14 @@ public class SnmpService implements RootService {
             case GET_REQUEST -> {
                 PDU pdu = createPdu(configuration);
                 pdu.setType(PDU.GET);
-
-                Optional<List<VariableBinding>> variableBindings = GET_REQUEST_BINDINGS_SETTING.read(configuration); // TODO read and require
-                if (variableBindings.isEmpty()) throw new IllegalArgumentException("No request bindings found");
-                pdu.addAll(variableBindings.get());
+                pdu.addAll(GET_REQUEST_BINDINGS_SETTING.readAndRequire(configuration));
 
                 SnmpSender.run(configuration, pdu);
             }
             case SET_REQUEST -> {
                 PDU pdu = createPdu(configuration);
                 pdu.setType(PDU.SET);
-
-                Optional<List<VariableBinding>> variableBindings = SET_REQUEST_BINDINGS_SETTING.read(configuration); // TODO read and require
-                if (variableBindings.isEmpty()) throw new IllegalArgumentException("No request bindings found");
-                pdu.addAll(variableBindings.get());
+                pdu.addAll(SET_REQUEST_BINDINGS_SETTING.readAndRequire(configuration));
 
                 SnmpSender.run(configuration, pdu);
             }
@@ -116,9 +108,7 @@ public class SnmpService implements RootService {
                     pdu.setType(PDU.TRAP);
                 }
 
-                Optional<List<VariableBinding>> variableBindings = TRAP_BINDINGS_SETTING.read(configuration); // TODO read and require
-                if (variableBindings.isEmpty()) throw new IllegalArgumentException("No request bindings found");
-                pdu.addAll(variableBindings.get());
+                pdu.addAll(TRAP_BINDINGS_SETTING.readAndRequire(configuration));
 
                 SnmpSender.run(configuration, pdu);
             }
