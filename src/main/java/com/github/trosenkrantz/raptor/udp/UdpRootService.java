@@ -108,8 +108,7 @@ public class UdpRootService implements RootService {
                             channel.setOption(StandardSocketOptions.IP_MULTICAST_IF, networkInterface);
                             channel.send(ByteBuffer.wrap(payload), new InetSocketAddress(group, destinationPort));
 
-                            InetSocketAddress localAddress = (InetSocketAddress) channel.getLocalAddress();
-                            LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + localAddress.getAddress().getHostAddress() + ":" + localAddress.getPort() + " to " + groupString + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+                            LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) channel.getLocalAddress()).getPort() + " to " + groupString + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
                         } catch (IOException e) {
                             LOGGER.log(Level.WARNING, "Failed sending on network interface " + networkInterfaceToString(networkInterface) + ".", e);
                             // And continue to try other interfaces

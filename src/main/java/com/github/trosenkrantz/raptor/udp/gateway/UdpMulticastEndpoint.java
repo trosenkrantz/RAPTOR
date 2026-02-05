@@ -118,8 +118,7 @@ public class UdpMulticastEndpoint implements Endpoint {
                 sendChannel.setOption(StandardSocketOptions.IP_MULTICAST_IF, nif);
                 sendChannel.send(ByteBuffer.wrap(payload), new InetSocketAddress(multicastGroup, destinationPort));
 
-                InetSocketAddress localAddress = (InetSocketAddress) sendChannel.getLocalAddress();
-                LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + localAddress.getAddress().getHostAddress() + ":" + localAddress.getPort() + " to " + multicastGroupString + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+                LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) sendChannel.getLocalAddress()).getPort() + " to " + multicastGroupString + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed sending multicast.", e);
