@@ -66,9 +66,9 @@ class CorruptionIntegrationTest {
 
             // Assert
             String expectedReceivedBinaryMessage = "\\\\xff\\\\xfe\\\\xfd\\\\xfc";
-            sender.expectNumberOfOutputLineContains(1, "sent", "bytes", originalBinaryMessage, sender.getRaptorIpAddress(), "224.0.2.0", "50000");
+            sender.expectNumberOfOutputLineContains(1, "sent", "bytes", originalBinaryMessage, "224.0.2.0", "50000");
             gateway.expectNumberOfOutputLineContains(1, "received", "bytes", originalBinaryMessage, sender.getRaptorIpAddress(), "224.0.2.0", "50000");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", expectedReceivedBinaryMessage, gateway.getRaptorIpAddress(), "224.0.2.1", "50000");
+            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", expectedReceivedBinaryMessage, "224.0.2.1", "50000");
             receiver.expectNumberOfOutputLineContains(1, "received", "bytes", expectedReceivedBinaryMessage, gateway.getRaptorIpAddress(), "224.0.2.1", "50000");
         }
     }

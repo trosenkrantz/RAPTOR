@@ -46,21 +46,6 @@ public class UdpUtility {
         LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " to " + destinationAddress.getHostAddress() + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
     }
 
-    public static MulticastSocket createMulticastSocket(Configuration configuration) throws IOException {
-        Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
-        MulticastSocket socket = new MulticastSocket(null);
-        socket.setReuseAddress(true);
-
-        // Bind to an IPv4 wildcard address to force an IPv4-only multicast socket
-        if (port.isPresent()) {
-            socket.bind(new InetSocketAddress(Inet4Address.getByName("0.0.0.0"), port.get()));
-        } else {
-            socket.bind(new InetSocketAddress(Inet4Address.getByName("0.0.0.0"), 0));
-        }
-
-        return socket;
-    }
-
     public static AllReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
         String multicastGroup = configuration.requireString(PARAMETER_REMOTE_ADDRESS);
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
@@ -76,6 +61,16 @@ public class UdpUtility {
                 .filter(anInterface -> !anInterface.getInterfaceAddresses().isEmpty()) // Sometimes, there can be interfaces without an address that still claims to support multicast, so we filter those away
                 .toList();
     }
+
+    public static List<NetworkInterface> getAllMulticastCapableInterfaces(Class<? extends InetAddress> family) throws SocketException {
+        return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
+                .filter(CheckedPredicate.wrap(NetworkInterface::isUp))
+                .filter(CheckedPredicate.wrap(NetworkInterface::supportsMulticast))
+                .filter(CheckedPredicate.wrap(anInterface -> !anInterface.isLoopback())) // Loopback interface does not normally support multicast
+                .filter(i -> i.getInterfaceAddresses().stream().map(InterfaceAddress::getAddress).anyMatch(family::isInstance)) // Has IP address matching IPv4 / IPv6 family
+                .toList();
+    }
+
 
     static List<InterfaceAddress> getAllBroadcastCapableInterfaceAddresses() throws SocketException {
         return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()

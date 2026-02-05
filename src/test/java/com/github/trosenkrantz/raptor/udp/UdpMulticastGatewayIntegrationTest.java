@@ -62,9 +62,9 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
                     """);
 
             // Assert
-            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", "50000");
+            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.0", "50000");
             gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", "50000");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", gateway.getRaptorIpAddress(), "224.0.2.1", "50000");
+            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.1", "50000");
             receiver.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway.getRaptorIpAddress(), "224.0.2.1", "50000");
         }
     }
@@ -150,15 +150,15 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
             // Assert
 
             // Sender 1 -> gateway -> Receiver 2
-            senderA.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", senderA.getRaptorIpAddress(), "224.0.2.1", "50001");
+            senderA.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", "224.0.2.1", "50001");
             gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 1", senderA.getRaptorIpAddress(), "224.0.2.1", "50001");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", gateway.getRaptorIpAddress(), "224.0.2.2", "50002");
+            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", "224.0.2.2", "50002");
             receiverB.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 1", gateway.getRaptorIpAddress(), "224.0.2.2", "50002");
 
             // Sender 2 -> gateway -> Receiver 1
-            senderB.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", senderB.getRaptorIpAddress(), "224.0.2.2", "50002");
+            senderB.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", "224.0.2.2", "50002");
             gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 2", senderB.getRaptorIpAddress(), "224.0.2.2", "50002");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", gateway.getRaptorIpAddress(), "224.0.2.1", "50001");
+            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", "224.0.2.1", "50001");
             receiverA.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 2", gateway.getRaptorIpAddress(), "224.0.2.1", "50001");
         }
     }
@@ -236,11 +236,11 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
             """);
 
             // Assert
-            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", "50000");
+            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.0", "50000");
             gateway1.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", "50000");
-            gateway1.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", gateway1.getRaptorIpAddress(), "224.0.2.1", "50000");
+            gateway1.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.1", "50000");
             gateway2.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway1.getRaptorIpAddress(), "224.0.2.1", "50000");
-            gateway2.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", gateway2.getRaptorIpAddress(), "224.0.2.2", "50000");
+            gateway2.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.2", "50000");
             receiver.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway2.getRaptorIpAddress(), "224.0.2.2", "50000");
         }
     }
