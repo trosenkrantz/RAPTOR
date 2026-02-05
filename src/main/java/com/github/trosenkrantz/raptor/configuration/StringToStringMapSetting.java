@@ -42,22 +42,20 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
     }
 
     @Override
-    public void configure(Configuration configuration) {
-        Map<String, String> current = readOrDefault(configuration).orElse(new HashMap<>());
-
+    public void configure(Configuration configuration, Map<String, String> currentValue) {
         while (true) {
-            ConsoleIo.writeLine("Configuring " + getDescription() + ". Current value: " + System.lineSeparator() + valueToString(current) + System.lineSeparator() + "Type " + Ansi.PROMPT.apply("a") + " to add or modify. Type " + Ansi.PROMPT.apply("enter") + " to continue. " + ConsoleIo.getExitString() + ":");
+            ConsoleIo.writeLine("Configuring " + getDescription() + ". Current value: " + System.lineSeparator() + valueToString(currentValue) + System.lineSeparator() + "Type " + Ansi.PROMPT.apply("a") + " to add or modify. Type " + Ansi.PROMPT.apply("enter") + " to continue. " + ConsoleIo.getExitString() + ":");
             String answer = ConsoleIo.readLine();
 
             switch (answer) {
                 case "a" -> {
                     String key = ConsoleIo.askForString("Key to configure");
                     String value = ConsoleIo.askForString("Value for " + key);
-                    current.put(key, value);
+                    currentValue.put(key, value);
                 }
                 case "" -> { // User chosen to finish configuring this setting
                     Configuration mapConfiguration = Configuration.empty();
-                    current.forEach(mapConfiguration::setString);
+                    currentValue.forEach(mapConfiguration::setString);
                     configuration.setSubConfiguration(getParameterKey(), mapConfiguration);
 
                     return;
@@ -71,6 +69,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
     public static class Builder extends Setting.Builder<Map<String, String>, Builder> {
         public Builder(String promptValue, String parameterKey, String name, String description) {
             super(promptValue, parameterKey, name, description);
+            defaultValue(new HashMap<>());
         }
 
         @Override

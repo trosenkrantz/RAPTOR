@@ -50,12 +50,11 @@ public class IntegerIntervalSetting extends Setting<IntegerInterval> {
     }
 
     @Override
-    public void configure(Configuration configuration) {
-        Optional<IntegerInterval> current = readOrDefault(configuration);
+    public void configure(Configuration configuration, IntegerInterval currentValue) {
         int min, max;
-        if (current.isPresent()) {
-            min = ConsoleIo.askForInt(getDescription() + ", minimum value", current.get().min(), minValidator);
-            max = ConsoleIo.askForInt(getDescription() + ", maximum value", current.get().max(), maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
+        if (currentValue != null) {
+            min = ConsoleIo.askForInt(getDescription() + ", minimum value", currentValue.min(), minValidator);
+            max = ConsoleIo.askForInt(getDescription() + ", maximum value", currentValue.max(), maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
         } else {
             min = ConsoleIo.askForInt(getDescription() + ", minimum value", minValidator);
             max = ConsoleIo.askForInt(getDescription() + ", maximum value", maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));

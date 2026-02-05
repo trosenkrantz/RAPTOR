@@ -1,27 +1,27 @@
 package com.github.trosenkrantz.raptor.snmp;
 
+import com.github.trosenkrantz.raptor.auto.reply.*;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
-import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
-import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import org.snmp4j.*;
+import org.snmp4j.CommandResponder;
+import org.snmp4j.CommandResponderEvent;
+import org.snmp4j.MessageException;
+import org.snmp4j.PDU;
 import org.snmp4j.mp.StatusInformation;
 import org.snmp4j.smi.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GetCommandResponder implements CommandResponder {
     private static final Logger LOGGER = Logger.getLogger(GetCommandResponder.class.getName());
 
-    private final StateMachine stateMachine;
+    private final PeakableBufferlessStateMachine stateMachine;
 
-    private byte[] output;
-
-    public GetCommandResponder(Configuration configuration) throws IOException {
-        stateMachine = new StateMachine(StateMachineConfiguration.fromConfiguration(configuration), out -> output = out);
+    public GetCommandResponder(Configuration configuration) {
+        stateMachine = new PeakableBufferlessStateMachine(StateMachineConfiguration.fromConfiguration(configuration));
     }
 
     @Override
@@ -42,11 +42,20 @@ public class GetCommandResponder implements CommandResponder {
         responsePDU.setRequestID(requestPdu.getRequestID());
 
         synchronized (this) {
+            Transition firstTransition = null;
+
             for (VariableBinding binding : requestPdu.getVariableBindings()) {
-                stateMachine.onInput(binding.getOid().toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
-                responsePDU.add(new VariableBinding(binding.getOid(), extractOutputVariable()));
-                stateMachine.resetInputBuffer();
-                output = null;
+                OID oid = binding.getOid();
+                Optional<Transition> optionalTransition = stateMachine.peak(oid.toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
+                responsePDU.add(new VariableBinding(oid, optionalTransition.map(this::extractOutputVariable).orElse(new Null())));
+
+                if (firstTransition == null && optionalTransition.isPresent()) { // If first transition
+                    firstTransition = optionalTransition.get();
+                }
+            }
+
+            if (firstTransition != null) {
+                stateMachine.transition(firstTransition);
             }
         }
 
@@ -68,16 +77,12 @@ public class GetCommandResponder implements CommandResponder {
         }
     }
 
-    private Variable extractOutputVariable() {
-        if (output == null) {
+    private Variable extractOutputVariable(Transition transition) {
+        try {
+            return SnmpService.toVariable(transition.outputAsBytes());
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed parsing " + transition.output() + " as Basic Encoding Rules.", e);
             return new Null();
-        } else {
-            try {
-                return SnmpService.toVariable(output);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed parsing " + BytesFormatter.bytesToFullyEscapedStringWithType(output) + " as Basic Encoding Rules.", e);
-                return new Null();
-            }
         }
     }
 }

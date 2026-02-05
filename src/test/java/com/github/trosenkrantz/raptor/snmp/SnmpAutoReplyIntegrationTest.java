@@ -55,8 +55,12 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "host" : "%s",
                       "port" : 161,
                       "version" : "v2c",
-                      "oid" : "1.2.3.5.1",
-                      "community" : "private"
+                      "community" : "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.5.1"
+                        }
+                      ]
                     }
                     """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains("Received", "Hello");
@@ -69,8 +73,12 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "host" : "%s",
                       "port" : 161,
                       "version" : "v2c",
-                      "oid" : "1.2.3.4",
-                      "community" : "private"
+                      "community" : "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.4"
+                        }
+                      ]
                     }
                     """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains("Received", "42");
@@ -83,8 +91,12 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "host" : "%s",
                       "port" : 161,
                       "version" : "v2c",
-                      "oid" : "1.2.3.4",
-                      "community" : "private"
+                      "community" : "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.4"
+                        }
+                      ]
                     }
                     """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains("Received", "300");

@@ -20,13 +20,15 @@ public class IntegerSetting extends Setting<Integer> {
     }
 
     @Override
-    public void configure(Configuration configuration) {
-        configuration.setInt(
-                getParameterKey(),
-                readOrDefault(configuration)
-                        .map(value -> ConsoleIo.askForInt(getDescription(), value, getValidator()))
-                        .orElseGet(() -> ConsoleIo.askForInt(getDescription()))
-        );
+    public void configure(Configuration configuration, Integer currentValue) {
+        int value;
+        if (currentValue == null) {
+            value = ConsoleIo.askForInt(getDescription());
+        } else {
+            value = ConsoleIo.askForInt(getDescription(), currentValue);
+        }
+
+        configuration.setInt(getParameterKey(), value);
     }
 
     public static class Builder extends Setting.Builder<Integer, Builder> {

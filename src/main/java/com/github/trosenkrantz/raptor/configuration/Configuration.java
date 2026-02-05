@@ -1,12 +1,10 @@
 package com.github.trosenkrantz.raptor.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.JsonUtility;
 
 import java.io.IOException;
@@ -63,6 +61,34 @@ public class Configuration {
         this.path = path;
     }
 
+    private String pathToString(String key) {
+        ArrayList<String> pathToLog = new ArrayList<>(path);
+        pathToLog.add(key);
+        return String.join("/", pathToLog);
+    }
+
+    public Configuration copy() {
+        return new Configuration(mapper, root.deepCopy(), path);
+    }
+
+    public boolean hasParameter(String key) {
+        return root.has(key);
+    }
+
+    /**
+     * Get the top level keys in this configuration.
+     *
+     * @return keys in this configuration scope
+     */
+    public List<String> keys() {
+        List<String> keys = new ArrayList<>();
+        root.fieldNames().forEachRemaining(keys::add);
+        return keys;
+    }
+
+
+    /* Sub-Configurations */
+
     /**
      * Add all parameters from a configuration to this configuration under a specified key.
      *
@@ -75,12 +101,6 @@ public class Configuration {
         }
 
         root.putObject(key).setAll(configuration.root);
-    }
-
-    private String pathToString(String key) {
-        ArrayList<String> pathToLog = new ArrayList<>(path);
-        pathToLog.add(key);
-        return String.join("/", pathToLog);
     }
 
     /**
@@ -107,23 +127,35 @@ public class Configuration {
         return getSubConfiguration(key).orElseThrow(() -> new IllegalArgumentException("Sub-configuration with path " + pathToString(key) + " does not exist."));
     }
 
-    public Configuration copy() {
-        return new Configuration(mapper, root.deepCopy(), path);
+    public List<Configuration> getSubConfigurationArray(String key) {
+        JsonNode node = root.get(key);
+        if (node == null) {
+            return List.of();
+        }
+        if (!node.isArray()) {
+            throw new IllegalArgumentException("Parameter " + pathToString(key) + " is not a JSON array.");
+        }
+
+        List<Configuration> result = new ArrayList<>();
+
+        for (JsonNode element : node) {
+            if (!element.isObject()) {
+                throw new IllegalArgumentException("Array element in " + pathToString(key) + " is not a JSON object.");
+            }
+            result.add(new Configuration(mapper, element.deepCopy(), path));
+        }
+
+        return result;
     }
 
-    public boolean hasParameter(String key) {
-        return root.has(key);
-    }
+    public void setSubConfigurationArray(String key, List<Configuration> values) {
+        ArrayNode array = mapper.createArrayNode();
 
-    /**
-     * Get the top level keys in this configuration.
-     *
-     * @return keys in this configuration scope
-     */
-    public List<String> keys() {
-        List<String> keys = new ArrayList<>();
-        root.fieldNames().forEachRemaining(keys::add);
-        return keys;
+        for (Configuration cfg : values) {
+            array.add(cfg.root);
+        }
+
+        root.set(key, array);
     }
 
 
@@ -211,6 +243,49 @@ public class Configuration {
         }
     }
 
+    public <T> T toObject(Class<T> clazz) {
+        try {
+            return mapper.treeToValue(root, clazz);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Failed to deserialize configuration into " + clazz.getSimpleName(), e);
+        }
+    }
+
+    public void setObject(String key, Object value) {
+        root.set(key, mapper.valueToTree(value));
+    }
+
+    public <T> Optional<List<T>> getObjectList(String key, Class<T> clazz) {
+        JsonNode node = root.get(key);
+
+        if (node == null) return Optional.empty();
+        if (!node.isArray()) {
+            throw new IllegalArgumentException("Parameter " + pathToString(key) + " is not a JSON array.");
+        }
+
+        List<T> result = new ArrayList<>();
+
+        for (JsonNode element : node) {
+            try {
+                result.add(mapper.treeToValue(element, clazz));
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Failed to deserialize element " + pathToString(key) + " into " + clazz.getSimpleName(), e);
+            }
+        }
+
+        return Optional.of(result);
+    }
+
+    public <T> void setObjectList(String key, List<T> values) {
+        ArrayNode array = mapper.createArrayNode();
+
+        for (T value : values) {
+            array.add(mapper.valueToTree(value));
+        }
+
+        root.set(key, array);
+    }
+
 
     /* Utility */
 
@@ -245,12 +320,10 @@ public class Configuration {
     /* Other */
 
     public String toJson() {
-        DefaultPrettyPrinter printer = new DefaultPrettyPrinter()
-                .withArrayIndenter(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
-
         try {
             return mapper
-                    .writer(printer)
+                    .writer()
+                    .with(new RaptorJsonPrinter())
                     .writeValueAsString(root);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Failed to convert configuration to JSON.", e);

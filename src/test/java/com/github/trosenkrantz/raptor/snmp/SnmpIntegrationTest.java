@@ -17,27 +17,31 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
 
             // Arrange
             receiver.runConfiguration("""
-            {
-              "service": "snmp",
-              "role": "listen",
-              "port": 162
-            }
-            """);
+                    {
+                      "service": "snmp",
+                      "role": "listen",
+                      "port": 162
+                    }
+                    """);
             receiver.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             // Act
             sender.runConfiguration(String.format("""
-            {
-              "service": "snmp",
-              "role": "trap",
-              "host": "%s",
-              "port": 162,
-              "version": "v2c",
-              "oid": "1.2.3.4",
-              "community": "private",
-              "variable": "\\\\x04\\\\x05Hello"
-            }
-            """, receiver.getRaptorHostname()));
+                    {
+                      "service": "snmp",
+                      "role": "trap",
+                      "host": "%s",
+                      "port": 162,
+                      "version": "v2c",
+                      "community": "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.4",
+                          "variable": "\\\\x04\\\\x05Hello"
+                        }
+                      ]
+                    }
+                    """, receiver.getRaptorHostname()));
 
             // Assert
             sender.expectAnyOutputLineContains("Sent", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "Hello", "162");
@@ -54,27 +58,31 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
 
             // Arrange
             receiver.runConfiguration("""
-            {
-              "service": "snmp",
-              "role": "listen",
-              "port": 162
-            }
-            """);
+                    {
+                      "service": "snmp",
+                      "role": "listen",
+                      "port": 162
+                    }
+                    """);
             receiver.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             // Act
             sender.runConfiguration(String.format("""
-            {
-              "service": "snmp",
-              "role": "trap",
-              "host": "%s",
-              "port": 162,
-              "version": "v1",
-              "oid": "1.2.3.4",
-              "community": "private",
-              "variable": "\\\\x04\\\\x05Hello"
-            }
-            """, receiver.getRaptorHostname()));
+                    {
+                      "service": "snmp",
+                      "role": "trap",
+                      "host": "%s",
+                      "port": 162,
+                      "version": "v1",
+                      "community": "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.4",
+                          "variable": "\\\\x04\\\\x05Hello"
+                        }
+                      ]
+                    }
+                    """, receiver.getRaptorHostname()));
 
             // Assert
             sender.expectAnyOutputLineContains("Sent", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "162");
@@ -91,27 +99,31 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
 
             // Arrange
             receiver.runConfiguration("""
-            {
-              "service": "snmp",
-              "role": "listen",
-              "port": 162
-            }
-            """);
+                    {
+                      "service": "snmp",
+                      "role": "listen",
+                      "port": 162
+                    }
+                    """);
             receiver.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             // Act
             sender.runConfiguration(String.format("""
-            {
-              "service": "snmp",
-              "role": "trap",
-              "host": "%s",
-              "port": 162,
-              "version": "v2c",
-              "oid": "1.2.3.4",
-              "community": "private",
-              "variable": "\\\\x04\\\\x05Hello"
-            }
-            """, receiver.getRaptorIpAddress()));
+                    {
+                      "service": "snmp",
+                      "role": "trap",
+                      "host": "%s",
+                      "port": 162,
+                      "version": "v2c",
+                      "community": "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.4",
+                          "variable": "\\\\x04\\\\x05Hello"
+                        }
+                      ]
+                    }
+                    """, receiver.getRaptorIpAddress()));
 
             // Assert
             sender.expectAnyOutputLineContains("Sent", "TRAP", "1.2.3.4", receiver.getRaptorIpAddress(), "Hello", "162");

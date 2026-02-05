@@ -12,28 +12,28 @@ public class StateMachine {
     private final StateMachineConfiguration configuration;
     private final Consumer<byte[]> onOutput;
 
-    private String currentState;
+    private String currentStateName;
     private StringBuilder buffer = new StringBuilder();
 
     public StateMachine(final StateMachineConfiguration configuration, final Consumer<byte[]> onOutput) {
         this.configuration = configuration;
-        currentState = configuration.startState();
+        currentStateName = configuration.startState();
         this.onOutput = onOutput;
     }
 
     public void onInput(byte[] input) {
         buffer.append(new String(input, StandardCharsets.ISO_8859_1)); // Use ISO 8859-1 to be able to match on arbitrary bytes
 
-        List<Transition> transitions = configuration.states().get(currentState);
-        if (transitions == null) throw new IllegalStateException("Auto-reply state " + currentState + " not defined.");
+        List<Transition> currentState = configuration.states().get(currentStateName);
+        if (currentState == null) throw new IllegalStateException("Auto-reply state " + currentStateName + " not defined.");
 
-        for (Transition transition : transitions) {
+        for (Transition transition : currentState) {
             Matcher matcher = Pattern.compile(transition.input(), Pattern.DOTALL).matcher(buffer); // We expect arbitrary bytes, so we use dotall mode to treat line terminators bytes as any other bytes
 
             if (matcher.matches()) {
                 onOutput.accept(BytesFormatter.hexEscapedStringToBytes(transition.output()));
                 if (transition.nextState() != null) {
-                    currentState = transition.nextState();
+                    currentStateName = transition.nextState();
                 }
                 resetInputBuffer();
                 break;

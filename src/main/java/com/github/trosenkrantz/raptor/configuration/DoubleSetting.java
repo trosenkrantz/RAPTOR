@@ -20,13 +20,15 @@ public class DoubleSetting extends Setting<Double> {
     }
 
     @Override
-    public void configure(Configuration configuration) {
-        configuration.setDouble(
-                getParameterKey(),
-                readOrDefault(configuration)
-                        .map(value -> ConsoleIo.askForDouble(getDescription(), value, getValidator()))
-                        .orElseGet(() -> ConsoleIo.askForDouble(getDescription(), getValidator()))
-        );
+    public void configure(Configuration configuration, Double currentValue) {
+        Double value;
+        if (currentValue == null) {
+            value = ConsoleIo.askForDouble(getDescription(), getValidator());
+        } else {
+            value = ConsoleIo.askForDouble(getDescription(), currentValue, getValidator());
+        }
+
+        configuration.setDouble(getParameterKey(), value);
     }
 
     public static class Builder extends Setting.Builder<Double, DoubleSetting.Builder> {

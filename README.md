@@ -71,7 +71,7 @@ RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste
 
 ## Configuration
 
-By default, starting RAPTOR will prompt us to configure a runtime, e.g., sending a UDP packet. When configured, we can either run the configuration immediately or save the configuration.
+By default, starting RAPTOR will prompt us to configure a concurrentInstance, e.g., sending a UDP packet. When configured, we can either run the configuration immediately or save the configuration.
 
 Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` directory:
 ```
@@ -98,8 +98,8 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
         "login": [
             {
                 "input": "login!", // When RAPTOR receives this
-                "output": "ok!", // It output this
-                "nextState": "active" // And move to this state
+                "output": "ok!", // It outputs this
+                "nextState": "active" // And moves to this state
             }
         ],
         "active": [
