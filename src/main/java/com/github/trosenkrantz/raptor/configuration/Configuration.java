@@ -256,29 +256,6 @@ public class Configuration {
 
     /* Utility */
 
-    public static String enumToCamelCase(Enum<?> value) {
-        String[] parts = value.name().toLowerCase(Locale.ROOT).split("_", -1);
-        StringBuilder sb = new StringBuilder(parts[0]);
-        for (int i = 1; i < parts.length; i++) {
-            sb.append(parts[i].substring(0, 1).toUpperCase(Locale.ROOT));
-            sb.append(parts[i].substring(1));
-        }
-        return sb.toString();
-    }
-
-    public static <E extends Enum<E>> E camelCaseToEnum(String value, Class<E> enumClass) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (Character.isUpperCase(c)) {
-                sb.append('_').append(Character.toUpperCase(c));
-            } else {
-                sb.append(Character.toUpperCase(c));
-            }
-        }
-        return Enum.valueOf(enumClass, sb.toString());
-    }
-
     private static String PascalCaseToCamelCase(String value) {
         return Character.toLowerCase(value.charAt(0)) + value.substring(1);
     }
