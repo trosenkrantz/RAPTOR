@@ -32,7 +32,7 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
                       "role": "trap",
                       "host": "%s",
                       "port": 162,
-                      "version": "v2c",
+                      "version": "2c",
                       "community": "private",
                       "bindings": [
                         {
@@ -73,7 +73,7 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
                       "role": "trap",
                       "host": "%s",
                       "port": 162,
-                      "version": "v1",
+                      "version": "1",
                       "community": "private",
                       "bindings": [
                         {
@@ -114,7 +114,7 @@ public class SnmpIntegrationTest extends RaptorIntegrationTest {
                       "role": "trap",
                       "host": "%s",
                       "port": 162,
-                      "version": "v2c",
+                      "version": "2c",
                       "community": "private",
                       "bindings": [
                         {

@@ -1,18 +1,21 @@
 package com.github.trosenkrantz.raptor.udp;
 
 import com.github.trosenkrantz.raptor.PromptEnum;
+import com.github.trosenkrantz.raptor.configuration.ConfigurableEnum;
 
-public enum Mode implements PromptEnum {
-    UNICAST("u", "Unicast"),
-    MULTICAST("m", "Multicast"),
-    BROADCAST("b", "Broadcast");
+public enum Mode implements PromptEnum, ConfigurableEnum {
+    UNICAST("u", "Unicast", "unicast"),
+    MULTICAST("m", "Multicast", "multicast"),
+    BROADCAST("b", "Broadcast", "broadcast");
 
     private final String promptValue;
     private final String description;
+    private final String configurationId;
 
-    Mode(String promptValue, String description) {
+    Mode(String promptValue, String description, String configurationId) {
         this.promptValue = promptValue;
         this.description = description;
+        this.configurationId = configurationId;
     }
 
     @Override
@@ -23,5 +26,10 @@ public enum Mode implements PromptEnum {
     @Override
     public String getDescription() {
         return this.description;
+    }
+
+    @Override
+    public String getConfigurationId() {
+        return this.configurationId;
     }
 }

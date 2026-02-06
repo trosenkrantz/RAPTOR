@@ -33,7 +33,7 @@ public class UdpEndpointService implements EndpointService {
     @Override
     public void configureEndpoint(Configuration configuration) {
         EndpointMode endpointMode = ConsoleIo.askForOptions(EndpointMode.class);
-        configuration.setEnum(PARAMETER_MODE, endpointMode);
+        configuration.setConfigurable(PARAMETER_MODE, endpointMode);
 
         if (endpointMode == EndpointMode.MULTICAST) {
             configuration.setString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to use", UdpUtility.DEFAULT_MULTICAST_GROUP));

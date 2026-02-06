@@ -54,7 +54,7 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "role" : "getRequest",
                       "host" : "%s",
                       "port" : 161,
-                      "version" : "v2c",
+                      "version" : "2c",
                       "community" : "private",
                       "bindings": [
                         {
@@ -72,7 +72,7 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "role" : "getRequest",
                       "host" : "%s",
                       "port" : 161,
-                      "version" : "v2c",
+                      "version" : "2c",
                       "community" : "private",
                       "bindings": [
                         {
@@ -90,7 +90,7 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "role" : "getRequest",
                       "host" : "%s",
                       "port" : 161,
-                      "version" : "v2c",
+                      "version" : "2c",
                       "community" : "private",
                       "bindings": [
                         {

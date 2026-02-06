@@ -11,10 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Configuration {
@@ -177,23 +174,36 @@ public class Configuration {
         root.put(key, value);
     }
 
-    /* Enum */
+    /* Enum and Configurable */
 
-    public <E extends Enum<E>> E requireEnum(Class<E> enumClass) {
+    public <E extends Enum<E> & ConfigurableEnum> E requireEnum(Class<E> enumClass) {
         return requireEnum(PascalCaseToCamelCase(enumClass.getSimpleName()), enumClass);
     }
 
-    public <E extends Enum<E>> E requireEnum(String key, Class<E> enumClass) {
-        return camelCaseToEnum(requireString(key), enumClass);
+    public <E extends Enum<E> & ConfigurableEnum> E requireEnum(String key, Class<E> enumClass) {
+        String idInConfiguration = requireString(key);
+        E[] enumConstants = enumClass.getEnumConstants();
+        List<E> matchingEnumConstants = Arrays.stream(enumConstants).filter(id -> id.getConfigurationId().equals(idInConfiguration)).toList();
+
+        if (matchingEnumConstants.isEmpty()) {
+            List<String> idsInEnumConstants = Arrays.stream(enumConstants).map(ConfigurableEnum::getConfigurationId).toList();
+            throw new IllegalArgumentException(idInConfiguration + " not found among [" + String.join(", ", idsInEnumConstants) + "].");
+        }
+        if (matchingEnumConstants.size() > 1) {
+            LOGGER.warning("Multiple enum constants found for " + idInConfiguration + ". Picking the first.");
+        }
+
+        return matchingEnumConstants.getFirst();
     }
 
-    public <E extends Enum<E>> void setEnum(String key, E value) {
-        setString(key, enumToCamelCase(value));
+    public <E extends Enum<E> & ConfigurableEnum> void setEnum(E value) {
+        setConfigurable(PascalCaseToCamelCase(value.getDeclaringClass().getSimpleName()), value);
     }
 
-    public <E extends Enum<E>> void setEnum(E value) {
-        setEnum(PascalCaseToCamelCase(value.getDeclaringClass().getSimpleName()), value);
+    public void setConfigurable(String key, ConfigurableEnum value) {
+        setString(key, value.getConfigurationId());
     }
+
 
     /* Int */
 
@@ -246,7 +256,7 @@ public class Configuration {
 
     /* Utility */
 
-    private static String enumToCamelCase(Enum<?> value) {
+    public static String enumToCamelCase(Enum<?> value) {
         String[] parts = value.name().toLowerCase(Locale.ROOT).split("_", -1);
         StringBuilder sb = new StringBuilder(parts[0]);
         for (int i = 1; i < parts.length; i++) {
@@ -256,7 +266,7 @@ public class Configuration {
         return sb.toString();
     }
 
-    private static <E extends Enum<E>> E camelCaseToEnum(String value, Class<E> enumClass) {
+    public static <E extends Enum<E>> E camelCaseToEnum(String value, Class<E> enumClass) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);

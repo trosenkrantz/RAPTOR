@@ -1,14 +1,15 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.PromptEnum;
+import com.github.trosenkrantz.raptor.configuration.ConfigurableEnum;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-public enum SendStrategy implements PromptEnum {
-    NONE("n", "Do [n]ot send"),
-    INTERACTIVE("i", "Prompt over console [i]nteractively"),
-    AUTO_REPLY("a", "Configure an [a]uto-reply");
+public enum SendStrategy implements PromptEnum, ConfigurableEnum {
+    NONE("n", "Do [n]ot send", "none"),
+    INTERACTIVE("i", "Prompt over console [i]nteractively", "interactive"),
+    AUTO_REPLY("a", "Configure an [a]uto-reply", "autoReply");
 
     private static final Map<SendStrategy, WebSocketSendStrategy> STRATEGY_MAP = new EnumMap<>(SendStrategy.class);
     static {
@@ -19,10 +20,12 @@ public enum SendStrategy implements PromptEnum {
 
     private final String promptValue;
     private final String description;
+    private final String configurationId;
 
-    SendStrategy(String promptValue, String description) {
+    SendStrategy(String promptValue, String description, String configurationId) {
         this.promptValue = promptValue;
         this.description = description;
+        this.configurationId = configurationId;
     }
 
     @Override
@@ -37,5 +40,10 @@ public enum SendStrategy implements PromptEnum {
 
     public WebSocketSendStrategy getStrategy() {
         return STRATEGY_MAP.get(this);
+    }
+
+    @Override
+    public String getConfigurationId() {
+        return configurationId;
     }
 }

@@ -126,7 +126,7 @@ public class TlsUtility {
             keyManagers = null; // Configure to not use TLS key, so making Java skip
         }
 
-        SSLContext sslContext = SSLContext.getInstance(configuration.requireEnum(TlsVersion.class).getId());
+        SSLContext sslContext = SSLContext.getInstance(configuration.requireEnum(TlsVersion.class).getJavaId());
         sslContext.init(keyManagers, new TrustManager[]{new AllTrustingTrustManager()}, new SecureRandom());
 
         return sslContext;
