@@ -68,8 +68,15 @@ tasks.jar {
     destinationDirectory.set(distributionsDir)
 }
 
-val distributeScripts = tasks.register<Copy>("distributeScripts") {
+tasks.processResources {
+    from("src/main/distributions-and-resources") {
+        into("com.github.trosenkrantz.raptor")
+    }
+}
+
+val distributeFiles = tasks.register<Copy>("distributeFiles") {
     from(layout.projectDirectory.dir("src/main/distributions"))
+    from(layout.projectDirectory.dir("src/main/distributions-and-resources"))
     into(distributionsDir)
 }
 
@@ -82,13 +89,15 @@ val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
     from(file("README.md"), file("LICENCE"))
     into(distributionsDir)
 
+    // Adapt links to other structure
     filter { line ->
-        line.replace("src/main/distributions/", "") // Adapt links to other structure
+        line.replace("src/main/distributions/", "")
+        line.replace("src/main/distributions-and-resources/", "")
     }
 }
 
 tasks.assemble {
-    dependsOn(tasks.jar, distributeScripts, distributeRuntime, distributeDocumentation)
+    dependsOn(tasks.jar, distributeFiles, distributeRuntime, distributeDocumentation)
 }
 
 val zip = tasks.register<Zip>("zip") {
