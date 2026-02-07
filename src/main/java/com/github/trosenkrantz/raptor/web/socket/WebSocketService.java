@@ -13,13 +13,11 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -56,7 +54,7 @@ public class WebSocketService implements RootService {
 
         switch (role) {
             case CLIENT -> {
-                configuration.setString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
+                configuration.setFullyEscapedString(PARAMETER_URI, ConsoleIo.askForString("URI of WebSocket server endpoint to connect", DEFAULT_URI));
 
                 EXTRA_HEADERS_SETTING.configure(configuration);
 
@@ -89,7 +87,7 @@ public class WebSocketService implements RootService {
 
         switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
-                String uri = configuration.requireString(PARAMETER_URI);
+                String uri = configuration.requireFullyEscapedString(PARAMETER_URI);
                 Map<String, String> extraHeaders = EXTRA_HEADERS_SETTING.read(configuration).orElse(new HashMap<>());
                 WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy, extraHeaders);
                 if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {

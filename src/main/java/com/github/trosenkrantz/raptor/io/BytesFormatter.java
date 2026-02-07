@@ -6,10 +6,10 @@ import java.util.HexFormat;
 /**
  * Terms:
  * <ul>
- *     <li>Hex escaped string: Printable characters and control characters are as-is (e.g., line feed is a single character), and arbitrary bytes are four characters (e.g., byte 0 is \, x, 0, and 0). Used for in-memory processing.</li>
- *     <li>Fully escaped string: Printable characters are as-is, control characters are escaped (e.g., line feed is two characters, \ and n), and arbitrary bytes are five characters (e.g., byte 0 is \, \, x, 0, and 0). Used for I/O and user prompts. From user's point of view, this is known as the RAPTOR encoding.</li>
- *     <li>Fully escaped text string: A fully escaped string that is only printable characters and control characters. Used for I/O where we think the bytes are text.</li>
- *     <li>Fully escaped hex string: Is a fully escaped string, but all bytes are formatted as arbitrary bytes. Used for I/O where we think the bytes are arbitrary bytes.</li>
+ *     <li>Hex escaped string: Printable characters and control characters are as-is (e.g., line feed is a single character), and arbitrary bytes are four characters (e.g., byte 0 is \, x, 0, and 0). Used to store values as JSON. When using Jackson to produce JSON on a hex escaped string, it is a subset of JSON.</li>
+ *     <li>Fully escaped text string: Printable characters are as-is, control characters are escaped (e.g., line feed is two characters, \ and n). Arbitrary bytes are not supported. Used for user prompts where we think the bytes are text.</li>
+ *     <li>Fully escaped hex string: Each byte is five characters (e.g., byte 0 is \, \, x, 0, and 0). Used for user prompts where we think the bytes are arbitrary bytes.</li>
+ *     <li>Fully escaped string: An umbrella term for either a fully escaped text string or fully escaped hex string.</li>
  * </ul>
  */
 public class BytesFormatter {
@@ -51,43 +51,70 @@ public class BytesFormatter {
     }
 
     public static String bytesToFullyEscapedTextString(byte[] input) {
+        return hexEscapedStringToFullyEscapedString(bytesToHexEscapedTextString(input));
+    }
+
+    public static String bytesToHexEscapedString(byte[] input) {
+        if (isText(input)) {
+            return bytesToHexEscapedTextString(input);
+        } else {
+            return bytesToHexEscapedHexString(input);
+        }
+    }
+
+    public static String bytesToHexEscapedTextString(byte[] input) {
         StringBuilder builder = new StringBuilder();
 
         int length = input.length;
         for (int i = 0; i < length; i++) {
-            char currentChar = (char) input[i];
-
-            builder.append(switch (currentChar) {
-                case '\n' -> "\\n";
-                case '\r' -> "\\r";
-                case '\t' -> "\\t";
-                case '\"' -> "\\\"";
-                case '\\' -> {
-                    // If this backslash could start a hex escape, force escaping the backslash
-                    if (i + 3 < length
-                            && input[i + 1] == 'x'
-                            && isHex((char) input[i + 2])
-                            && isHex((char) input[i + 3])) {
-                        yield "\\\\x5c"; // Hex escape backslash
-                    } else {
-                        yield  "\\\\";
-                    }
-                }
-                default -> String.valueOf(currentChar);
-            });
+            // For an edge case of four bytes that would encode as \, \, x, a hex character, and a hex character, that would decode to a single byte.
+            // Instead, we process the backslash as an arbitrary byte with hex value 5c, which is a backslash in ASCII.
+            if (input[i] == '\\'
+                    && i + 3 < length
+                    && input[i + 1] == 'x'
+                    && isHex((char) input[i + 2])
+                    && isHex((char) input[i + 3])) {
+                builder.append("\\x5c");
+            } else {
+                builder.append((char) input[i]);
+            }
         }
         return builder.toString();
     }
 
-    public static String bytesToFullyEscapedHexString(byte[] bytes) {
-        return HexFormat.of().withPrefix("\\\\x").formatHex(bytes);
+    public static String bytesToHexEscapedHexString(byte[] input) {
+        return HexFormat.of().withPrefix("\\x").formatHex(input);
+    }
+
+    public static String hexEscapedStringToFullyEscapedString(String input) {
+        StringBuilder result = new StringBuilder();
+
+        int length = input.length();
+        for (int i = 0; i < length; i++) {
+            char currentChar = input.charAt(i);
+
+            result.append(switch (currentChar) {
+                case '\n' -> "\\n";
+                case '\r' -> "\\r";
+                case '\t' -> "\\t";
+                case '\"' -> "\\\"";
+                case '\\' -> "\\\\";
+                default -> String.valueOf(currentChar);
+            });
+        }
+
+        return result.toString();
+    }
+
+    public static String bytesToFullyEscapedHexString(byte[] input) {
+        return HexFormat.of().withPrefix("\\\\x").formatHex(input);
     }
 
     public static byte[] fullyEscapedStringToBytes(String input) {
         return hexEscapedStringToBytes(fullyEscapedStringToHexEscapedString(input));
     }
 
-    private static String fullyEscapedStringToHexEscapedString(String input) {
+    public static String fullyEscapedStringToHexEscapedString(String input) {
         StringBuilder stringBuilder = new StringBuilder();
 
         int length = input.length();

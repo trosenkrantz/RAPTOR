@@ -52,17 +52,17 @@ public class SnmpService implements RootService {
 
         switch (role) {
             case GET_REQUEST -> {
-                configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
+                configuration.setFullyEscapedString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
-                configuration.setString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
+                configuration.setFullyEscapedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 GET_REQUEST_BINDINGS_SETTING.configure(configuration);
             }
             case SET_REQUEST -> {
-                configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
+                configuration.setFullyEscapedString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of agent to request", DEFAULT_HOST));
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Agent IP port to send to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
-                configuration.setString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
+                configuration.setFullyEscapedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 SET_REQUEST_BINDINGS_SETTING.configure(configuration);
             }
             case RESPOND -> {
@@ -71,10 +71,10 @@ public class SnmpService implements RootService {
                 StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.SNMP_REPLIES_PATH);
             }
             case TRAP -> {
-                configuration.setString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of manager to send trap to", DEFAULT_HOST));
+                configuration.setFullyEscapedString(PARAMETER_HOST, ConsoleIo.askForString("Hostname / IP address of manager to send trap to", DEFAULT_HOST));
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Manager IP port to send to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT));
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
-                configuration.setString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
+                configuration.setFullyEscapedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 TRAP_BINDINGS_SETTING.configure(configuration);
             }
             case LISTEN -> {

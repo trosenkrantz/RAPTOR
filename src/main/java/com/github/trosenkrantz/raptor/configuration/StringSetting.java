@@ -11,7 +11,7 @@ public class StringSetting extends Setting<String> {
 
     @Override
     public Optional<String> read(Configuration configuration) {
-        return configuration.getString(getParameterKey());
+        return configuration.getFullyEscapedString(getParameterKey());
     }
 
     @Override
@@ -28,7 +28,7 @@ public class StringSetting extends Setting<String> {
             value = ConsoleIo.askForString(getDescription(), currentValue);
         }
 
-        configuration.setString(getParameterKey(), value);
+        configuration.setFullyEscapedString(getParameterKey(), value);
     }
 
     public static class Builder extends Setting.Builder<String, Builder> {

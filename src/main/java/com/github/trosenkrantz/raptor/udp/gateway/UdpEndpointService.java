@@ -36,7 +36,7 @@ public class UdpEndpointService implements EndpointService {
         configuration.setConfigurable(PARAMETER_MODE, endpointMode);
 
         if (endpointMode == EndpointMode.MULTICAST) {
-            configuration.setString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to use", UdpUtility.DEFAULT_MULTICAST_GROUP));
+            configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to use", UdpUtility.DEFAULT_MULTICAST_GROUP));
         }
 
         configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Multicast port to send to and receive on", UdpUtility.DEFAULT_PORT, IpPortValidator.VALIDATOR));

@@ -47,7 +47,7 @@ public class UdpUtility {
     }
 
     public static AllReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
-        String multicastGroup = configuration.requireString(PARAMETER_REMOTE_ADDRESS);
+        String multicastGroup = configuration.requireFullyEscapedString(PARAMETER_REMOTE_ADDRESS);
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
         if (port.isPresent()) return new AllReceivingMulticastSocket(multicastGroup, port.get());
         else return new AllReceivingMulticastSocket(multicastGroup);

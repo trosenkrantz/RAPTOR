@@ -13,7 +13,7 @@ class BytesFormatterTest {
             byte[] input = new byte[]{(byte) i};
             String encoded = BytesFormatter.bytesToFullyEscapedString(input);
             byte[] roundTrip = BytesFormatter.fullyEscapedStringToBytes(encoded);
-            Assertions.assertArrayEquals(input, roundTrip, "Failed for value " + i + ".");
+            Assertions.assertArrayEquals(input, roundTrip, "Failed for value " + i + ", encoded as " + encoded + ".");
         }
     }
 
@@ -90,6 +90,14 @@ class BytesFormatterTest {
     @Test
     public void encodeBytesMatchingHexEscapeStringPrefixedWithBackslash() {
         byte[] input = "\\\\x00".getBytes(StandardCharsets.US_ASCII);
+        String encoded = BytesFormatter.bytesToFullyEscapedString(input);
+        byte[] roundTrip = BytesFormatter.fullyEscapedStringToBytes(encoded);
+        Assertions.assertArrayEquals(input, roundTrip);
+    }
+
+    @Test
+    public void encodeBytesMatchingHexEscapeStringPrefixedWithTwoBackslashes() {
+        byte[] input = "\\\\\\x00".getBytes(StandardCharsets.US_ASCII);
         String encoded = BytesFormatter.bytesToFullyEscapedString(input);
         byte[] roundTrip = BytesFormatter.fullyEscapedStringToBytes(encoded);
         Assertions.assertArrayEquals(input, roundTrip);

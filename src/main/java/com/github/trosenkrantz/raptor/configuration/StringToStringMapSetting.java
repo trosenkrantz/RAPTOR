@@ -7,7 +7,6 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class StringToStringMapSetting extends Setting<Map<String, String>> {
@@ -24,7 +23,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
 
         Map<String, String> result = new HashMap<>();
         Configuration mapConfiguration = optionalMapConfiguration.get();
-        mapConfiguration.keys().forEach(key -> result.put(key, mapConfiguration.requireString(key)));
+        mapConfiguration.keys().forEach(key -> result.put(key, mapConfiguration.requireFullyEscapedString(key)));
         return Optional.of(result);
     }
 
@@ -55,7 +54,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
                 }
                 case "" -> { // User chosen to finish configuring this setting
                     Configuration mapConfiguration = Configuration.empty();
-                    currentValue.forEach(mapConfiguration::setString);
+                    currentValue.forEach(mapConfiguration::setFullyEscapedString);
                     configuration.setSubConfiguration(getParameterKey(), mapConfiguration);
 
                     return;

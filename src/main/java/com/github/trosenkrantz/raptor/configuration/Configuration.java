@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.JsonUtility;
 
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class Configuration {
     }
 
     public boolean hasParameter(String key) {
-        return root.has(key);
+        return root.has(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
     }
 
     /**
@@ -93,11 +94,11 @@ public class Configuration {
      * @param configuration configuration to copy from
      */
     public void setSubConfiguration(String key, Configuration configuration) {
-        if (root.get(key) != null) {
+        if (root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key)) != null) {
             LOGGER.warning("Overwriting sub-configuration with path " + pathToString(key) + ".");
         }
 
-        root.putObject(key).setAll(configuration.root);
+        root.putObject(BytesFormatter.fullyEscapedStringToHexEscapedString(key)).setAll(configuration.root);
     }
 
     /**
@@ -110,7 +111,7 @@ public class Configuration {
         List<String> nextPath = new ArrayList<>(path);
         nextPath.add(key);
 
-        JsonNode nextNode = root.get(key);
+        JsonNode nextNode = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (nextNode == null) {
             return Optional.empty();
         } else if (!nextNode.isObject()) {
@@ -125,7 +126,7 @@ public class Configuration {
     }
 
     public List<Configuration> getSubConfigurationArray(String key) {
-        JsonNode node = root.get(key);
+        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (node == null) {
             return List.of();
         }
@@ -152,26 +153,45 @@ public class Configuration {
             array.add(cfg.root);
         }
 
-        root.set(key, array);
+        root.set(BytesFormatter.fullyEscapedStringToHexEscapedString(key), array);
     }
 
 
     /* String */
 
-    public Optional<String> getString(String key) {
-        JsonNode node = root.get(key);
+    /**
+     * Gets a string.
+     *
+     * @param key key, must be a fully escaped string, see {@link BytesFormatter}
+     * @return the value as a fully escaped string if present, empty Optional otherwise
+     */
+    public Optional<String> getFullyEscapedString(String key) {
+        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (node == null || !node.isTextual()) {
             return Optional.empty();
         }
-        return Optional.of(node.asText());
+        return Optional.of(BytesFormatter.hexEscapedStringToFullyEscapedString(node.asText()));
     }
 
-    public String requireString(String key) {
-        return getString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + pathToString(key) + " not set."));
+    /**
+     * Gets a string, throwing an exception if absent.
+     *
+     * @param key key, must be a fully escaped string, see {@link BytesFormatter}
+     * @return the value as a fully escaped string
+     */
+    public String requireFullyEscapedString(String key) {
+        return getFullyEscapedString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + pathToString(key) + " not set."));
     }
 
-    public void setString(String key, String value) {
-        root.put(key, value);
+    /**
+     * Sets a string.
+     *
+     * @param key   key, must be a fully escaped strings, see {@link BytesFormatter}
+     * @param value value, must be a fully escaped strings, see {@link BytesFormatter}
+     */
+    public void setFullyEscapedString(String key, String value) {
+        // Jackson escapes strings, so we convert to hex escaped strings, matching unescaped JSON, to avoid double escaping
+        root.put(BytesFormatter.fullyEscapedStringToHexEscapedString(key), BytesFormatter.fullyEscapedStringToHexEscapedString(value));
     }
 
     /* Enum and Configurable */
@@ -180,8 +200,16 @@ public class Configuration {
         return requireEnum(PascalCaseToCamelCase(enumClass.getSimpleName()), enumClass);
     }
 
+    /**
+     * Gets an enum constant, throwing an exception if absent.
+     *
+     * @param key       key, must be a fully escaped string, see {@link BytesFormatter}
+     * @param enumClass enum class
+     * @param <E>       enum type
+     * @return enum constant
+     */
     public <E extends Enum<E> & ConfigurableEnum> E requireEnum(String key, Class<E> enumClass) {
-        String idInConfiguration = requireString(key);
+        String idInConfiguration = requireFullyEscapedString(key);
         E[] enumConstants = enumClass.getEnumConstants();
         List<E> matchingEnumConstants = Arrays.stream(enumConstants).filter(id -> id.getConfigurationId().equals(idInConfiguration)).toList();
 
@@ -201,14 +229,14 @@ public class Configuration {
     }
 
     public void setConfigurable(String key, ConfigurableEnum value) {
-        setString(key, value.getConfigurationId());
+        setFullyEscapedString(key, value.getConfigurationId());
     }
 
 
     /* Int */
 
     public Optional<Integer> getInt(String key) {
-        JsonNode node = root.get(key);
+        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (node == null || !node.isInt()) {
             return Optional.empty();
         }
@@ -220,13 +248,13 @@ public class Configuration {
     }
 
     public void setInt(String key, Integer value) {
-        root.put(key, value);
+        root.put(BytesFormatter.fullyEscapedStringToHexEscapedString(key), value);
     }
 
     /* Double */
 
     public Optional<Double> getDouble(String key) {
-        JsonNode node = root.get(key);
+        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (node == null || !node.isNumber()) {
             return Optional.empty();
         }
@@ -234,14 +262,14 @@ public class Configuration {
     }
 
     public void setDouble(String key, Double value) {
-        root.put(key, value);
+        root.put(BytesFormatter.fullyEscapedStringToHexEscapedString(key), value);
     }
 
 
     /* Complex objects */
 
     public <T> T getObject(String key, Class<T> clazz) {
-        JsonNode node = root.get(key);
+        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (node == null) {
             throw new IllegalArgumentException("Parameter " + pathToString(key) + " not set.");
         }

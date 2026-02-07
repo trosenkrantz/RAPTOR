@@ -40,7 +40,7 @@ public class TlsUtility {
         if (tlsVersion != TlsVersion.NONE) {
             Optional<String> keyStorePathOptional = configureKeyStorePath(requireKeyStore);
             keyStorePathOptional.ifPresent(keyStorePath -> {
-                configuration.setString(PARAMETER_KEY_STORE, keyStorePath);
+                configuration.setFullyEscapedString(PARAMETER_KEY_STORE, keyStorePath);
 
                 String keyStorePassword = ConsoleIo.askForString("Password of key store", pw -> {
                     try {
@@ -50,9 +50,9 @@ public class TlsUtility {
                         return Optional.of("Failed loading key store with password. " + e.getMessage());
                     }
                 });
-                configuration.setString(PARAMETER_KEY_STORE_PASSWORD, keyStorePassword);
+                configuration.setFullyEscapedString(PARAMETER_KEY_STORE_PASSWORD, keyStorePassword);
 
-                configuration.setString(
+                configuration.setFullyEscapedString(
                         PARAMETER_KEY_PASSWORD,
                         ConsoleIo.askForString("Password of key", keyStorePassword, pw -> {
                             try {
@@ -114,12 +114,12 @@ public class TlsUtility {
 
     public static SSLContext loadSslContext(Configuration configuration) throws Exception {
         KeyManager[] keyManagers;
-        Optional<String> keyStorePathOptional = configuration.getString(PARAMETER_KEY_STORE);
+        Optional<String> keyStorePathOptional = configuration.getFullyEscapedString(PARAMETER_KEY_STORE);
         if (keyStorePathOptional.isPresent()) {
             keyManagers = loadKey(
-                    configuration.requireString(PARAMETER_KEY_STORE),
-                    configuration.requireString(PARAMETER_KEY_STORE_PASSWORD),
-                    configuration.requireString(PARAMETER_KEY_PASSWORD),
+                    configuration.requireFullyEscapedString(PARAMETER_KEY_STORE),
+                    configuration.requireFullyEscapedString(PARAMETER_KEY_STORE_PASSWORD),
+                    configuration.requireFullyEscapedString(PARAMETER_KEY_PASSWORD),
                     true
             ).getKeyManagers();
         } else {

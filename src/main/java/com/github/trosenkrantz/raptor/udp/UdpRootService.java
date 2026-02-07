@@ -48,8 +48,8 @@ public class UdpRootService implements RootService {
             case SEND -> {
                 // Configure remote address
                 switch (mode) {
-                    case UNICAST -> configuration.setString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", UdpUtility.DEFAULT_ADDRESS));
-                    case MULTICAST -> configuration.setString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("IPv4 or IPv6 multicast group to send to", UdpUtility.DEFAULT_MULTICAST_GROUP, new MulticastGroupValidator()));
+                    case UNICAST -> configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", UdpUtility.DEFAULT_ADDRESS));
+                    case MULTICAST -> configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("IPv4 or IPv6 multicast group to send to", UdpUtility.DEFAULT_MULTICAST_GROUP, new MulticastGroupValidator()));
                     case BROADCAST -> {
                     }
                 }
@@ -62,11 +62,11 @@ public class UdpRootService implements RootService {
                         IpPortValidator.VALIDATOR
                 ).ifPresent(port -> configuration.setInt(UdpUtility.PARAMETER_LOCAL_PORT, port));
 
-                configuration.setString(UdpUtility.PARAMETER_PAYLOAD, ConsoleIo.askForString("Payload to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING));
+                configuration.setFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD, ConsoleIo.askForString("Payload to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING));
             }
             case RECEIVE -> {
                 if (mode == Mode.MULTICAST) {
-                    configuration.setString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to receive from", UdpUtility.DEFAULT_MULTICAST_GROUP, new MulticastGroupValidator()));
+                    configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to receive from", UdpUtility.DEFAULT_MULTICAST_GROUP, new MulticastGroupValidator()));
                 }
 
                 configuration.setInt(UdpUtility.PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("Port of local server socket to listen to", UdpUtility.DEFAULT_PORT, IpPortValidator.VALIDATOR));
@@ -77,7 +77,7 @@ public class UdpRootService implements RootService {
     @Override
     public void run(Configuration configuration) throws Exception {
         switch (configuration.requireEnum(Role.class)) {
-            case SEND -> runSend(configuration, BytesFormatter.fullyEscapedStringToBytes(configuration.requireString(UdpUtility.PARAMETER_PAYLOAD)));
+            case SEND -> runSend(configuration, BytesFormatter.fullyEscapedStringToBytes(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD)));
             case RECEIVE -> runReceive(configuration);
         }
     }
@@ -86,11 +86,11 @@ public class UdpRootService implements RootService {
         switch (configuration.requireEnum(Mode.class)) {
             case UNICAST -> {
                 try (DatagramSocket socket = UdpUtility.createSocket(configuration)) {
-                    UdpUtility.send(configuration, InetAddress.getByName(configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS)), socket, true, payload);
+                    UdpUtility.send(configuration, InetAddress.getByName(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS)), socket, true, payload);
                 }
             }
             case MULTICAST -> {
-                String groupString = configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
+                String groupString = configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
                 InetAddress group = InetAddress.getByName(groupString);
 
                 try (DatagramChannel channel = DatagramChannel.open(IpAddressMapper.getProtocolFamily(group))) {
@@ -164,7 +164,7 @@ public class UdpRootService implements RootService {
             }
             case MULTICAST -> {
                 try (MulticastSocket socket = UdpUtility.createReceivingMulticastSocket(configuration)) {
-                    keepReceivingAndPromptUserToCloseSocket(socket, packet -> configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS) + ":" + socket.getLocalPort());
+                    keepReceivingAndPromptUserToCloseSocket(socket, packet -> configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS) + ":" + socket.getLocalPort());
                 } catch (SocketException e) {
                     // If "Socket closed", it was probably closed by user, so ignore
                     if (!"Socket closed".equals(e.getMessage())) throw e;

@@ -34,7 +34,7 @@ public class SerialPortUtility {
                 .toList();
         LOGGER.info("Available ports on this machine: " + String.join(", ", portNames));
         String defaultPort = portNames.isEmpty() ? DEFAULT_PORT : portNames.getFirst();
-        configuration.setString(PARAMETER_PORT, ConsoleIo.askForString("port name", defaultPort));
+        configuration.setFullyEscapedString(PARAMETER_PORT, ConsoleIo.askForString("port name", defaultPort));
 
         configuration.setInt(PARAMETER_BAUD_RATE, ConsoleIo.askForInt("Baud rate", DEFAULT_BAUD_RATE));
 
@@ -59,7 +59,7 @@ public class SerialPortUtility {
      * @throws InterruptedException if the thread is interrupted
      */
     public static void connectAndStartSendingAndReceiving(Configuration configuration, SerialPortSendStrategy sendStrategy) throws IOException, InterruptedException {
-        String portName = configuration.requireString(PARAMETER_PORT);
+        String portName = configuration.requireFullyEscapedString(PARAMETER_PORT);
 
         SerialPort serialPort = SerialPort.getCommPort(portName);
         serialPort.setComPortParameters(

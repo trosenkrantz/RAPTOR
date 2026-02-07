@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -26,7 +25,7 @@ public class UdpMulticastEndpoint implements Endpoint {
     private final int sendLocalPort;
 
     public UdpMulticastEndpoint(final Configuration configuration, final Consumer<byte[]> broker, final Runnable onEndpointClosed) throws IOException {
-        multicastGroupString = configuration.requireString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
+        multicastGroupString = configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
         multicastGroup = InetAddress.getByName(multicastGroupString);
 
         // Map configuration to one for receiving
