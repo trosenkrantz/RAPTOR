@@ -6,6 +6,15 @@ import java.util.Optional;
 
 /**
  * Something to be configured by a user as well as stored in and read from the CLI configuration.
+ * We intend the following flow:
+ * <ol>
+ *     <li>RAPTOR prompts the user to configure a setting in the {@link #configure(Configuration)}</li>
+ *     <ul>
+ *         <li>While configuring, RATPOR keeps the state in a {@link Configuration}.</li>
+ *         <li>For complex settings, RAPTOR might iteratively print the working value with {@link #valueToString(Configuration)}.</li>
+ *     </ul>
+ *     <li>RAPTOR reads the configuration with {@link #read(Configuration)} or {@link #readAndRequire(Configuration)}, returning POJO objects.</li>
+ * </ol>
  *
  * @param <T> Type for what the settings model
  */
@@ -53,35 +62,6 @@ public abstract class Setting<T> {
     }
 
     /**
-     * Read the value for this setting from the configuration.
-     *
-     * @param configuration Configuration to read from
-     * @return Optional setting value, empty if not set
-     */
-    public abstract Optional<T> read(Configuration configuration);
-
-    public T readAndRequire(Configuration configuration) {
-        Optional<T> value = read(configuration);
-        if (value.isEmpty()) {
-            throw new IllegalStateException("Required setting " + getParameterKey() + " not set.");
-        }
-        return value.get();
-    }
-
-    protected Optional<T> readOrDefault(Configuration configuration) {
-        return read(configuration).or(this::getDefaultValue);
-    }
-
-    /**
-     * Gets a string representation of the value of this setting given a configuration.
-     * Used to display the value to the user.
-     *
-     * @param configuration Configuration to read from
-     * @return String representation of the value
-     */
-    public abstract String valueToString(Configuration configuration);
-
-    /**
      * Prompts the user to configure this setting.
      * If any, we use the current value as default.
      *
@@ -97,7 +77,32 @@ public abstract class Setting<T> {
      * @param configuration configuration to set this setting with
      * @param currentValue  current value if any, otherwise the default value if any, otherwise null
      */
-    public abstract void configure(Configuration configuration, T currentValue);
+    protected abstract void configure(Configuration configuration, T currentValue);
+
+    /**
+     * Read the value for this setting from the configuration.
+     *
+     * @param configuration Configuration to read from
+     * @return Optional setting value, empty if not set
+     */
+    public abstract Optional<T> read(Configuration configuration);
+
+    public T readAndRequire(Configuration configuration) {
+        Optional<T> value = read(configuration);
+        if (value.isEmpty()) {
+            throw new IllegalStateException("Required setting " + getParameterKey() + " not set.");
+        }
+        return value.get();
+    }
+
+    /**
+     * Gets a string representation of the value of this setting given a configuration.
+     * Used to display the value to the user.
+     *
+     * @param configuration Configuration to read from
+     * @return String representation of the value
+     */
+    public abstract String valueToString(Configuration configuration);
 
     public static abstract class Builder<T, B extends Builder<T, B>> {
         private final String promptValue;

@@ -90,7 +90,7 @@ RAPTOR also creates `run` and `run.cmd` scripts that run RAPTOR with the corresp
 
 ## Auto-Reply
 
-For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a JSON file. Example:
+For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a state machine. Example:
 ```json5
 {
     "startState": "login",
@@ -126,7 +126,10 @@ See [replies.json](src/main/resources/com/github/trosenkrantz/raptor/replies.jso
 ### SNMP
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
-If RAPTOR finds no output to an SNMP auto-reply, it responds with Null.
+When processing a GET request with multiple variable bindings, RAPTOR matches each IOD against the current state, to deliver independent response variables matching the corresponding request.
+RAPTOR transitions the state machine once, based on the first matched OID.
+
+If RAPTOR finds no match for an OID, it responds with Null for that variable binding.
 
 See [snmp-replies.json](src/main/resources/com/github/trosenkrantz/raptor/snmp-replies.json) for an example.
 
