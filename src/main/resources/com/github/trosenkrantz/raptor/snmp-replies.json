@@ -1,0 +1,23 @@
+{
+  "startState": "ready1",
+  "states": {
+    "ready1": [
+      {
+        "input": "1.2.3.4",
+        "output": "\\x02\\x01\\x2a",
+        "nextState": "ready2"
+      },
+      {
+        "input": "1.2.3.5..+",
+        "output": "\\x04\\x05Hello"
+      }
+    ],
+    "ready2": [
+      {
+        "input": "1.2.3.4",
+        "output": "\\x02\\x02\\x01\\x2c",
+        "nextState": "ready1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "startState": "unauthenticated",
+  "states": {
+    "unauthenticated": [
+      {
+        "input": "AUTH user pass!",
+        "output": "AUTH_OK!",
+        "nextState": "ready1"
+      },
+      {
+        "input": "AUTH .*!",
+        "output": "INVALID_CREDENTIALS!"
+      },
+      {
+        "input": ".*!",
+        "output": "UNKNOWN_COMMAND!"
+      }
+    ],
+    "ready1": [
+      {
+        "input": "STATUS!",
+        "output": "STATUS:OK!"
+      },
+      {
+        "input": "DATA!",
+        "output": "DATA:1234!",
+        "nextState": "ready2"
+      },
+      {
+        "input": ".*!",
+        "output": "UNKNOWN_COMMAND!"
+      }
+    ],
+    "ready2": [
+      {
+        "input": "STATUS!",
+        "output": "STATUS:OK!"
+      },
+      {
+        "input": "DATA!",
+        "output": "DATA:2345!",
+        "nextState": "ready1"
+      },
+      {
+        "input": ".*!",
+        "output": "UNKNOWN_COMMAND!"
+      }
+    ]
+  }
+}

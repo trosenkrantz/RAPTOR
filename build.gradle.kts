@@ -68,15 +68,8 @@ tasks.jar {
     destinationDirectory.set(distributionsDir)
 }
 
-tasks.processResources {
-    from("src/main/distributions-and-resources") {
-        into("com.github.trosenkrantz.raptor")
-    }
-}
-
 val distributeFiles = tasks.register<Copy>("distributeFiles") {
     from(layout.projectDirectory.dir("src/main/distributions"))
-    from(layout.projectDirectory.dir("src/main/distributions-and-resources"))
     into(distributionsDir)
 }
 
@@ -92,7 +85,6 @@ val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
     // Adapt links to other structure
     filter { line ->
         line.replace("src/main/distributions/", "")
-        line.replace("src/main/distributions-and-resources/", "")
     }
 }
 
