@@ -10,10 +10,10 @@ import org.snmp4j.smi.VariableBinding;
 import java.io.IOException;
 
 public class VariableBindingSettingGroup implements SettingGroup<VariableBinding> {
-    private static final StringSetting OID_SETTING = new StringSetting.Builder("o", "oid", "OID", "OID")
+    private static final StringSetting OID_SETTING = new StringSetting.Builder("o", SnmpService.PARAMETER_OID, "OID", "OID")
             .defaultValue(SnmpService.DEFAULT_OID)
             .build();
-    private static final StringSetting VARIABLE_SETTING = new StringSetting.Builder("v", "variable", "Variable", "Variable as escaped string of BER encoding")
+    private static final StringSetting VARIABLE_SETTING = new StringSetting.Builder("v", SnmpService.PARAMETER_VARIABLE, "Variable", "Variable as escaped string of BER encoding")
             .defaultValue(SnmpService.DEFAULT_VARIABLE)
             .build();
 

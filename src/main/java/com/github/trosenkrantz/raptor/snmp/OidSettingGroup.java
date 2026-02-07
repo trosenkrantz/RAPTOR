@@ -7,7 +7,7 @@ import org.snmp4j.smi.OID;
 import org.snmp4j.smi.VariableBinding;
 
 public class OidSettingGroup implements SettingGroup<VariableBinding> {
-    private static final StringSetting OID_SETTING = new StringSetting.Builder("o", "oid", "OID", "OID")
+    private static final StringSetting OID_SETTING = new StringSetting.Builder("o", SnmpService.PARAMETER_OID, "OID", "OID")
             .defaultValue(SnmpService.DEFAULT_OID)
             .build();
 

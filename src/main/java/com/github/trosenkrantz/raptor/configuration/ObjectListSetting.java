@@ -19,15 +19,12 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
 
     @Override
     public Optional<List<T>> read(Configuration configuration) {
-
         List<Configuration> items = configuration.getSubConfigurationArray(getParameterKey());
-
         if (items.isEmpty()) {
             return Optional.empty();
         }
 
         List<T> result = new ArrayList<>();
-
         for (Configuration itemCfg : items) {
             result.add(group.readAndRequire(itemCfg));
         }
@@ -72,18 +69,10 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
         }
     }
 
-    public static class Builder<T>
-            extends Setting.Builder<List<T>, Builder<T>> {
-
+    public static class Builder<T> extends Setting.Builder<List<T>, Builder<T>> {
         private final SettingGroup<T> group;
 
-        public Builder(
-                String promptValue,
-                String parameterKey,
-                String name,
-                String description,
-                SettingGroup<T> group
-        ) {
+        public Builder(String promptValue, String parameterKey, String name, String description, SettingGroup<T> group) {
             super(promptValue, parameterKey, name, description);
             this.group = group;
         }
