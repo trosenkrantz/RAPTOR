@@ -13,7 +13,7 @@ class StateMachineConfigurationTest {
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfigurationTest.class.getResourceAsStream("/auto-reply-with-line-comments.json"));
         Configuration configuration = Configuration.empty();
         configuration.setSubConfiguration(AutoRepliesUtility.PARAMETER_REPLIES, autoReplyConfiguration);
-        StateMachineConfiguration stateMachineConfiguration = configuration.getObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
+        StateMachineConfiguration stateMachineConfiguration = configuration.requireObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
 
         // Assert parsed values
         Assertions.assertEquals("login", stateMachineConfiguration.startState());
@@ -31,7 +31,7 @@ class StateMachineConfigurationTest {
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfigurationTest.class.getResourceAsStream("/auto-reply-with-many-comments.json"));
         Configuration configuration = Configuration.empty();
         configuration.setSubConfiguration(AutoRepliesUtility.PARAMETER_REPLIES, autoReplyConfiguration);
-        StateMachineConfiguration stateMachineConfiguration = configuration.getObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
+        StateMachineConfiguration stateMachineConfiguration = configuration.requireObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
 
         // Assert parsed values
         Assertions.assertEquals("login", stateMachineConfiguration.startState());

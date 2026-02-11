@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
+import com.github.trosenkrantz.raptor.configuration.ReloadableConfiguration;
 import com.github.trosenkrantz.raptor.configuration.SaveConfigurationOptions;
 import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.configuration.ConfigurationStorage;
@@ -21,15 +22,15 @@ public class Main {
             LoggingConfigurator.initialise();
 
             Collection<RootService> services = RaptorServiceFactory.createServices();
-            Optional<Configuration> configurationFromCliArguments = Configuration.fromSavedFile();
+            Optional<ReloadableConfiguration> configurationFromSavedFile = ConfigurationStorage.loadConfiguration();
             Ansi.configure(args);
 
-            Configuration configuration;
-            if (configurationFromCliArguments.isPresent()) {
-                configuration = configurationFromCliArguments.get(); // Use configuration from arguments
-                run(configuration, services);
+            if (configurationFromSavedFile.isPresent()) {
+                try (ReloadableConfiguration configuration = configurationFromSavedFile.get()) { // Use configuration from file
+                    run(configuration.configuration(), services);
+                }
             } else {
-                configuration = configure(services); // Create new configuration
+                Configuration configuration = configure(services); // Create new configuration
 
                 SaveConfigurationOptions chosenOption = ConsoleIo.askForOptions(SaveConfigurationOptions.class);
                 switch (chosenOption) {

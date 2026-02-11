@@ -10,36 +10,36 @@ import com.github.trosenkrantz.raptor.io.JsonUtility;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class Configuration {
     private static final Logger LOGGER = Logger.getLogger(Configuration.class.getName());
 
     private final ObjectMapper mapper;
-    private final ObjectNode root;
-    private final List<String> path; // logical prefix path
+    private final List<String> jsonPath; // logical prefix path from origin configuration
+    private final Path filePath;
+    private final FileWatcher fileWatcher;
+
+    private ObjectNode root;
 
     public static Configuration empty() {
         ObjectMapper mapper = JsonUtility.buildMapper();
         return new Configuration(mapper, mapper.createObjectNode(), List.of());
     }
 
-    public static Optional<Configuration> fromSavedFile() throws IOException {
-        Path path = Path.of(ConfigurationStorage.CONFIGURATION_FILE_NAME);
-        if (!Files.exists(path)) return Optional.empty();
-
+    public static Configuration fromSavedFile(Path path, FileWatcher fileWatcher) throws IOException {
         ObjectMapper mapper = JsonUtility.buildMapper();
         JsonNode node = mapper.readTree(path.toFile());
         if (!node.isObject()) {
             throw new IllegalArgumentException("Configuration file " + path.toAbsolutePath() + " is not a JSON object.");
         }
 
-        LOGGER.info("Loaded configuration at: " + path.toAbsolutePath());
+        LOGGER.info("Loaded configuration at " + path.toAbsolutePath() + ".");
 
-        return Optional.of(new Configuration(mapper, (ObjectNode) node, List.of()));
+        return new Configuration(mapper, (ObjectNode) node, List.of(), path, fileWatcher);
     }
 
     public static Configuration fromStream(final InputStream inputStream) throws IOException {
@@ -53,20 +53,26 @@ public class Configuration {
         return new Configuration(mapper, (ObjectNode) node, List.of());
     }
 
-    private Configuration(ObjectMapper mapper, ObjectNode root, List<String> path) {
+    private Configuration(ObjectMapper mapper, ObjectNode root, List<String> jsonPath) {
+        this(mapper, root, jsonPath, null, null);
+    }
+
+    public Configuration(ObjectMapper mapper, ObjectNode root, List<String> jsonPath, Path filePath, FileWatcher fileWatcher) {
         this.mapper = mapper;
         this.root = root;
-        this.path = path;
+        this.jsonPath = jsonPath;
+        this.filePath = filePath;
+        this.fileWatcher = fileWatcher;
     }
 
     private String pathToString(String key) {
-        ArrayList<String> pathToLog = new ArrayList<>(path);
+        ArrayList<String> pathToLog = new ArrayList<>(jsonPath);
         pathToLog.add(key);
         return String.join("/", pathToLog);
     }
 
     public Configuration copy() {
-        return new Configuration(mapper, root.deepCopy(), path);
+        return new Configuration(mapper, root.deepCopy(), jsonPath);
     }
 
     public boolean hasParameter(String key) {
@@ -83,6 +89,8 @@ public class Configuration {
         root.fieldNames().forEachRemaining(keys::add);
         return keys;
     }
+
+
 
 
     /* Sub-Configurations */
@@ -108,7 +116,7 @@ public class Configuration {
      * @return a new configuration containing only the matching parameters
      */
     public Optional<Configuration> getSubConfiguration(String key) {
-        List<String> nextPath = new ArrayList<>(path);
+        List<String> nextPath = new ArrayList<>(jsonPath);
         nextPath.add(key);
 
         JsonNode nextNode = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
@@ -140,7 +148,7 @@ public class Configuration {
             if (!element.isObject()) {
                 throw new IllegalArgumentException("Array element in " + pathToString(key) + " is not a JSON object.");
             }
-            result.add(new Configuration(mapper, element.deepCopy(), path));
+            result.add(new Configuration(mapper, element.deepCopy(), jsonPath));
         }
 
         return result;
@@ -268,7 +276,7 @@ public class Configuration {
 
     /* Complex objects */
 
-    public <T> T getObject(String key, Class<T> clazz) {
+    public <T> T requireObject(String key, Class<T> clazz) {
         JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
         if (node == null) {
             throw new IllegalArgumentException("Parameter " + pathToString(key) + " not set.");
@@ -278,6 +286,34 @@ public class Configuration {
             return mapper.treeToValue(node, clazz);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Failed to deserialize parameter " + pathToString(key) + " into " + clazz.getSimpleName() + ".", e);
+        }
+    }
+
+    public <T> boolean subscribeToObjectChangesIfSupported(String key, Class<T> clazz, Consumer<T> consumer) {
+        if (fileWatcher == null || filePath == null) return false;
+
+        try {
+            fileWatcher.subscribe(() -> {
+                JsonNode node;
+                try {
+                    node = mapper.readTree(filePath.toFile());
+                } catch (IOException ex) {
+                    LOGGER.warning("Failed to read configuration at " + filePath.toAbsolutePath() + ".");
+                    return;
+                }
+                if (!node.isObject()) {
+                    throw new IllegalArgumentException("Configuration file " + filePath.toAbsolutePath() + " is not a JSON object.");
+                }
+
+                root = (ObjectNode) node;
+
+                consumer.accept(requireObject(key, clazz));
+            });
+
+            return true;
+        } catch (IOException e) {
+            LOGGER.warning("Failed watching for configuration file changes at " + filePath.toAbsolutePath() + ".");
+            return false;
         }
     }
 
