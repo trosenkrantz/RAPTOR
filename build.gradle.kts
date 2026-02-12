@@ -42,7 +42,7 @@ dependencies {
 
     // For testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testImplementation("org.testcontainers:testcontainers:2.0.1")
+    testImplementation("org.testcontainers:testcontainers:2.0.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("org.slf4j:slf4j-nop:2.0.7") // testcontainers use SLF4J, route to NOP to ignore
 
