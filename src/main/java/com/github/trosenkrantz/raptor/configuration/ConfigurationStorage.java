@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor.configuration;
 
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.FileWatcher;
 
 import java.awt.*;
 import java.io.IOException;

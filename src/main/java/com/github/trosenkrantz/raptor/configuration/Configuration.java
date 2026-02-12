@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.io.FileWatcher;
 import com.github.trosenkrantz.raptor.io.JsonUtility;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Configuration {
@@ -297,22 +299,25 @@ public class Configuration {
                 JsonNode node;
                 try {
                     node = mapper.readTree(filePath.toFile());
-                } catch (IOException ex) {
-                    LOGGER.warning("Failed to read configuration at " + filePath.toAbsolutePath() + ".");
-                    return;
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to read configuration at " + filePath.toAbsolutePath() + ".", e);
+                    return false;
                 }
                 if (!node.isObject()) {
-                    throw new IllegalArgumentException("Configuration file " + filePath.toAbsolutePath() + " is not a JSON object.");
+                    LOGGER.log(Level.WARNING, "Failed processing configuration file " + filePath.toAbsolutePath() + ", it is not a JSON object.");
+                    return false;
                 }
 
                 root = (ObjectNode) node;
 
                 consumer.accept(requireObject(key, clazz));
+
+                return true;
             });
 
             return true;
         } catch (IOException e) {
-            LOGGER.warning("Failed watching for configuration file changes at " + filePath.toAbsolutePath() + ".");
+            LOGGER.log(Level.WARNING, "Failed watching for configuration file changes at " + filePath.toAbsolutePath() + ".", e);
             return false;
         }
     }

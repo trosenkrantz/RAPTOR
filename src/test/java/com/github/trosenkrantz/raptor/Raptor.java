@@ -133,8 +133,12 @@ public class Raptor extends GenericContainer<Raptor> {
         }
     }
 
-    public Raptor runConfiguration(String json) throws IOException {
+    public void setConfiguration(String json) {
         copyFileToContainer(Transferable.of(json), "/app/config.json");
+    }
+
+    public Raptor runConfiguration(String json) throws IOException {
+        setConfiguration(json);
         writeLineToStdIn("./raptor");
 
         return this;
