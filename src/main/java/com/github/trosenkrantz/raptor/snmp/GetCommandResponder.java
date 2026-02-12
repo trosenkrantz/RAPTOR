@@ -49,7 +49,7 @@ public class GetCommandResponder implements CommandResponder {
                 Optional<Transition> optionalTransition = stateMachine.peak(oid.toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
                 responsePDU.add(new VariableBinding(oid, optionalTransition.map(this::extractOutputVariable).orElse(new Null())));
 
-                if (firstTransition == null && optionalTransition.isPresent()) { // If first transition
+                if (firstTransition == null && optionalTransition.isPresent() && optionalTransition.get().nextState() != null) { // If first transition with a nextState
                     firstTransition = optionalTransition.get();
                 }
             }

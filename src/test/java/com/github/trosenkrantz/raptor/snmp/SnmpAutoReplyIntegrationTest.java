@@ -309,4 +309,81 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
             );
         }
     }
+
+    @Test
+    public void firstMatchedOidDoesNotHaveANextState() throws IOException {
+        try (RaptorNetwork network = new RaptorNetwork();
+             Raptor agent = new Raptor(network);
+             Raptor manager = new Raptor(network)) {
+            network.startAll();
+
+            agent.runConfiguration("""
+                {
+                  "service" : "snmp",
+                  "role" : "respond",
+                  "port" : 161,
+                  "replies" : {
+                    "startState" : "s1",
+                    "states" : {
+                      "s1" : [
+                        {
+                          "input" : "1.2.3.4",
+                          "output" : "\\\\x02\\\\x01\\\\x01"
+                        },
+                        {
+                          "input" : "1.2.3.5",
+                          "output" : "\\\\x02\\\\x01\\\\x02",
+                          "nextState" : "s3"
+                        }
+                      ],
+                      "s2" : [
+                        { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x0a" }
+                      ],
+                      "s3" : [
+                        { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x14" }
+                      ]
+                    }
+                  }
+                }
+                """);
+            agent.expectNumberOfOutputLineContains(1, "Listening to requests");
+
+            manager.runConfiguration(String.format("""
+                {
+                  "service" : "snmp",
+                  "role" : "getRequest",
+                  "host" : "%s",
+                  "port" : 161,
+                  "version" : "2c",
+                  "community" : "private",
+                  "bindings": [
+                    { "oid": "1.2.3.4" },
+                    { "oid": "1.2.3.5" }
+                  ]
+                }
+                """, agent.getRaptorHostname()));
+
+            manager.expectAnyOutputLineContains(
+                    "Received",
+                    "1.2.3.4", "1",
+                    "1.2.3.5", "2"
+            );
+
+            // Should transition to s3, as first match (to s2) have no nextState
+            manager.runConfiguration(String.format("""
+                {
+                  "service" : "snmp",
+                  "role" : "getRequest",
+                  "host" : "%s",
+                  "port" : 161,
+                  "version" : "2c",
+                  "community" : "private",
+                  "bindings": [
+                    { "oid": "1.2.3.9" }
+                  ]
+                }
+                """, agent.getRaptorHostname()));
+            manager.expectAnyOutputLineContains("Received", "20");
+        }
+    }
 }

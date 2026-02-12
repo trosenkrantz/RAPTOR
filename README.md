@@ -127,7 +127,7 @@ See [replies.json](src/main/distributions/docs/replies.json) for an example.
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
 When processing a GET request with multiple variable bindings, RAPTOR matches each IOD against the current state, to deliver independent response variables matching the corresponding request.
-RAPTOR transitions the state machine once, based on the first matched OID.
+RAPTOR transitions the state machine once, based on the first matched OID with a `nextState`.
 
 If RAPTOR finds no match for an OID, it responds with Null for that variable binding.
 
