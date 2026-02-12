@@ -6,6 +6,9 @@ on:
     - cron: '0 0 1 * *' # First day of every month
   workflow_dispatch: # Enables option to manually trigger build
 
+permissions:
+  contents: write # Gives permissions to push tags as well as create and update releases
+
 jobs:
   build:
     runs-on: ubuntu-24.04
