@@ -3,12 +3,12 @@ Rapid Assessment and Protocol-based Testing of Operational Responders (RAPTOR) i
 
 It exchanges data with systems, either as a standalone, interactive console application or scripted through command line arguments. It is useful for:
 
-- Experimenting with unfamiliar systems using RAPTOR to interact with them.
-![](https://img.plantuml.biz/plantuml/png/JOun2i9044NxESMGIejSG4HYOM6bR4ndC-nEDWkRMPWTGMzleWYsZyVxlwj6QeyvG-RHq0fgYfDXIChUKX4WRqNn9349iyAAIM9cRDpnUhkuksnyaLeoRnkaYkvV6MIaEUL4Ylsh6iyVPG3uzN3VjWTqkCEp6EioLi5zuR10VlffIN75G4RGiOJrwni0)
-- Testing integrations using RAPTOR to simulate systems we may not have access to.
-![](https://img.plantuml.biz/plantuml/png/JO-n3i8m34JtV8NL2OR-04Ae3CoWjDrOhCQaaL9NYbsf_3r9kh3UdT_vEb5CkYtHHFeew0ef-5d1XKIJXfKDJhec64YKaYaYiey4JV_DoW8ZEphi1b2W7uV_aBs_XgTzyqd2iaNKm1vepoJ62589vtfdZJage6rlXGAN2XK8hEGJrb-AVYq1c-t7FisvXWGSAfgEs9KTFm00)
-- Testing distributed systems using RAPTOR as a gateway to simulate middleware and network impairment we may not have access to.
-![](https://img.plantuml.biz/plantuml/png/ROz12i8m44NtSugXArrqKPSYqkG2IipIpT2ECT0ca8n8RsyJGGJTVVvxds7wB9JaCKymyKrG8YRlxeAZJpo8Zm5ea9ZGSXPEI1bj1mLHS1DZSrdMVaRL5AI-YL5dUpBNi74a_AHbMnNpPwmhqR-NTW2smxOzei9z1HaK7afXmBo31bt2Ad-KdiDOFde1)
+- Experimenting with unfamiliar systems using RAPTOR to interact with them.<br>
+  ![](https://img.plantuml.biz/plantuml/dsvg/JOun2i9044NxESMGIejSG4HYaS9AsPWkpR2P90kRMPWTGM_lHX5i7u_tVvEDr1vhXCYJeINKC2-6Or3s5f80UKkAhSn1c1KsJ397nigTR_Uh6sJda-GKULyXPNJ_IYyJhI46qa6wLpPUFquFy0lYiQvFwF205p7MifR1VM5VOFlqIsbnnf6Ce64PjxDl)
+- Testing integrations using RAPTOR to simulate systems we may not have access to.<br>
+  ![](https://img.plantuml.biz/plantuml/dsvg/JO-n3i8m34JtV8N514D_025K1cPGscvThCQaaL9NYbsf_3r9kh3UdT_vMb5CkYtHHFeew0ef-5d1XKIJXfKDJhecw4cKaYaYiey4f-wRbMNaWHqT_WbGe1lw_vHzlFkNXRE4POkeWVt8j6SKOmIfY4kziyOS7T0qzqA1QuKA15Ro2UipHR-LWCtsSv_cN4C23XLDI-pAa1y0)
+- Testing distributed systems using RAPTOR as a gateway to simulate middleware and network impairment we may not have access to.<br>
+  ![](https://img.plantuml.biz/plantuml/dsvg/ROz12i8m44NtSugXArrqKPSYqkG2bfXbDw4TOo1D81cHtjucWWYw-_ptFiFqcKtYn-B1qusH8oPdxuopIpInYm7Cn36XfioKq6JK7HHaWlM4pNNT-cKCeYbCV2Cb1drHOzXPm_GqwxugwjzQLYH_Rnq0T8TjUqQ1nmeo23oLGe5w1mcoX4t-A3s5kVpq0W00)
 
 ## Capabilities
 - UDP:
@@ -118,10 +118,78 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
 ```
 RAPTOR checks for matching inputs in the order of appearance. It ignores simple line and block comments but does not use JSON5.
 
+RAPTOR listens to changes to the configuration file.
+This enables us to dynamically change all aspects of the state machine, Example use-cases:
+
+- Experiment with different scenarios while RAPTOR keeps the connection to an unfamiliar system, by manually editing the configuration.
+- Have RAPTOR react on or produce data can cannot be hardcoded, using a custom script to update `config.json`.<br>
+  ![](https://img.plantuml.biz/plantuml/dsvg/JP2n2i9038RtUuhWf8Cl82AAE2jdkxc4QsmFhccvfA1lR-vqS0l_btm9EOfYrcLCBj5JGIV8iHyKkfWfQ9pOOT0fGqEYb5q9aVj4iBg_BHaVt797Nxu25BYtpN-NFzsQguUrn759g97x1zFBL8m9f2esTSx_JvqNqSdS4dASVzvQElSz1BRRGra5kxfP8B9Idx5UNF9zQV26Bwymc9K4EbHqlf2Vp6WxMshClg048uOXChaZSMSl-G00)
+  - Timestamp generation tied to wall clock.
+  - Unbounded output, like sequence numbers.
+  - Probabilistic, random, or other non-deterministic behaviour.
+  - Complex branching where a hardcoded state machine would need too many states.
+
 ### TCP and Serial Port
 For TCP and serial port auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
 
-See [replies.json](src/main/distributions/docs/replies.json) for an example.
+<details>
+<summary>Example</summary>
+
+```json5
+{
+  "startState": "unauthenticated",
+  "states": {
+    "unauthenticated": [
+      {
+        "input": "AUTH user pass!", // When RAPTOR receives this
+        "output": "AUTH_OK!", // It outputs this, confirming authentication success
+        "nextState": "ready1" // And move to this state
+      },
+      {
+        "input": "AUTH .*!", // Utilising the order of transitions to capture invalid credentials
+        "output": "INVALID_CREDENTIALS!"
+        // Stay unauthenticated with missing nextState
+      },
+      {
+        "input": ".*!", // Capture everything else ending with !
+        "output": "UNKNOWN_COMMAND!"
+      }
+    ],
+    "ready1": [
+      {
+        "input": "STATUS!",
+        "output": "STATUS:OK!"
+      },
+      {
+        "input": "DATA!",
+        "output": "DATA:1234!",
+        "nextState": "ready2" // Alternate between two states to simulate variation
+      },
+      {
+        "input": ".*!",
+        "output": "UNKNOWN_COMMAND!"
+      }
+    ],
+    "ready2": [
+      {
+        "input": "STATUS!",
+        "output": "STATUS:OK!"
+      },
+      {
+        "input": "DATA!",
+        "output": "DATA:2345!",
+        "nextState": "ready1" // Alternate between two states to simulate variation
+      },
+      {
+        "input": ".*!",
+        "output": "UNKNOWN_COMMAND!"
+      }
+    ]
+  }
+}
+```
+</details>
+
 
 ### SNMP
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
@@ -131,12 +199,39 @@ RAPTOR transitions the state machine once, based on the first matched OID with a
 
 If RAPTOR finds no match for an OID, it responds with Null for that variable binding.
 
-See [snmp-replies.json](src/main/distributions/docs/snmp-replies.json) for an example.
+<details>
+<summary>Example</summary>
+
+```json5
+{
+  "startState": "ready1",
+  "states": {
+    "ready1": [
+      {
+        "input": "1.2.3.4", // For OID 1.2.3.4
+        "output": "\\x02\\x01\\x2a", // Deliver type integer (\x02 in BER), length 1 byte, value 42 (\x2a in hex)
+        "nextState": "ready2" // Alternate between two states to simulate variation
+      },
+      {
+        "input": "1.2.3.5..+", // Use regex
+        "output": "\\x04\\x05Hello" // Type octet string (\x04), length 5 bytes, value "Hello"
+      }
+      // For SNMP, RAPTOR delivers Null if it finds no match
+    ],
+    "ready2": [
+      {
+        "input": "1.2.3.4",
+        "output": "\\x02\\x02\\x01\\x2c", // Integer 300
+        "nextState": "ready1" // Alternate between two states to simulate variation
+      }
+    ]
+  }
+}
+```
+</details>
 
 ### WebSocket
 For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
-
-See [replies.json](src/main/distributions/docs/replies.json) for an example.
 
 ## TLS
 RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates.
