@@ -79,7 +79,7 @@ val distributeRuntime = tasks.register<Copy>("distributeRuntime") {
 }
 
 val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
-    from(file("README.md"), file("LICENCE"))
+    from(file("readme.md"), file("licence"))
     into(distributionsDir)
 
     // Adapt links to other structure

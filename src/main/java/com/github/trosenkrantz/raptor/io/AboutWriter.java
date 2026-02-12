@@ -3,7 +3,7 @@ package com.github.trosenkrantz.raptor.io;
 public class AboutWriter {
     public static void write() {
         ConsoleIo.writeLine("For information:");
-        ConsoleIo.writeLine("Read the README.md that came with the distribution.");
+        ConsoleIo.writeLine("Read the readme.md that came with the distribution.");
         ConsoleIo.writeLine("Go to https://github.com/trosenkrantz/RAPTOR.");
         ConsoleIo.writeLine();
 

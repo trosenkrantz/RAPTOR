@@ -53,7 +53,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
      │   ├── conf
      │   └── ...
      ├── libs
-     ├── LICENCE
+     ├── licence
      ├── raptor
      └── ...
      ```
@@ -146,7 +146,7 @@ RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-
 
 ## Licence
 
-RAPTOR's source code is licenced under MIT, see [LICENCE](LICENCE) for more details. The release includes the following third-party libraries, which are subject to their own licences:
+RAPTOR's source code is licenced under MIT, see [licence](licence) for more details. The release includes the following third-party libraries, which are subject to their own licences:
 
 | Name                                                                    | License                                                  |
 |-------------------------------------------------------------------------|----------------------------------------------------------|
