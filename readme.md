@@ -38,6 +38,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
     - Text and binary data.
     - Use regular expressions to match input, even for binary input.
     - Define an arbitrary state machine.
+    - Update the state machine dynamically. 
 - Arbitrary OS support through Java, shell scripts, and .cmd (Windows) scripts.
 - Support scripted and automated execution.
 - Portable application, can be run from a USB stick.
