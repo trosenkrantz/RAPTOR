@@ -36,6 +36,11 @@ jobs:
         run: |
           git tag -f snapshot
           git push -f origin snapshot
+      - name: Delete Existing Snapshot Release
+        run: |
+          gh release delete snapshot --yes || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Release Snapshot
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
@@ -43,6 +48,5 @@ jobs:
           name: Snapshot
           prerelease: true
           files: build/libs/*
-          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
