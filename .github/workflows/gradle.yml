@@ -16,7 +16,7 @@ jobs:
         run: chmod +x gradlew
       - name: Build
         run: ./gradlew build
-      - name: Upload Build
+      - name: Upload Package
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: Package
@@ -29,3 +29,17 @@ jobs:
           name: Test Results
           path: '**/build/reports/tests/test/**'
           if-no-files-found: error
+      - name: Move Snapshot Tag
+        run: |
+          git tag -f snapshot
+          git push -f origin snapshot
+      - name: Release Snapshot
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          tag_name: snapshot
+          name: Snapshot
+          prerelease: true
+          files: build/libs/*
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
