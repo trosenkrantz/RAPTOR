@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
-import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.java_websocket.WebSocket;
@@ -29,7 +29,7 @@ class InteractiveSendStrategy implements WebSocketSendStrategy {
                             WebSocketService.send(socket, bytesToSend);
                             bytesToSend = supplier.get();
                         }
-                    } catch (AbortedException ignore) {
+                    } catch (UserAbortedException ignore) {
                         shutDownAction.run();
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Error occurred.", e);

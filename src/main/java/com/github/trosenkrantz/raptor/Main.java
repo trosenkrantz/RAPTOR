@@ -46,7 +46,7 @@ public class Main {
             }
 
             ConsoleIo.onExit();
-        } catch (AbortedException ignore) {
+        } catch (UserAbortedException ignore) {
             // Exit immediately
         } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Error occurred.", e);

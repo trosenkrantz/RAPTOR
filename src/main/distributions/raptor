@@ -16,7 +16,7 @@ else
 fi
 
 case "$(uname 2>/dev/null || echo unknown)" in
-    CYGWIN* | MSYS* | MINGW*) # Windows
+    CYGWIN*|MSYS*|MINGW*) # Windows
         BASE_DIR=$(cygpath -w "$BASE_DIR") # Convert to Windows path
         CLASS_SEPARATOR=";"
     ;;

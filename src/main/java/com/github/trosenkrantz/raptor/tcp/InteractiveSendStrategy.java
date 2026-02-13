@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.tcp;
 
-import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
@@ -28,7 +28,7 @@ class InteractiveSendStrategy implements TcpSendStrategy {
 
                             whatToSend = supplier.get();
                         }
-                    } catch (AbortedException ignore) {
+                    } catch (UserAbortedException ignore) {
                         shutDownAction.run();
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Error occurred.", e);

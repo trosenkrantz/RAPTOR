@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.configuration;
 
-import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
@@ -64,7 +64,7 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
                     configuration.setSubConfigurationArray(getParameterKey(), currentConfigurations);
                     return;
                 }
-                case "e" -> throw new AbortedException();
+                case "e" -> throw new UserAbortedException();
             }
         }
     }

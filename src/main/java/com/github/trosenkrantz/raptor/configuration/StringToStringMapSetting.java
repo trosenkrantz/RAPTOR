@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.configuration;
 
-import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
@@ -59,7 +59,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
 
                     return;
                 }
-                case "e" -> throw new AbortedException();
+                case "e" -> throw new UserAbortedException();
                 default -> ConsoleIo.writeLine("Unrecognised answer.", Ansi.ERROR); // And do another iteration
             }
         }

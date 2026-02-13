@@ -45,9 +45,10 @@ It exchanges data with systems, either as a standalone, interactive console appl
 - Logging to capture data exchange.
 
 ## Getting Started
-1. Download a release and unzip it.
-2. Either
-   - Download Java Runtime Environment 21 (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir:
+1. Download a RAPTOR release and unzip it.
+2. Set up Java Runtime Environment 21 or newer, either
+   - Run the `download-java` shell script or the `download-java.cmd` script.
+   - Download Java (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir:
      ```
      ├── java
      │   ├── bin
@@ -55,11 +56,10 @@ It exchanges data with systems, either as a standalone, interactive console appl
      │   └── ...
      ├── libs
      ├── licence
-     ├── raptor
      └── ...
      ```
    - Or install Java 21 or newer on your machine.
-3. Run either the `raptor` shell script or `raptor.cmd` script.
+3. Run the `raptor` shell script or `raptor.cmd` script.
 
 ## Encoding
 RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters as-is. To support this, we must input to RAPTOR either:

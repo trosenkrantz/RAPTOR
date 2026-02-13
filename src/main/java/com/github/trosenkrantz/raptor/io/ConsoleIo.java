@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.io;
 
-import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
@@ -97,7 +97,7 @@ public class ConsoleIo {
                 AboutWriter.write();
                 continue;
             }
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
             if (defaultValue != null && answer.isEmpty()) return defaultValue.value();
 
             Optional<PromptOption<T>> result = options.stream().filter(option -> option.promptValue().equalsIgnoreCase(answer)).findAny();
@@ -129,7 +129,7 @@ public class ConsoleIo {
             write(description + ". " + getExitString() + ": ");
 
             String answer = readLine();
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
 
             if (!answer.matches("^-?\\d+$")) {
                 writeLine("Answer must be an integer.", Ansi.ERROR);
@@ -156,7 +156,7 @@ public class ConsoleIo {
 
             String answer = readLine();
             if (answer.isEmpty()) return Optional.empty();
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
 
             if (!answer.matches("^-?\\d+$")) {
                 writeLine("Answer must be an integer.", Ansi.ERROR);
@@ -189,7 +189,7 @@ public class ConsoleIo {
             write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
             if (defaultValue != null && answer.isEmpty()) return defaultValue;
 
             if (!answer.matches("^-?\\d+(\\.\\d+)?$")) {
@@ -231,7 +231,7 @@ public class ConsoleIo {
             write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
             if (defaultValue != null && answer.isEmpty()) return defaultValue;
 
             Optional<String> error = validator.validate(answer);
@@ -259,7 +259,7 @@ public class ConsoleIo {
             write(String.join(". ", prefixes) + ": ");
 
             String answer = readLine();
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
             if (defaultPath != null && answer.isEmpty()) answer = defaultPath;
 
             answer = stripQuotes(answer);
@@ -289,7 +289,7 @@ public class ConsoleIo {
 
             String answer = readLine();
             if (answer.isEmpty()) return Optional.empty();
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
 
             answer = stripQuotes(answer);
             Path path = Path.of(answer);
@@ -321,7 +321,7 @@ public class ConsoleIo {
 
             String answer = readLine();
             if (answer.isEmpty()) return; // User chosen to continue
-            if (answer.equals("e")) throw new AbortedException();
+            if (answer.equals("e")) throw new UserAbortedException();
 
             Optional<Setting<?>> result = settings.stream().filter(setting -> setting.getPromptValue().equalsIgnoreCase(answer)).findAny();
             if (result.isPresent()) {
@@ -336,7 +336,7 @@ public class ConsoleIo {
     /* Other */
 
     public static void onExit() {
-        if (shouldPromptUserBeforeExit) { // Skip prompt if running as CLI
+        if (shouldPromptUserBeforeExit) { // Prompt only if user have already interacted
             promptUserToExit();
         }
     }

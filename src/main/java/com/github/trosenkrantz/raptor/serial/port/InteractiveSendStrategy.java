@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.serial.port;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.github.trosenkrantz.raptor.AbortedException;
+import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
@@ -22,7 +22,7 @@ class InteractiveSendStrategy implements SerialPortSendStrategy {
                             byte[] whatToSend = BytesFormatter.fullyEscapedStringToBytes(userAnswer);
                             SerialPortUtility.writeToPort(port, whatToSend);
                         }
-                    } catch (AbortedException ignore) {
+                    } catch (UserAbortedException ignore) {
                         shutDownAction.run();
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Error occurred.", e);
