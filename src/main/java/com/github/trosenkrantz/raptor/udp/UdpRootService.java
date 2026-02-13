@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.IpAddressValidator;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -48,16 +50,27 @@ public class UdpRootService implements RootService {
             case SEND -> {
                 // Configure remote address
                 switch (mode) {
-                    case UNICAST -> configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", UdpUtility.DEFAULT_ADDRESS));
-                    case MULTICAST -> configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("IPv4 or IPv6 multicast group to send to", UdpUtility.DEFAULT_MULTICAST_GROUP, new MulticastGroupValidator()));
+                    case UNICAST -> {
+                        configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Hostname / IP address of server socket to send to", UdpUtility.DEFAULT_ADDRESS));
+                    }
+                    case MULTICAST -> {
+                        configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("IPv4 or IPv6 multicast group to send to", UdpUtility.DEFAULT_MULTICAST_GROUP, MulticastGroupValidator.VALIDATOR));
+                    }
                     case BROADCAST -> {
                     }
                 }
 
                 configuration.setInt(UdpUtility.PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("Remote port", UdpUtility.DEFAULT_PORT, IpPortValidator.VALIDATOR));
 
+                String defaultDescription = mode == Mode.BROADCAST ? "every available address" : "primary address of the interface";
+                ConsoleIo.askForOptionalString(
+                        "Local socket address to send from",
+                        defaultDescription,
+                        IpAddressValidator.VALIDATOR
+                ).ifPresent(address -> configuration.setFullyEscapedString(UdpUtility.PARAMETER_LOCAL_ADDRESS, address));
+
                 ConsoleIo.askForOptionalInt(
-                        "Local socket port to bind to",
+                        "Local socket port to send from",
                         "arbitrary ephemeral port",
                         IpPortValidator.VALIDATOR
                 ).ifPresent(port -> configuration.setInt(UdpUtility.PARAMETER_LOCAL_PORT, port));
@@ -66,7 +79,7 @@ public class UdpRootService implements RootService {
             }
             case RECEIVE -> {
                 if (mode == Mode.MULTICAST) {
-                    configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to receive from", UdpUtility.DEFAULT_MULTICAST_GROUP, new MulticastGroupValidator()));
+                    configuration.setFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to receive from", UdpUtility.DEFAULT_MULTICAST_GROUP, MulticastGroupValidator.VALIDATOR));
                 }
 
                 configuration.setInt(UdpUtility.PARAMETER_LOCAL_PORT, ConsoleIo.askForInt("Port of local server socket to listen to", UdpUtility.DEFAULT_PORT, IpPortValidator.VALIDATOR));
@@ -84,57 +97,82 @@ public class UdpRootService implements RootService {
 
     private static void runSend(Configuration configuration, byte[] payload) throws IOException {
         switch (configuration.requireEnum(Mode.class)) {
-            case UNICAST -> {
-                try (DatagramSocket socket = UdpUtility.createSocket(configuration)) {
-                    UdpUtility.send(configuration, InetAddress.getByName(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS)), socket, true, payload);
+            case UNICAST -> runSendUnicast(configuration, payload);
+            case MULTICAST -> runSendMulticast(configuration, payload);
+            case BROADCAST -> runSendBroadcast(configuration, payload);
+        }
+    }
+
+    private static void runSendUnicast(Configuration configuration, byte[] payload) throws IOException {
+        String remoteAddressString = configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
+        InetAddress remoteAddress = InetAddress.getByName(remoteAddressString);
+        try (DatagramSocket socket = UdpUtility.createSocket(configuration, remoteAddress.getClass())) {
+            UdpUtility.send(configuration, remoteAddress, socket, true, payload);
+        }
+    }
+
+    private static void runSendBroadcast(Configuration configuration, byte[] payload) throws IOException {
+        Optional<String> localAddress = configuration.getFullyEscapedString(UdpUtility.PARAMETER_LOCAL_ADDRESS);
+
+        List<InterfaceAddress> foundAddresses = UdpUtility.getAllBroadcastCapableInterfaceAddresses();
+        if (localAddress.isPresent()) {
+            // Keep only those having the configured IP address
+            foundAddresses = foundAddresses.stream().filter(address -> address.getAddress().getHostAddress().equals(localAddress.get())).toList();
+        }
+
+        // Do directed broadcast on each network
+        try (DatagramSocket socket = UdpUtility.createSocket(configuration)) {
+            socket.setBroadcast(true);
+
+            for (InterfaceAddress address : foundAddresses) {
+                UdpUtility.send(configuration, address.getBroadcast(), socket, true, payload);
+            }
+        }
+
+        // Do limited broadcast (255.255.255.255) on each network
+        int port = configuration.getInt(UdpUtility.PARAMETER_LOCAL_PORT).orElse(0); // 0 means ephemeral
+        for (InterfaceAddress address : foundAddresses) {
+            try (DatagramSocket socket = new DatagramSocket(new InetSocketAddress(address.getAddress(), port))) { // Bind explicitly to the address of the network interface, as we cannot automatically bind to the right one based on "255.255.255.255"
+                socket.setBroadcast(true);
+                UdpUtility.send(configuration, InetAddress.getByName("255.255.255.255"), socket, false, payload); // Since we already explicitly bound the socket, do not connect here as well
+            }
+        }
+    }
+
+    private static void runSendMulticast(Configuration configuration, byte[] payload) throws IOException {
+        String groupString = configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
+        InetAddress group = InetAddress.getByName(groupString);
+
+        Optional<String> localAddress = configuration.getFullyEscapedString(UdpUtility.PARAMETER_LOCAL_ADDRESS);
+        InetAddress bindAddress = localAddress.isPresent() ? InetAddress.getByName(localAddress.get()) : InetAddress.getByName(IpAddressMapper.getWildcard(group));
+
+        int localPort = configuration.getInt(UdpUtility.PARAMETER_LOCAL_PORT).orElse(0); // 0 means ephemeral
+        int destinationPort = configuration.requireInt(UdpUtility.PARAMETER_REMOTE_PORT);
+
+        try (DatagramChannel channel = DatagramChannel.open(IpAddressMapper.getProtocolFamily(group))) {
+            channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            channel.bind(new InetSocketAddress(bindAddress, localPort));
+
+            List<NetworkInterface> foundInterfaces = UdpUtility.getAllMulticastCapableInterfaces(group.getClass());
+            if (localAddress.isPresent()) {
+                // Keep only those having the configured IP address
+                foundInterfaces = foundInterfaces.stream().filter(networkInterface -> Collections.list(networkInterface.getInetAddresses()).stream().anyMatch(address -> address.equals(bindAddress))).toList();
+            }
+
+            int successCount = 0;
+            for (NetworkInterface networkInterface : foundInterfaces) {
+                LOGGER.fine("Sending through network interface " + networkInterfaceToString(networkInterface) + ".");
+                try {
+                    channel.setOption(StandardSocketOptions.IP_MULTICAST_IF, networkInterface);
+                    channel.send(ByteBuffer.wrap(payload), new InetSocketAddress(group, destinationPort));
+                    successCount++;
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed sending on network interface " + networkInterfaceToString(networkInterface) + ".", e);
+                    // And continue to try other interfaces
                 }
             }
-            case MULTICAST -> {
-                String groupString = configuration.requireFullyEscapedString(UdpUtility.PARAMETER_REMOTE_ADDRESS);
-                InetAddress group = InetAddress.getByName(groupString);
 
-                try (DatagramChannel channel = DatagramChannel.open(IpAddressMapper.getProtocolFamily(group))) {
-                    Optional<Integer> localPort = configuration.getInt(UdpUtility.PARAMETER_LOCAL_PORT);
-                    if (localPort.isPresent()) {
-                        channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-                        channel.bind(new InetSocketAddress(IpAddressMapper.getWildcard(group), localPort.get()));
-                    }
-
-                    int destinationPort = configuration.requireInt(UdpUtility.PARAMETER_REMOTE_PORT);
-
-                    for (NetworkInterface networkInterface : UdpUtility.getAllMulticastCapableInterfaces(group.getClass())) {
-                        LOGGER.fine("Using network interface " + networkInterfaceToString(networkInterface) + ".");
-                        try {
-                            channel.setOption(StandardSocketOptions.IP_MULTICAST_IF, networkInterface);
-                            channel.send(ByteBuffer.wrap(payload), new InetSocketAddress(group, destinationPort));
-
-                            LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) channel.getLocalAddress()).getPort() + " to " + groupString + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
-                        } catch (IOException e) {
-                            LOGGER.log(Level.WARNING, "Failed sending on network interface " + networkInterfaceToString(networkInterface) + ".", e);
-                            // And continue to try other interfaces
-                        }
-                    }
-                }
-            }
-            case BROADCAST -> {
-                // Do directed broadcast on each network
-                try (DatagramSocket socket = UdpUtility.createSocket(configuration)) {
-                    socket.setBroadcast(true);
-
-                    for (InterfaceAddress address : UdpUtility.getAllBroadcastCapableInterfaceAddresses()) {
-                        UdpUtility.send(configuration, address.getBroadcast(), socket, true, payload);
-                    }
-                }
-
-                // Do limited broadcast (255.255.255.255) on each network
-                int port = configuration.getInt(UdpUtility.PARAMETER_LOCAL_PORT).orElse(0); // 0 means ephemeral
-                for (InterfaceAddress address : UdpUtility.getAllBroadcastCapableInterfaceAddresses()) {
-                    try (DatagramSocket socket = new DatagramSocket(new InetSocketAddress(address.getAddress(), port))) { // Bind explicitly to the address of the network interface, as we cannot automatically bind to the right one based on "255.255.255.255"
-                        socket.setBroadcast(true);
-                        UdpUtility.send(configuration, InetAddress.getByName("255.255.255.255"), socket, false, payload); // Since we already explicitly bound the socket, do not connect here as well
-                    }
-                }
-            }
+            LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) channel.getLocalAddress()).getPort() + " to " + groupString + ":" + destinationPort + " through " + successCount + " interface" + (successCount == 1 ? "" : "s") + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
         }
     }
 

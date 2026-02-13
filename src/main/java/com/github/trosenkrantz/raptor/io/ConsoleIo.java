@@ -243,6 +243,27 @@ public class ConsoleIo {
         }
     }
 
+    public static Optional<String> askForOptionalString(String description, String defaultDescription, Validator<String> validator) {
+        while (true) {
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultDescription != null) prefixes.add(getDefaultString(defaultDescription));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
+
+            String answer = readLine();
+            if (answer.isEmpty()) return Optional.empty();
+            if (answer.equals("e")) throw new UserAbortedException();
+
+            Optional<String> error = validator.validate(answer);
+            if (error.isPresent()) {
+                writeLine(error.get(), Ansi.ERROR);
+            } else {
+                return Optional.of(answer);
+            }
+        }
+    }
+
 
     /* File */
 

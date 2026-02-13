@@ -14,9 +14,10 @@ import java.util.logging.Logger;
 public class UdpUtility {
     private static final Logger LOGGER = Logger.getLogger(UdpUtility.class.getName());
 
+    public static final String PARAMETER_LOCAL_ADDRESS = "localAddress";
     public static final String PARAMETER_LOCAL_PORT = "localPort";
-    public static final String PARAMETER_REMOTE_PORT = "remotePort";
     public static final String PARAMETER_REMOTE_ADDRESS = "remoteAddress";
+    public static final String PARAMETER_REMOTE_PORT = "remotePort";
     public static final String PARAMETER_PAYLOAD = "payload";
     public static final String DEFAULT_ADDRESS = "localhost";
     public static final int DEFAULT_PORT = 50000;
@@ -27,6 +28,14 @@ public class UdpUtility {
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
         if (port.isPresent()) return new DatagramSocket(port.get());
         else return new DatagramSocket();
+    }
+
+    static DatagramSocket createSocket(Configuration configuration, Class<? extends InetAddress> family) throws SocketException, UnknownHostException {
+        Optional<String> localAddress = configuration.getFullyEscapedString(PARAMETER_LOCAL_ADDRESS);
+        InetAddress bindingAddress = localAddress.isPresent() ? InetAddress.getByName(localAddress.get()) : InetAddress.getByName(IpAddressMapper.getWildcard(family));
+
+        int localPort = configuration.getInt(PARAMETER_LOCAL_PORT).orElse(0); // 0 means ephemeral
+        return new DatagramSocket(new InetSocketAddress(bindingAddress, localPort));
     }
 
     public static void send(Configuration configuration, InetAddress destinationAddress, DatagramSocket socket, boolean connect, byte[] payload) throws IOException {

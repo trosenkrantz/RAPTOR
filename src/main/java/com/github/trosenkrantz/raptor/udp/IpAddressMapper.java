@@ -14,12 +14,16 @@ public class IpAddressMapper {
     }
 
     public static String getWildcard(InetAddress address) {
-        if (address instanceof Inet4Address) {
+        return getWildcard(address.getClass());
+    }
+
+    public static String getWildcard(Class<? extends InetAddress> family) {
+        if (family == Inet4Address.class) {
             return "0.0.0.0";
-        }  else if (address instanceof Inet6Address) {
+        }  else if (family == Inet6Address.class) {
             return "::";
         }  else {
-            throw new IllegalArgumentException("Unknown address family: " + address);
+            throw new IllegalArgumentException("Unknown address family: " + family.getSimpleName());
         }
     }
 }

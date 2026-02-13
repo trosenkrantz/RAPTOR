@@ -13,6 +13,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
 ## Capabilities
 - UDP:
   - Unicast, multicast, and broadcast.
+  - IPv4 and IPv6.
   - Send and receive.
 - TCP:
   - Client and server.
