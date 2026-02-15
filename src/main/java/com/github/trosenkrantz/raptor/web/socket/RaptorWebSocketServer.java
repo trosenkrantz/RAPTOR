@@ -1,7 +1,6 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -53,7 +52,7 @@ public class RaptorWebSocketServer extends WebSocketServer {
     public void onMessage(WebSocket webSocket, String message) {
         byte[] input = message.getBytes(StandardCharsets.UTF_8); // WebSockets use UTF-8 for text frames
         InetSocketAddress remoteAddress = webSocket.getRemoteSocketAddress();
-        LOGGER.info("Received text from " + remoteAddress + ": " + BytesFormatter.bytesToFullyEscapedTextString(input));
+        LOGGER.info("Received text from " + remoteAddress + ": " + BytesFormatter.bytesToRaptorEncodedText(input));
         onInput.get(remoteAddress).accept(input);
     }
 
@@ -62,7 +61,7 @@ public class RaptorWebSocketServer extends WebSocketServer {
         byte[] input = new byte[message.remaining()];
         message.get(input);
         InetSocketAddress remoteAddress = webSocket.getRemoteSocketAddress();
-        LOGGER.info("Received bytes from " + remoteAddress + ": " + BytesFormatter.bytesToFullyEscapedHexString(input));
+        LOGGER.info("Received bytes from " + remoteAddress + ": " + BytesFormatter.bytesToRaptorEncodedBytes(input));
         onInput.get(remoteAddress).accept(input);
     }
 

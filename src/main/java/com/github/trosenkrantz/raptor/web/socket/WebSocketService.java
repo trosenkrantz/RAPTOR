@@ -110,10 +110,10 @@ public class WebSocketService implements RootService {
     public static void send(WebSocket socket, byte[] userAnswerAsBytes) {
         if (BytesFormatter.isText(userAnswerAsBytes)) { // Has only printable and control characters
             socket.send(new String(userAnswerAsBytes, StandardCharsets.US_ASCII)); // Send as text frame, using ASCII as we just checked this is ASCII text
-            LOGGER.info("Sent text: " + BytesFormatter.bytesToFullyEscapedTextString(userAnswerAsBytes));
+            LOGGER.info("Sent text: " + BytesFormatter.bytesToRaptorEncodedText(userAnswerAsBytes));
         } else {
             socket.send(userAnswerAsBytes); // Send as binary frame
-            LOGGER.info("Sent bytes: " + BytesFormatter.bytesToFullyEscapedHexString(userAnswerAsBytes));
+            LOGGER.info("Sent bytes: " + BytesFormatter.bytesToRaptorEncodedBytes(userAnswerAsBytes));
         }
     }
 }

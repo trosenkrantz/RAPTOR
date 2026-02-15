@@ -102,7 +102,7 @@ public class UdpMulticastEndpoint implements Endpoint {
 
             InetSocketAddress local = (InetSocketAddress) channel.getLocalAddress();
 
-            LOGGER.info("Received " + BytesFormatter.getType(payload) + " from " + source.getAddress().getHostAddress() + ":" + sourcePort + " to " + multicastGroup.getHostAddress() + ":" + local.getPort() + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+            LOGGER.info("Received " + BytesFormatter.getType(payload) + " from " + source.getAddress().getHostAddress() + ":" + sourcePort + " to " + multicastGroup.getHostAddress() + ":" + local.getPort() + ": " + BytesFormatter.bytesToRaptorEncoding(payload));
 
             consumer.accept(payload);
         }
@@ -117,7 +117,7 @@ public class UdpMulticastEndpoint implements Endpoint {
                 sendChannel.setOption(StandardSocketOptions.IP_MULTICAST_IF, nif);
                 sendChannel.send(ByteBuffer.wrap(payload), new InetSocketAddress(multicastGroup, destinationPort));
 
-                LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) sendChannel.getLocalAddress()).getPort() + " to " + multicastGroupString + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+                LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) sendChannel.getLocalAddress()).getPort() + " to " + multicastGroupString + ":" + destinationPort + ": " + BytesFormatter.bytesToRaptorEncoding(payload));
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed sending multicast.", e);

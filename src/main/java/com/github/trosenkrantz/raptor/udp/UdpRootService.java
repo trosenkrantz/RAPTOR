@@ -90,7 +90,7 @@ public class UdpRootService implements RootService {
     @Override
     public void run(Configuration configuration) throws Exception {
         switch (configuration.requireEnum(Role.class)) {
-            case SEND -> runSend(configuration, BytesFormatter.fullyEscapedStringToBytes(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD)));
+            case SEND -> runSend(configuration, BytesFormatter.raptorEncodingToBytes(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD)));
             case RECEIVE -> runReceive(configuration);
         }
     }
@@ -172,7 +172,7 @@ public class UdpRootService implements RootService {
                 }
             }
 
-            LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) channel.getLocalAddress()).getPort() + " to " + groupString + ":" + destinationPort + " through " + successCount + " interface" + (successCount == 1 ? "" : "s") + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+            LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from local port " + ((InetSocketAddress) channel.getLocalAddress()).getPort() + " to " + groupString + ":" + destinationPort + " through " + successCount + " interface" + (successCount == 1 ? "" : "s") + ": " + BytesFormatter.bytesToRaptorEncoding(payload));
         }
     }
 
@@ -231,7 +231,7 @@ public class UdpRootService implements RootService {
         while (!socket.isClosed()) {
             socket.receive(packet);
             byte[] payload = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
-            LOGGER.info("Received " + BytesFormatter.getType(payload) + " from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " to " + toPrinter.apply(packet) + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+            LOGGER.info("Received " + BytesFormatter.getType(payload) + " from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " to " + toPrinter.apply(packet) + ": " + BytesFormatter.bytesToRaptorEncoding(payload));
         }
     }
 

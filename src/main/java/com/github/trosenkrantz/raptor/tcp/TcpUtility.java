@@ -141,7 +141,7 @@ public class TcpUtility {
         while ((readLength = in.read(buffer)) != -1) {
             byte[] bytesRead = new byte[readLength];
             System.arraycopy(buffer, 0, bytesRead, 0, readLength);
-            LOGGER.info("Received " + BytesFormatter.bytesToFullyEscapedStringWithType(bytesRead));
+            LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(bytesRead));
             onInput.accept(bytesRead);
         }
 

@@ -39,7 +39,7 @@ public class VariableBindingSettingGroup implements SettingGroup<VariableBinding
         try {
             return new VariableBinding(
                     new OID(OID_SETTING.readAndRequire(configuration)),
-                    SnmpService.toVariable(BytesFormatter.fullyEscapedStringToBytes(
+                    SnmpService.toVariable(BytesFormatter.raptorEncodingToBytes(
                             variableAsFullyEscapedString
                     ))
             );

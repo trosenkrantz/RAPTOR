@@ -111,6 +111,6 @@ public class SerialPortUtility {
             return;
         }
 
-        LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(payload));
+        LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
     }
 }

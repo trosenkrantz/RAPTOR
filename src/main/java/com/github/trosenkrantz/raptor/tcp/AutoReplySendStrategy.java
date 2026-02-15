@@ -4,7 +4,6 @@ import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +29,7 @@ class AutoReplySendStrategy implements TcpSendStrategy {
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
             try {
                 out.write(output);
-                LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(output));
+                LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(output));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

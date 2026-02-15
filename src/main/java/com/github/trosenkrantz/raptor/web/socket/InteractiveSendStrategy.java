@@ -18,7 +18,7 @@ class InteractiveSendStrategy implements WebSocketSendStrategy {
         Thread.ofVirtual().start(() -> {
                     Supplier<byte[]> supplier = () -> {
                         String userAnswer = ConsoleIo.askForString("What to send", "Hello, World!"); // User answers with fully escaped string
-                        return BytesFormatter.fullyEscapedStringToBytes(userAnswer);
+                        return BytesFormatter.raptorEncodingToBytes(userAnswer);
                     };
 
                     try {

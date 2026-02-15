@@ -27,7 +27,7 @@ class MySerialPortDataListener implements SerialPortDataListener {
         switch (event.getEventType()) {
             case SerialPort.LISTENING_EVENT_DATA_RECEIVED:
                 byte[] data = event.getReceivedData();
-                LOGGER.info("Received " + BytesFormatter.bytesToFullyEscapedStringWithType(data));
+                LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(data));
                 onReceivedData.accept(data);
                 break;
             case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED:

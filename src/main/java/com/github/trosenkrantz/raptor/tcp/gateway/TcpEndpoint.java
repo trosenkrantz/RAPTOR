@@ -33,7 +33,7 @@ public class TcpEndpoint implements Endpoint {
                         fromBroker.setDelegate(payload -> {
                             try {
                                 out.write(payload);
-                                LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(payload));
+                                LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
                             } catch (IOException e) {
                                 throw new UncheckedIOException(e);
                             }

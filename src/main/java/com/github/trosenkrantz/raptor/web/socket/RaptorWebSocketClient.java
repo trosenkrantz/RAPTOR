@@ -39,7 +39,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         byte[] input = message.getBytes(StandardCharsets.UTF_8); // WebSockets use UTF-8 for text frames
-        LOGGER.info("Received text: " + BytesFormatter.bytesToFullyEscapedTextString(input));
+        LOGGER.info("Received text: " + BytesFormatter.bytesToRaptorEncodedText(input));
         onInput.accept(input);
     }
 
@@ -47,7 +47,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
     public void onMessage(ByteBuffer message) {
         byte[] input = new byte[message.remaining()];
         message.get(input);
-        LOGGER.info("Received bytes: " + BytesFormatter.bytesToFullyEscapedHexString(input));
+        LOGGER.info("Received bytes: " + BytesFormatter.bytesToRaptorEncodedBytes(input));
         onInput.accept(input);
     }
 

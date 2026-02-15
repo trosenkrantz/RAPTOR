@@ -52,7 +52,7 @@ public class UdpUtility {
         );
 
         socket.send(packet);
-        LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " to " + destinationAddress.getHostAddress() + ":" + destinationPort + ": " + BytesFormatter.bytesToFullyEscapedString(payload));
+        LOGGER.info("Sent " + BytesFormatter.getType(payload) + " from " + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort() + " to " + destinationAddress.getHostAddress() + ":" + destinationPort + ": " + BytesFormatter.bytesToRaptorEncoding(payload));
     }
 
     public static AllReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {

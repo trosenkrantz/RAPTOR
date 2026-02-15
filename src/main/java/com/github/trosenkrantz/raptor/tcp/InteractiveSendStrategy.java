@@ -18,13 +18,13 @@ class InteractiveSendStrategy implements TcpSendStrategy {
     public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) {
         Thread.ofVirtual().start(() -> {
                     try {
-                        Supplier<byte[]> supplier = () -> BytesFormatter.fullyEscapedStringToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
+                        Supplier<byte[]> supplier = () -> BytesFormatter.raptorEncodingToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
 
                         OutputStream out = socket.getOutputStream();
                         byte[] whatToSend = supplier.get();
                         while (!socket.isInputShutdown()) {
                             out.write(whatToSend);
-                            LOGGER.info("Sent " + BytesFormatter.bytesToFullyEscapedStringWithType(whatToSend));
+                            LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(whatToSend));
 
                             whatToSend = supplier.get();
                         }

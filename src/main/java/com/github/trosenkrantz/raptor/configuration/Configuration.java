@@ -78,7 +78,7 @@ public class Configuration {
     }
 
     public boolean hasParameter(String key) {
-        return root.has(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        return root.has(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
     }
 
     /**
@@ -104,11 +104,11 @@ public class Configuration {
      * @param configuration configuration to copy from
      */
     public void setSubConfiguration(String key, Configuration configuration) {
-        if (root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key)) != null) {
+        if (root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key)) != null) {
             LOGGER.warning("Overwriting sub-configuration with path " + pathToString(key) + ".");
         }
 
-        root.putObject(BytesFormatter.fullyEscapedStringToHexEscapedString(key)).setAll(configuration.root);
+        root.putObject(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key)).setAll(configuration.root);
     }
 
     /**
@@ -121,7 +121,7 @@ public class Configuration {
         List<String> nextPath = new ArrayList<>(jsonPath);
         nextPath.add(key);
 
-        JsonNode nextNode = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        JsonNode nextNode = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (nextNode == null) {
             return Optional.empty();
         } else if (!nextNode.isObject()) {
@@ -136,7 +136,7 @@ public class Configuration {
     }
 
     public List<Configuration> getSubConfigurationArray(String key) {
-        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null) {
             return List.of();
         }
@@ -163,7 +163,7 @@ public class Configuration {
             array.add(cfg.root);
         }
 
-        root.set(BytesFormatter.fullyEscapedStringToHexEscapedString(key), array);
+        root.set(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key), array);
     }
 
 
@@ -176,11 +176,11 @@ public class Configuration {
      * @return the value as a fully escaped string if present, empty Optional otherwise
      */
     public Optional<String> getFullyEscapedString(String key) {
-        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null || !node.isTextual()) {
             return Optional.empty();
         }
-        return Optional.of(BytesFormatter.hexEscapedStringToFullyEscapedString(node.asText()));
+        return Optional.of(BytesFormatter.intermediateEncodingToRaptorEncoded(node.asText()));
     }
 
     /**
@@ -201,7 +201,7 @@ public class Configuration {
      */
     public void setFullyEscapedString(String key, String value) {
         // Jackson escapes strings, so we convert to hex escaped strings, matching unescaped JSON, to avoid double escaping
-        root.put(BytesFormatter.fullyEscapedStringToHexEscapedString(key), BytesFormatter.fullyEscapedStringToHexEscapedString(value));
+        root.put(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key), BytesFormatter.raptorEncodingToIntermediateEncodedBytes(value));
     }
 
     /* Enum and Configurable */
@@ -246,7 +246,7 @@ public class Configuration {
     /* Int */
 
     public Optional<Integer> getInt(String key) {
-        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null || !node.isInt()) {
             return Optional.empty();
         }
@@ -258,13 +258,13 @@ public class Configuration {
     }
 
     public void setInt(String key, Integer value) {
-        root.put(BytesFormatter.fullyEscapedStringToHexEscapedString(key), value);
+        root.put(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key), value);
     }
 
     /* Double */
 
     public Optional<Double> getDouble(String key) {
-        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null || !node.isNumber()) {
             return Optional.empty();
         }
@@ -272,14 +272,14 @@ public class Configuration {
     }
 
     public void setDouble(String key, Double value) {
-        root.put(BytesFormatter.fullyEscapedStringToHexEscapedString(key), value);
+        root.put(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key), value);
     }
 
 
     /* Complex objects */
 
     public <T> T requireObject(String key, Class<T> clazz) {
-        JsonNode node = root.get(BytesFormatter.fullyEscapedStringToHexEscapedString(key));
+        JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null) {
             throw new IllegalArgumentException("Parameter " + pathToString(key) + " not set.");
         }

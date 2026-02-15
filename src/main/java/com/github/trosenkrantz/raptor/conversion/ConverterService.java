@@ -59,7 +59,7 @@ public class ConverterService implements RootService {
 
                 Path path = Path.of(configuration.requireFullyEscapedString(PARAMETER_PATH));
                 Files.createDirectories(path.getParent());
-                byte[] bytes = BytesFormatter.fullyEscapedStringToBytes(encoding);
+                byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding);
                 Files.write(
                         path,
                         bytes,
@@ -70,7 +70,7 @@ public class ConverterService implements RootService {
                 LOGGER.info("Wrote " + bytes.length + (bytes.length == 1 ? " byte" : " bytes") + " to " + path + ".");
             }
             case FILE -> {
-                LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToFullyEscapedString(Files.readAllBytes(Paths.get(configuration.requireFullyEscapedString(PARAMETER_PATH)))));
+                LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToRaptorEncoding(Files.readAllBytes(Paths.get(configuration.requireFullyEscapedString(PARAMETER_PATH)))));
             }
         }
     }
