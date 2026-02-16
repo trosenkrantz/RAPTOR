@@ -34,7 +34,8 @@ public class UdpUnicastIntegrationTest extends RaptorIntegrationTest {
                       "role": "send",
                       "remoteAddress": "%s",
                       "remotePort": 50000,
-                      "payload": "Hello, World!"
+                      "payload": "Hello, World!",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, receiver.getRaptorHostname()));
 
@@ -70,7 +71,8 @@ public class UdpUnicastIntegrationTest extends RaptorIntegrationTest {
                       "role": "send",
                       "remoteAddress": "%s",
                       "remotePort": 50000,
-                      "payload": "Hello, World!"
+                      "payload": "Hello, World!",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, receiver.getRaptorIpAddress()));
 

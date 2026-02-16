@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.configuration.ObjectListSetting;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.snmp4j.PDU;
 import org.snmp4j.PDUv1;
@@ -27,8 +28,8 @@ public class SnmpService implements RootService {
     public static final String DEFAULT_VARIABLE = "\\\\x04\\\\x05Hello";
 
     private static final ObjectListSetting<VariableBinding> GET_REQUEST_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "OIDs", "OIDs of MIB variables to request", new OidSettingGroup()).build();
-    private static final ObjectListSetting<VariableBinding> SET_REQUEST_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "Bindings", "MIB variables to set", new VariableBindingSettingGroup()).build();
-    private static final ObjectListSetting<VariableBinding> TRAP_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "OIDs", "MIB variables to send", new VariableBindingSettingGroup()).build();
+    private static final ObjectListSetting<UnresolvedVariableBinding> SET_REQUEST_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "Bindings", "MIB variables to set", new VariableBindingSettingGroup()).build();
+    private static final ObjectListSetting<UnresolvedVariableBinding> TRAP_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "OIDs", "MIB variables to send", new VariableBindingSettingGroup()).build();
 
     @Override
     public String getPromptValue() {
@@ -64,6 +65,7 @@ public class SnmpService implements RootService {
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setFullyEscapedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 SET_REQUEST_BINDINGS_SETTING.configure(configuration);
+                CommandSubstitutor.configureTimeout(configuration);
             }
             case RESPOND -> {
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for managers to send requests to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
@@ -76,6 +78,7 @@ public class SnmpService implements RootService {
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setFullyEscapedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 TRAP_BINDINGS_SETTING.configure(configuration);
+                CommandSubstitutor.configureTimeout(configuration);
             }
             case LISTEN -> {
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for agent to send traps to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT));
@@ -96,7 +99,8 @@ public class SnmpService implements RootService {
             case SET_REQUEST -> {
                 PDU pdu = createPdu(configuration);
                 pdu.setType(PDU.SET);
-                pdu.addAll(SET_REQUEST_BINDINGS_SETTING.readAndRequire(configuration));
+                int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+                pdu.addAll(SET_REQUEST_BINDINGS_SETTING.readAndRequire(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
 
                 SnmpSender.run(configuration, pdu);
             }
@@ -108,7 +112,8 @@ public class SnmpService implements RootService {
                     pdu.setType(PDU.TRAP);
                 }
 
-                pdu.addAll(TRAP_BINDINGS_SETTING.readAndRequire(configuration));
+                int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+                pdu.addAll(TRAP_BINDINGS_SETTING.readAndRequire(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
 
                 SnmpSender.run(configuration, pdu);
             }
@@ -139,7 +144,7 @@ public class SnmpService implements RootService {
         };
     }
 
-    public static Variable toVariable(byte[] output) throws IOException {
-        return AbstractVariable.createFromBER(new BERInputStream(ByteBuffer.wrap(output)));
+    public static Variable toVariable(byte[] berEncoding) throws IOException {
+        return AbstractVariable.createFromBER(new BERInputStream(ByteBuffer.wrap(berEncoding)));
     }
 }

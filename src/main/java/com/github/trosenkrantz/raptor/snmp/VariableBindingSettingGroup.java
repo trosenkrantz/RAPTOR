@@ -9,7 +9,7 @@ import org.snmp4j.smi.VariableBinding;
 
 import java.io.IOException;
 
-public class VariableBindingSettingGroup implements SettingGroup<VariableBinding> {
+public class VariableBindingSettingGroup implements SettingGroup<UnresolvedVariableBinding> {
     private static final StringSetting OID_SETTING = new StringSetting.Builder("o", SnmpService.PARAMETER_OID, "OID", "OID")
             .defaultValue(SnmpService.DEFAULT_OID)
             .build();
@@ -33,18 +33,7 @@ public class VariableBindingSettingGroup implements SettingGroup<VariableBinding
     }
 
     @Override
-    public VariableBinding readAndRequire(Configuration configuration) {
-        String variableAsFullyEscapedString = VARIABLE_SETTING.readAndRequire(configuration);
-
-        try {
-            return new VariableBinding(
-                    new OID(OID_SETTING.readAndRequire(configuration)),
-                    SnmpService.toVariable(BytesFormatter.raptorEncodingToBytes(
-                            variableAsFullyEscapedString
-                    ))
-            );
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to read variable binding " + variableAsFullyEscapedString + ".", e);
-        }
+    public UnresolvedVariableBinding readAndRequire(Configuration configuration) {
+        return new UnresolvedVariableBinding(OID_SETTING.readAndRequire(configuration), VARIABLE_SETTING.readAndRequire(configuration));
     }
 }

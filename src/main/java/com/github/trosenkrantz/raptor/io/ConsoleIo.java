@@ -325,6 +325,10 @@ public class ConsoleIo {
 
     /* Advanced settings */
 
+    public static void configureAdvancedSettings(List<Setting<?>> settings, Configuration configuration) {
+        configureAdvancedSettings(null, settings, configuration);
+    }
+
     public static void configureAdvancedSettings(String description, List<Setting<?>> settings, Configuration configuration) {
         while (true) {
             List<List<String>> rows = settings.stream().map(setting -> List.of(
@@ -334,7 +338,7 @@ public class ConsoleIo {
             )).toList();
 
             List<String> prefixes = new ArrayList<>();
-            prefixes.add(description);
+            if (description != null) prefixes.add(description);
             prefixes.add("Type " + Ansi.PROMPT.apply("enter") + " to continue");
             prefixes.add(getExitString());
 

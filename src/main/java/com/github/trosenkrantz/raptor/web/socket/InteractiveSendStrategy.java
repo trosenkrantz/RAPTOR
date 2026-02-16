@@ -14,11 +14,11 @@ class InteractiveSendStrategy implements WebSocketSendStrategy {
     private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
 
     @Override
-    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction) {
+    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction, int commandSubstitutionTimeout) {
         Thread.ofVirtual().start(() -> {
                     Supplier<byte[]> supplier = () -> {
                         String userAnswer = ConsoleIo.askForString("What to send", "Hello, World!"); // User answers with fully escaped string
-                        return BytesFormatter.raptorEncodingToBytes(userAnswer);
+                        return BytesFormatter.raptorEncodingToBytes(userAnswer, commandSubstitutionTimeout);
                     };
 
                     try {

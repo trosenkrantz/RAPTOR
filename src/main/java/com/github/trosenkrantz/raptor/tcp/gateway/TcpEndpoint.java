@@ -26,7 +26,7 @@ public class TcpEndpoint implements Endpoint {
             try {
                 TcpUtility.connectAndStartSendingAndReceiving(configuration, new TcpSendStrategy() {
                     @Override
-                    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) throws IOException {
+                    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction, int commandSubstitutionTimeout) throws IOException {
                         OutputStream out = socket.getOutputStream();
 
                         // Now that we are connected, we can set what to do with data from the broker

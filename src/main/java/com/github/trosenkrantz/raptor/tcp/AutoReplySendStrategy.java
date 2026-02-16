@@ -24,7 +24,7 @@ class AutoReplySendStrategy implements TcpSendStrategy {
     }
 
     @Override
-    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) throws IOException {
+    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction, int commandSubstitutionTimeout) throws IOException {
         OutputStream out = socket.getOutputStream();
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
             try {

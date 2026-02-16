@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
@@ -54,14 +55,17 @@ public class TcpUtility {
             }
         }
 
+        CommandSubstitutor.configureTimeout(configuration); // TODO Test
     }
 
     public static void connectAndStartSendingAndReceiving(Configuration configuration, TcpSendStrategy sendStrategy) throws Exception {
+        int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+
         try {
             switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
                     try (Socket socket = getClientSocket(configuration)) {
-                        runWithSocket(socket, sendStrategy);
+                        runWithSocket(socket, sendStrategy, commandSubstitutionTimeout);
                     }
                 }
                 case SERVER -> {
@@ -71,7 +75,7 @@ public class TcpUtility {
                         while (!shutDown) { // Open for new client when closed
                             LOGGER.info("Waiting for client to connect to port " + port + "...");
                             try {
-                                runWithSocket(socket.accept(), sendStrategy);
+                                runWithSocket(socket.accept(), sendStrategy, commandSubstitutionTimeout);
                             } catch (SocketException e) {
                                 if ("Socket closed".equals(e.getMessage())) {
                                     LOGGER.info("Socket closed normally.");
@@ -130,10 +134,10 @@ public class TcpUtility {
         }
     }
 
-    private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy) throws IOException {
+    private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy, int commandSubstitutionTimeout) throws IOException {
         LOGGER.info("Local socket at " + socket.getLocalSocketAddress() + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
 
-        Consumer<byte[]> onInput = sendStrategy.start(socket, () -> shutDown = true);
+        Consumer<byte[]> onInput = sendStrategy.start(socket, () -> shutDown = true, commandSubstitutionTimeout);
 
         InputStream in = socket.getInputStream();
         byte[] buffer = new byte[1024];

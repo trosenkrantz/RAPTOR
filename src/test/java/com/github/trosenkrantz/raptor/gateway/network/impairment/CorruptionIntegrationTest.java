@@ -60,7 +60,8 @@ class CorruptionIntegrationTest {
                       "role": "send",
                       "remoteAddress": "224.0.2.0",
                       "remotePort": 50000,
-                      "payload": "%s"
+                      "payload": "%s",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, originalBinaryMessage));
 

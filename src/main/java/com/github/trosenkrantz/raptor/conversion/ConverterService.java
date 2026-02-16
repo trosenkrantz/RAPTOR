@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.conversion;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.File;
@@ -38,7 +39,10 @@ public class ConverterService implements RootService {
         configuration.setEnum(action);
 
         String path = switch (action) {
-            case ENCODING -> ConsoleIo.askForString("Absolute or relative path of file to write to", "." + File.separator + "file");
+            case ENCODING -> {
+                CommandSubstitutor.configureTimeout(configuration);
+                yield ConsoleIo.askForString("Absolute or relative path of file to write to", "." + File.separator + "file");
+            }
             case FILE -> {
                 String result = ConsoleIo.askForFile("Absolute or relative path of file to convert", "." + File.separator + "file");
 
@@ -59,7 +63,7 @@ public class ConverterService implements RootService {
 
                 Path path = Path.of(configuration.requireFullyEscapedString(PARAMETER_PATH));
                 Files.createDirectories(path.getParent());
-                byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding);
+                byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding, CommandSubstitutor.requireTimeout(configuration));
                 Files.write(
                         path,
                         bytes,

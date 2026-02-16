@@ -27,13 +27,15 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                         "endpoint": "tcp",
                         "role": "server",
                         "localPort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "server",
                         "localPort": 50001,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       }
                     }
                     """);
@@ -50,7 +52,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, gateway.getRaptorHostname()));
             system2.runConfiguration(String.format("""
@@ -60,7 +63,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50001,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, gateway.getRaptorHostname()));
             gateway.expectNumberOfOutputLineContains(1, "connected", system1.getRaptorIpAddress(), "50000");
@@ -104,7 +108,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "localPort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             system2.runConfiguration("""
@@ -113,7 +118,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "localPort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
 
@@ -130,14 +136,16 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                         "role": "client",
                         "remoteHost": "%s",
                         "remotePort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "client",
                         "remoteHost": "%s",
                         "remotePort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       }
                     }
                     """, system1.getRaptorHostname(), system2.getRaptorHostname()));
@@ -183,7 +191,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "localPort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             system1.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
@@ -197,13 +206,15 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                         "role": "client",
                         "remoteHost": "%s",
                         "remotePort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "server",
                         "localPort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       }
                     }
                     """, system1.getRaptorHostname()));
@@ -219,13 +230,15 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                         "role": "client",
                         "remoteHost": "%s",
                         "remotePort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       },
                       "b": {
                         "endpoint": "tcp",
                         "role": "server",
                         "localPort": 50000,
-                        "tlsVersion": "none"
+                        "tlsVersion": "none",
+                        "commandSubstitutionTimeout": 1000
                       }
                     }
                     """, gateway1.getRaptorHostname()));
@@ -240,7 +253,8 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, gateway2.getRaptorHostname()));
             system2.expectNumberOfOutputLineContains(1, "connected", gateway2.getRaptorIpAddress(), "50000");

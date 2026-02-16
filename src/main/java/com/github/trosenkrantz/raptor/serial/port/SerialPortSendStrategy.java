@@ -16,5 +16,5 @@ public interface SerialPortSendStrategy {
      * @return a consumer to be called when the serial port receives data
      * @throws IOException if an I/O error occurs
      */
-    Consumer<byte[]> start(final Configuration configuration, final SerialPort port, final Runnable shutDownAction) throws IOException;
+    Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction, int commandSubstitutionTimeout) throws IOException;
 }

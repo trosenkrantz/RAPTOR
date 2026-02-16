@@ -14,12 +14,12 @@ class InteractiveSendStrategy implements SerialPortSendStrategy {
     private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
 
     @Override
-    public Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction) {
+    public Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction, int commandSubstitutionTimeout) {
         Thread.ofVirtual().start(() -> {
                     try {
                         while (port.isOpen()) {
                             String userAnswer = ConsoleIo.askForString("What to send", "Hello, World!"); // User answers with fully escaped string
-                            byte[] whatToSend = BytesFormatter.raptorEncodingToBytes(userAnswer);
+                            byte[] whatToSend = BytesFormatter.raptorEncodingToBytes(userAnswer, commandSubstitutionTimeout);
                             SerialPortUtility.writeToPort(port, whatToSend);
                         }
                     } catch (UserAbortedException ignore) {

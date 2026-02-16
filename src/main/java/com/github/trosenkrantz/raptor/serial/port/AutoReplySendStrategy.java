@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 class AutoReplySendStrategy implements SerialPortSendStrategy {
     @Override
-    public Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction) throws IOException {
+    public Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction, int commandSubstitutionTimeout) throws IOException {
         StateMachine stateMachine = new StateMachine(
                 StateMachineConfiguration.fromConfiguration(configuration),
                 payload -> SerialPortUtility.writeToPort(port, payload)

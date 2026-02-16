@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 class NoneSendStrategy implements WebSocketSendStrategy {
     @Override
-    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction) {
+    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction, int commandSubstitutionTimeout) {
         return input -> { // Nothing to send on inputs
         };
     }

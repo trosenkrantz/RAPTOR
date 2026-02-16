@@ -1,9 +1,6 @@
 package com.github.trosenkrantz.raptor.io;
 
-import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
-
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 import java.util.Locale;
@@ -135,8 +132,8 @@ public class BytesFormatter {
         return HexFormat.of().withPrefix("\\\\x").formatHex(input);
     }
 
-    public static byte[] raptorEncodingToBytes(String input) {
-        return intermediateEncodingToBytes(raptorEncodingToIntermediateEncodedBytes(input));
+    public static byte[] raptorEncodingToBytes(String input, int commandSubstitutionTimeout) {
+        return intermediateEncodingToBytes(raptorEncodingToIntermediateEncodedBytes(input), commandSubstitutionTimeout);
     }
 
     public static String raptorEncodingToIntermediateEncodedBytes(String input) {
@@ -165,7 +162,14 @@ public class BytesFormatter {
         return stringBuilder.toString();
     }
 
-    public static byte[] intermediateEncodingToBytes(String input) {
+    /**
+     * Converts intermediate encoding to bytes.
+     *
+     * @param input                      intermediate encoding
+     * @param commandSubstitutionTimeout timeout in ms used for command substitutions
+     * @return convert bytes
+     */
+    public static byte[] intermediateEncodingToBytes(String input, int commandSubstitutionTimeout) {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
         int length = input.length();
@@ -182,10 +186,10 @@ public class BytesFormatter {
 
                 if (end.isPresent()) {
                     String command = input.substring(start, end.get());
-                    byte[] stdout = executeCommand(command);
+                    byte[] stdout = executeCommand(command, commandSubstitutionTimeout);
                     String outputString = new String(stdout, StandardCharsets.ISO_8859_1); // stdout should be RAPTOR encoding, which is ASCII, but use ISO 8859-1 to be more forgiving
                     String trimmedOutputString = outputString.replaceAll("\\r?\\n$", ""); // Many CLI commands append a newline in stdout, this is invalid in RAPTOR encoding, trimmed away to be more forgiving
-                    byte[] commandBytes = raptorEncodingToBytes(trimmedOutputString); // Convert the RAPTOR encoded stdout to bytes
+                    byte[] commandBytes = raptorEncodingToBytes(trimmedOutputString, commandSubstitutionTimeout); // Convert the RAPTOR encoded stdout to bytes
                     byteStream.write(commandBytes, 0, commandBytes.length);
 
                     i = end.get(); // Skip past the closing parenthesis
@@ -232,7 +236,14 @@ public class BytesFormatter {
         return Optional.empty();
     }
 
-    private static byte[] executeCommand(String command) {
+    /**
+     * Executes a command.
+     *
+     * @param command command to execute
+     * @param timeout timeout in ms
+     * @return stdout of command, or empty if failed
+     */
+    private static byte[] executeCommand(String command, int timeout) {
         boolean isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
         String[] shellConfig = isWindows ? new String[]{"cmd", "/c", command} : new String[]{"sh", "-c", command};
 
@@ -244,7 +255,7 @@ public class BytesFormatter {
             Future<byte[]> stderrFuture = executor.submit(() -> process.getErrorStream().readAllBytes());
 
             try {
-                byte[] stdout = stdoutFuture.get(1, TimeUnit.SECONDS); // Timeout to not block RAPTOR
+                byte[] stdout = stdoutFuture.get(timeout, TimeUnit.MILLISECONDS); // Timeout to not block RAPTOR
                 byte[] stderr = stderrFuture.get(100, TimeUnit.MILLISECONDS); // Expect stderr to end at most shortly after
 
                 if (process.waitFor(100, TimeUnit.MILLISECONDS)) { // Expect process to terminate at most shortly after
@@ -259,14 +270,14 @@ public class BytesFormatter {
                     }
                 } else {
                     process.destroyForcibly();
-                    LOGGER.severe("Command " + command + " did not terminate by itself. Killed it and skipping processing its output.");
-                    return new byte[0];
+                    LOGGER.warning("Command " + command + " did not terminate by itself within 100 ms of closing its standard streams. Killed the process.");
+                    return stdout;
                 }
 
                 return stdout;
             } catch (TimeoutException e) {
                 process.destroyForcibly();
-                LOGGER.severe("Command " + command + " did not terminate its standard streams. Killed it and skipping processing its output.");
+                LOGGER.severe("Command " + command + " did not end its standard streams within " + timeout + " ms. Killed the process and skipping processing its output.");
                 return new byte[0];
             }
         } catch (Exception e) {

@@ -11,7 +11,7 @@ import com.github.trosenkrantz.raptor.io.BytesFormatter;
  * @param nextState Name of the state to transition to if input is matched
  */
 public record Transition(String input, String output, String nextState) {
-    public byte[] outputAsBytes() {
-        return BytesFormatter.intermediateEncodingToBytes(output);
+    public byte[] outputAsBytes(int commandSubstitutionTimeout) {
+        return BytesFormatter.intermediateEncodingToBytes(output, commandSubstitutionTimeout);
     }
 }

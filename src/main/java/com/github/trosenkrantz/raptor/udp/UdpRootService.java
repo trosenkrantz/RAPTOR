@@ -2,10 +2,7 @@ package com.github.trosenkrantz.raptor.udp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.RootService;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.ConsoleIo;
-import com.github.trosenkrantz.raptor.io.IpAddressValidator;
-import com.github.trosenkrantz.raptor.io.IpPortValidator;
+import com.github.trosenkrantz.raptor.io.*;
 
 import java.io.IOException;
 import java.net.*;
@@ -76,6 +73,8 @@ public class UdpRootService implements RootService {
                 ).ifPresent(port -> configuration.setInt(UdpUtility.PARAMETER_LOCAL_PORT, port));
 
                 configuration.setFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD, ConsoleIo.askForString("Payload to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING));
+
+                CommandSubstitutor.configureTimeout(configuration); // TODO Test
             }
             case RECEIVE -> {
                 if (mode == Mode.MULTICAST) {
@@ -90,7 +89,7 @@ public class UdpRootService implements RootService {
     @Override
     public void run(Configuration configuration) throws Exception {
         switch (configuration.requireEnum(Role.class)) {
-            case SEND -> runSend(configuration, BytesFormatter.raptorEncodingToBytes(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD)));
+            case SEND -> runSend(configuration, BytesFormatter.raptorEncodingToBytes(configuration.requireFullyEscapedString(UdpUtility.PARAMETER_PAYLOAD), CommandSubstitutor.requireTimeout(configuration)));
             case RECEIVE -> runReceive(configuration);
         }
     }

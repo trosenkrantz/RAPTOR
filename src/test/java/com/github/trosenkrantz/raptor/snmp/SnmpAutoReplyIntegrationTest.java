@@ -41,7 +41,8 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                               "nextState" : "ready1"
                             }
                           ]
-                        }
+                        },
+                        "commandSubstitutionTimeout": 1000
                       }
                     }
                     """);
@@ -111,51 +112,52 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             agent.runConfiguration("""
-                {
-                  "service" : "snmp",
-                  "role" : "respond",
-                  "port" : 161,
-                  "replies" : {
-                    "startState" : "s1",
-                    "states" : {
-                      "s1" : [
-                        {
-                          "input" : "1.2.3.4",
-                          "output" : "\\\\x02\\\\x01\\\\x2a",
-                          "nextState" : "s2"
+                    {
+                      "service" : "snmp",
+                      "role" : "respond",
+                      "port" : 161,
+                      "replies" : {
+                        "startState" : "s1",
+                        "states" : {
+                          "s1" : [
+                            {
+                              "input" : "1.2.3.4",
+                              "output" : "\\\\x02\\\\x01\\\\x2a",
+                              "nextState" : "s2"
+                            },
+                            {
+                              "input" : "1.2.3.5",
+                              "output" : "\\\\x04\\\\x05Hello"
+                            }
+                          ],
+                          "s2" : [
+                            {
+                              "input" : "1.2.3.4",
+                              "output" : "\\\\x02\\\\x01\\\\x64"
+                            }
+                          ]
                         },
-                        {
-                          "input" : "1.2.3.5",
-                          "output" : "\\\\x04\\\\x05Hello"
-                        }
-                      ],
-                      "s2" : [
-                        {
-                          "input" : "1.2.3.4",
-                          "output" : "\\\\x02\\\\x01\\\\x64"
-                        }
-                      ]
+                        "commandSubstitutionTimeout": 1000
+                      }
                     }
-                  }
-                }
-                """);
+                    """);
             agent.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
 
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "1.2.3.4" },
-                    { "oid": "1.2.3.5" },
-                    { "oid": "1.2.3.6" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "1.2.3.4" },
+                        { "oid": "1.2.3.5" },
+                        { "oid": "1.2.3.6" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains(
                     "Received",
                     "1.2.3.4", "42",
@@ -165,18 +167,18 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
 
             // Verify state transitioned
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "1.2.3.4" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "1.2.3.4" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains("Received", "100");
         }
     }
@@ -189,51 +191,52 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             agent.runConfiguration("""
-                {
-                  "service" : "snmp",
-                  "role" : "respond",
-                  "port" : 161,
-                  "replies" : {
-                    "startState" : "s1",
-                    "states" : {
-                      "s1" : [
-                        {
-                          "input" : "1.2.3.4",
-                          "output" : "\\\\x02\\\\x01\\\\x01",
-                          "nextState" : "s2"
+                    {
+                      "service" : "snmp",
+                      "role" : "respond",
+                      "port" : 161,
+                      "replies" : {
+                        "startState" : "s1",
+                        "states" : {
+                          "s1" : [
+                            {
+                              "input" : "1.2.3.4",
+                              "output" : "\\\\x02\\\\x01\\\\x01",
+                              "nextState" : "s2"
+                            },
+                            {
+                              "input" : "1.2.3.5",
+                              "output" : "\\\\x02\\\\x01\\\\x02",
+                              "nextState" : "s3"
+                            }
+                          ],
+                          "s2" : [
+                            { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x0a" }
+                          ],
+                          "s3" : [
+                            { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x14" }
+                          ]
                         },
-                        {
-                          "input" : "1.2.3.5",
-                          "output" : "\\\\x02\\\\x01\\\\x02",
-                          "nextState" : "s3"
-                        }
-                      ],
-                      "s2" : [
-                        { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x0a" }
-                      ],
-                      "s3" : [
-                        { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x14" }
-                      ]
+                        "commandSubstitutionTimeout": 1000
+                      }
                     }
-                  }
-                }
-                """);
+                    """);
             agent.expectNumberOfOutputLineContains(1, "Listening to requests");
 
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "1.2.3.5" },
-                    { "oid": "1.2.3.4" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "1.2.3.5" },
+                        { "oid": "1.2.3.4" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
 
             manager.expectAnyOutputLineContains(
                     "Received",
@@ -243,18 +246,18 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
 
             // Should transition to s3 (first matched OID = 1.2.3.5)
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "1.2.3.9" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "1.2.3.9" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains("Received", "20");
         }
     }
@@ -267,40 +270,41 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             agent.runConfiguration("""
-                {
-                  "service" : "snmp",
-                  "role" : "respond",
-                  "port" : 161,
-                  "replies" : {
-                    "startState" : "s1",
-                    "states" : {
-                      "s1" : [
-                        {
-                          "input" : "1.2.3.4",
-                          "output" : "\\\\x02\\\\x01\\\\x2a",
-                          "nextState" : "s2"
-                        }
-                      ]
+                    {
+                      "service" : "snmp",
+                      "role" : "respond",
+                      "port" : 161,
+                      "replies" : {
+                        "startState" : "s1",
+                        "states" : {
+                          "s1" : [
+                            {
+                              "input" : "1.2.3.4",
+                              "output" : "\\\\x02\\\\x01\\\\x2a",
+                              "nextState" : "s2"
+                            }
+                          ]
+                        },
+                        "commandSubstitutionTimeout": 1000
+                      }
                     }
-                  }
-                }
-                """);
+                    """);
             agent.expectNumberOfOutputLineContains(1, "Listening to requests");
 
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "2.9.9.1" },
-                    { "oid": "2.9.9.2" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "2.9.9.1" },
+                        { "oid": "2.9.9.2" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
 
             manager.expectAnyOutputLineContains(
                     "Received",
@@ -318,50 +322,51 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
             network.startAll();
 
             agent.runConfiguration("""
-                {
-                  "service" : "snmp",
-                  "role" : "respond",
-                  "port" : 161,
-                  "replies" : {
-                    "startState" : "s1",
-                    "states" : {
-                      "s1" : [
-                        {
-                          "input" : "1.2.3.4",
-                          "output" : "\\\\x02\\\\x01\\\\x01"
+                    {
+                      "service" : "snmp",
+                      "role" : "respond",
+                      "port" : 161,
+                      "replies" : {
+                        "startState" : "s1",
+                        "states" : {
+                          "s1" : [
+                            {
+                              "input" : "1.2.3.4",
+                              "output" : "\\\\x02\\\\x01\\\\x01"
+                            },
+                            {
+                              "input" : "1.2.3.5",
+                              "output" : "\\\\x02\\\\x01\\\\x02",
+                              "nextState" : "s3"
+                            }
+                          ],
+                          "s2" : [
+                            { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x0a" }
+                          ],
+                          "s3" : [
+                            { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x14" }
+                          ]
                         },
-                        {
-                          "input" : "1.2.3.5",
-                          "output" : "\\\\x02\\\\x01\\\\x02",
-                          "nextState" : "s3"
-                        }
-                      ],
-                      "s2" : [
-                        { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x0a" }
-                      ],
-                      "s3" : [
-                        { "input" : "1.2.3.9", "output" : "\\\\x02\\\\x01\\\\x14" }
-                      ]
+                        "commandSubstitutionTimeout": 1000
+                      }
                     }
-                  }
-                }
-                """);
+                    """);
             agent.expectNumberOfOutputLineContains(1, "Listening to requests");
 
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "1.2.3.4" },
-                    { "oid": "1.2.3.5" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "1.2.3.4" },
+                        { "oid": "1.2.3.5" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
 
             manager.expectAnyOutputLineContains(
                     "Received",
@@ -371,18 +376,18 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
 
             // Should transition to s3, as first match (to s2) have no nextState
             manager.runConfiguration(String.format("""
-                {
-                  "service" : "snmp",
-                  "role" : "getRequest",
-                  "host" : "%s",
-                  "port" : 161,
-                  "version" : "2c",
-                  "community" : "private",
-                  "bindings": [
-                    { "oid": "1.2.3.9" }
-                  ]
-                }
-                """, agent.getRaptorHostname()));
+                    {
+                      "service" : "snmp",
+                      "role" : "getRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        { "oid": "1.2.3.9" }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
             manager.expectAnyOutputLineContains("Received", "20");
         }
     }

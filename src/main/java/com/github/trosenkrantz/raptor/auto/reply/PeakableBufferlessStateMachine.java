@@ -16,14 +16,14 @@ public class PeakableBufferlessStateMachine {
 
     public PeakableBufferlessStateMachine(final StateMachineConfiguration configuration) {
         this.configuration = configuration;
-        currentStateName = configuration.startState();
+        currentStateName = configuration.getStartState();
     }
 
     public Optional<Transition> peak(byte[] input) {
-        List<Transition> currentState = configuration.states().get(currentStateName);
+        List<Transition> currentState = configuration.getStates().get(currentStateName);
         if (currentState == null) {
-            LOGGER.warning("Auto-reply state " + currentStateName + " not defined. Transitioning to start state " + configuration.startState() + ".");
-            currentState = configuration.states().get(configuration.startState());
+            LOGGER.warning("Auto-reply state " + currentStateName + " not defined. Transitioning to start state " + configuration.getStartState() + ".");
+            currentState = configuration.getStates().get(configuration.getStartState());
         }
 
         String instanceBuffer = new String(input, StandardCharsets.ISO_8859_1); // Use ISO 8859-1 to be able to match on arbitrary bytes
@@ -41,5 +41,9 @@ public class PeakableBufferlessStateMachine {
         if (transition.nextState() != null) {
             currentStateName = transition.nextState();
         }
+    }
+
+    public StateMachineConfiguration getConfiguration() {
+        return configuration;
     }
 }

@@ -46,11 +46,13 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                               "output" : "UNKNOWN_COMMAND!"
                             }
                           ]
-                        }
-                      }
+                        },
+                        "commandSubstitutionTimeout": 1000
+                      },
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
-            server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
+            server.expectNumberOfOutputLineContains(1, "Waiting for client to connect"); // TODO TCP currently have timeouts on two levels, fix
 
             // Client connects to server
             client.runConfiguration(String.format("""
@@ -60,7 +62,8 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
@@ -103,8 +106,10 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                               "output" : "Output 1"
                             }
                           ]
-                        }
-                      }
+                        },
+                        "commandSubstitutionTimeout": 1000
+                      },
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -117,7 +122,8 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
@@ -142,8 +148,10 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                               "output" : "Output 2"
                             }
                           ]
-                        }
-                      }
+                        },
+                        "commandSubstitutionTimeout": 1000
+                      },
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Updated auto-replies");

@@ -22,7 +22,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -34,7 +35,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client1.getRaptorIpAddress(), "50000");
@@ -51,7 +53,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client2.getRaptorIpAddress(), "50000");
@@ -72,7 +75,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -84,7 +88,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorIpAddress()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
@@ -105,7 +110,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -117,7 +123,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             String serverAddress = server.getRaptorIpAddress();
@@ -152,7 +159,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "port": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -167,7 +175,8 @@ public class WebSocketIntegrationTest extends RaptorIntegrationTest {
                         "abc" : "def"
                       },
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "abc", "def");

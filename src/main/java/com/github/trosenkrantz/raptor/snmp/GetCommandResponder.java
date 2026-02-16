@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.snmp;
 
 import com.github.trosenkrantz.raptor.auto.reply.*;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
+import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import org.snmp4j.CommandResponder;
 import org.snmp4j.CommandResponderEvent;
 import org.snmp4j.MessageException;
@@ -78,10 +79,12 @@ public class GetCommandResponder implements CommandResponder {
     }
 
     private Variable extractOutputVariable(Transition transition) {
+        byte[] berEncoding = transition.outputAsBytes(stateMachine.getConfiguration().getCommandSubstitutionTimeout());
+
         try {
-            return SnmpService.toVariable(transition.outputAsBytes());
+            return SnmpService.toVariable(berEncoding);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed parsing " + transition.output() + " as Basic Encoding Rules.", e);
+            LOGGER.log(Level.SEVERE, "Failed parsing " + BytesFormatter.bytesToRaptorEncodedBytes(berEncoding) + " as Basic Encoding Rules.", e);
             return new Null();
         }
     }

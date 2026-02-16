@@ -18,7 +18,7 @@ class AutoReplySendStrategy implements WebSocketSendStrategy {
     }
 
     @Override
-    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction) {
+    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction, int commandSubstitutionTimeout) {
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> WebSocketService.send(socket, output));
         return input -> {
             for (byte b : input) {

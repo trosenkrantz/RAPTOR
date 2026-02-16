@@ -39,7 +39,8 @@ public class SnmpTrapIntegrationTest extends RaptorIntegrationTest {
                           "oid": "1.2.3.4",
                           "variable": "\\\\x04\\\\x05Hello"
                         }
-                      ]
+                      ],
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, receiver.getRaptorHostname()));
 
@@ -80,7 +81,8 @@ public class SnmpTrapIntegrationTest extends RaptorIntegrationTest {
                           "oid": "1.2.3.4",
                           "variable": "\\\\x04\\\\x05Hello"
                         }
-                      ]
+                      ],
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, receiver.getRaptorHostname()));
 
@@ -121,7 +123,8 @@ public class SnmpTrapIntegrationTest extends RaptorIntegrationTest {
                           "oid": "1.2.3.4",
                           "variable": "\\\\x04\\\\x05Hello"
                         }
-                      ]
+                      ],
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, receiver.getRaptorIpAddress()));
 
@@ -161,7 +164,8 @@ public class SnmpTrapIntegrationTest extends RaptorIntegrationTest {
                         { "oid": "1.2.3.1", "variable": "\\\\x04\\\\x05Hello" }, // OctetString
                         { "oid": "1.2.3.2", "variable": "\\\\x02\\\\x01\\\\x2A" }, // Integer 42
                         { "oid": "1.2.3.3", "variable": "\\\\x06\\\\x03\\\\x2B\\\\x06\\\\x01" } // OID 1.3.6.1
-                      ]
+                      ],
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, receiver.getRaptorHostname()));
 

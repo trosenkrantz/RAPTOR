@@ -18,7 +18,7 @@ public class SerialPortEndpoint implements Endpoint {
         // Start receiving in a separate thread to not block the main thread
         Thread.ofVirtual().start(() -> {
             try {
-                SerialPortUtility.connectAndStartSendingAndReceiving(configuration, (ignore1, port, ignore2) -> {
+                SerialPortUtility.connectAndStartSendingAndReceiving(configuration, (ignore1, port, ignore2, ignore3) -> {
                     // Now that the port is open, we can set what to do with data from the broker
                     fromBroker.setDelegate(payload -> SerialPortUtility.writeToPort(port, payload));
 

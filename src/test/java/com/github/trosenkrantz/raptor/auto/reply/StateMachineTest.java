@@ -9,13 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 class StateMachineTest {
+
+    public static final int COMMAND_SUBSTITUTION_TIMEOUT = 1000;
+
     @Test
     void matchesInputEscapeCharacters() {
         // Arrange
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("login\n", "ok", null)))
+                Map.of("S1", List.of(new Transition("login\n", "ok", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -34,7 +38,8 @@ class StateMachineTest {
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("\\x00login", "ok", null)))
+                Map.of("S1", List.of(new Transition("\\x00login", "ok", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -54,7 +59,8 @@ class StateMachineTest {
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("\\x00(\\x01)+\\xff", "ok", null)))
+                Map.of("S1", List.of(new Transition("\\x00(\\x01)+\\xff", "ok", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -73,7 +79,8 @@ class StateMachineTest {
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("1.2.3.4", "ok", null)))
+                Map.of("S1", List.of(new Transition("1.2.3.4", "ok", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -92,7 +99,8 @@ class StateMachineTest {
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("1.2.3..+", "ok", null)))
+                Map.of("S1", List.of(new Transition("1.2.3..+", "ok", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -111,7 +119,8 @@ class StateMachineTest {
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("login", "ok\n", null)))
+                Map.of("S1", List.of(new Transition("login", "ok\n", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -128,7 +137,8 @@ class StateMachineTest {
         List<byte[]> capturedOutputs = new ArrayList<>();
         StateMachine stateMachine = new StateMachine(new StateMachineConfiguration(
                 "S1",
-                Map.of("S1", List.of(new Transition("login", "ok\\x02", null)))
+                Map.of("S1", List.of(new Transition("login", "ok\\x02", null))),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act
@@ -148,7 +158,8 @@ class StateMachineTest {
                 Map.of(
                         "S1", List.of(new Transition("S1 input", "S1 output", "S2")),
                         "S2", List.of(new Transition("S2 input", "S2 output", "S1"))
-                )
+                ),
+                COMMAND_SUBSTITUTION_TIMEOUT
         ), capturedOutputs::add);
 
         // Act and Assert

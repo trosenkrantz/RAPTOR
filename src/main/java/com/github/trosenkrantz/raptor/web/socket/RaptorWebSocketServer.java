@@ -19,10 +19,12 @@ public class RaptorWebSocketServer extends WebSocketServer {
 
     private final WebSocketSendStrategy sendStrategy;
     private final Map<InetSocketAddress, Consumer<byte[]>> onInput = new HashMap<>();
+    private final int commandSubstitutionTimeout;
 
-    public RaptorWebSocketServer(InetSocketAddress address, WebSocketSendStrategy sendStrategy) {
+    public RaptorWebSocketServer(InetSocketAddress address, WebSocketSendStrategy sendStrategy, int commandSubstitutionTimeout) {
         super(address);
         this.sendStrategy = sendStrategy;
+        this.commandSubstitutionTimeout = commandSubstitutionTimeout;
     }
 
     @Override
@@ -45,7 +47,7 @@ public class RaptorWebSocketServer extends WebSocketServer {
                 LOGGER.log(Level.SEVERE, "Error stopping server.", e);
                 Thread.currentThread().interrupt();
             }
-        }));
+        }, commandSubstitutionTimeout));
     }
 
     @Override

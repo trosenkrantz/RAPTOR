@@ -46,10 +46,12 @@ public class WebSocketAutoReplyIntegrationTest extends RaptorIntegrationTest {
                               "output" : "UNKNOWN_COMMAND!"
                             }
                           ]
-                        }
-                      }
+                        },
+                        "commandSubstitutionTimeout": 1000
+                      },
+                      "commandSubstitutionTimeout": 1000
                     }
-                    """);
+                    """); // TODO Uses timeout at two levels, fix
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
@@ -59,7 +61,8 @@ public class WebSocketAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "role": "client",
                       "uri": "ws://%s:50000",
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             String serverAddress = server.getRaptorIpAddress();

@@ -1,12 +1,12 @@
 package com.github.trosenkrantz.raptor.auto.reply;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 public final class StateMachineConfiguration {
@@ -17,18 +17,32 @@ public final class StateMachineConfiguration {
 
     private String startState;
     private Map<String, List<Transition>> states;
+    private Integer commandSubstitutionTimeout; // In ms
 
     public StateMachineConfiguration() {
     }
 
-    public StateMachineConfiguration(String startState, Map<String, List<Transition>> states) {
+    /**
+     * Constructor
+     *
+     * @param startState                 name of the start state
+     * @param states                     states
+     * @param commandSubstitutionTimeout timeout in ms used for command substitutions
+     */
+    public StateMachineConfiguration(String startState, Map<String, List<Transition>> states, int commandSubstitutionTimeout) {
         this.startState = startState;
         this.states = states;
+        this.commandSubstitutionTimeout = commandSubstitutionTimeout;
     }
 
     public static StateMachineConfiguration fromConfiguration(final Configuration configuration) {
         StateMachineConfiguration originalStateMachine = configuration.requireObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
-        ConsoleIo.writeLine("Loaded auto-replies configuration with " + originalStateMachine.states().size() + " states and " + originalStateMachine.states().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
+        ConsoleIo.writeLine("Loaded auto-replies configuration with " + originalStateMachine.getStates().size() + " states and " + originalStateMachine.getStates().values().stream().map(List::size).reduce(0, Integer::sum) + " transitions.");
+
+        if (originalStateMachine.getCommandSubstitutionTimeout() == null) {
+            LOGGER.warning("Auto-reply command substitution timeout is not set, setting to " + CommandSubstitutor.DEFAULT_TIMEOUT);
+            originalStateMachine.commandSubstitutionTimeout = CommandSubstitutor.DEFAULT_TIMEOUT;
+        }
 
         boolean subscribed = configuration.subscribeToObjectChangesIfSupported(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class, originalStateMachine::updateModel);
         if (subscribed) LOGGER.info("Listening for updates to configuration file. Will update auto-replies if updated.");
@@ -39,37 +53,27 @@ public final class StateMachineConfiguration {
     private void updateModel(StateMachineConfiguration newStateMachineConfiguration) {
         this.startState = newStateMachineConfiguration.startState;
         this.states = newStateMachineConfiguration.states;
+        if (newStateMachineConfiguration.commandSubstitutionTimeout != null) this.commandSubstitutionTimeout = newStateMachineConfiguration.getCommandSubstitutionTimeout();
         LOGGER.info("Updated auto-replies due to configuration changes.");
     }
 
     public static void configureSampleAutoReply(Configuration configuration, String resourcePath) throws IOException {
+
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfiguration.class.getResourceAsStream(resourcePath));
+        CommandSubstitutor.configureTimeout(autoReplyConfiguration);
         configuration.setSubConfiguration(AutoRepliesUtility.PARAMETER_REPLIES, autoReplyConfiguration);
-
         ConsoleIo.writeLine("Configured sample auto-reply. To adjust: Save configuration, edit it, and re-run RAPTOR.");
-    }
-
-    public String startState() {
-        return startState;
-    }
-
-    public Map<String, List<Transition>> states() {
-        return states;
     }
 
     public String getStartState() {
         return startState;
     }
 
-    public void setStartState(String startState) {
-        this.startState = startState;
-    }
-
     public Map<String, List<Transition>> getStates() {
         return states;
     }
 
-    public void setStates(Map<String, List<Transition>> states) {
-        this.states = states;
+    public Integer getCommandSubstitutionTimeout() {
+        return commandSubstitutionTimeout;
     }
 }

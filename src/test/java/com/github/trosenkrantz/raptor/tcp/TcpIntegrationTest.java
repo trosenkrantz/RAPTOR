@@ -24,7 +24,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "localPort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -37,7 +38,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client1.getRaptorIpAddress(), "50000");
@@ -56,7 +58,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client2.getRaptorIpAddress(), "50000");
@@ -77,7 +80,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "localPort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -90,7 +94,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "none"
+                      "sendStrategy": "none",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorIpAddress()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
@@ -111,7 +116,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "role": "server",
                       "localPort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -124,7 +130,8 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
                       "remoteHost": "%s",
                       "remotePort": 50000,
                       "tlsVersion": "none",
-                      "sendStrategy": "interactive"
+                      "sendStrategy": "interactive",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
             String serverAddress = server.getRaptorIpAddress();

@@ -38,7 +38,8 @@ public class UdpMulticastIntegrationTest extends RaptorIntegrationTest {
                       "role" : "send",
                       "remoteAddress" : "224.0.2.0",
                       "remotePort" : 50000,
-                      "payload" : "Hello, World!"
+                      "payload" : "Hello, World!",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
 

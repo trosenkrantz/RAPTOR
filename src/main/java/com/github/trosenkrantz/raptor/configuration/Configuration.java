@@ -175,7 +175,7 @@ public class Configuration {
      * @param key key, must be a fully escaped string, see {@link BytesFormatter}
      * @return the value as a fully escaped string if present, empty Optional otherwise
      */
-    public Optional<String> getFullyEscapedString(String key) {
+    public Optional<String> getFullyEscapedString(String key) { // TODO Rename to RAPTOR encoding throughout class
         JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null || !node.isTextual()) {
             return Optional.empty();
@@ -205,6 +205,29 @@ public class Configuration {
     }
 
     /* Enum and Configurable */
+
+    public <E extends Enum<E> & ConfigurableEnum> Optional<E> getEnum(String key, Class<E> enumClass) {
+        Optional<String> idInConfiguration = getFullyEscapedString(key);
+        if (idInConfiguration.isEmpty()) return Optional.empty();
+
+        E[] enumConstants = enumClass.getEnumConstants();
+        List<E> matchingEnumConstants = Arrays.stream(enumConstants).filter(id -> id.getConfigurationId().equals(idInConfiguration.get())).toList();
+
+        if (matchingEnumConstants.isEmpty()) {
+            List<String> idsInEnumConstants = Arrays.stream(enumConstants).map(ConfigurableEnum::getConfigurationId).toList();
+            LOGGER.warning(idInConfiguration + " not found among [" + String.join(", ", idsInEnumConstants) + "]. Assuming unset.");
+            return Optional.empty();
+        }
+        if (matchingEnumConstants.size() > 1) {
+            LOGGER.warning("Multiple enum constants found for " + idInConfiguration + ". Picking the first.");
+        }
+
+        return Optional.of(matchingEnumConstants.getFirst());
+    }
+
+    public <E extends Enum<E> & ConfigurableEnum> Optional<E> getEnum(Class<E> enumClass) {
+        return getEnum(PascalCaseToCamelCase(enumClass.getSimpleName()), enumClass);
+    }
 
     public <E extends Enum<E> & ConfigurableEnum> E requireEnum(Class<E> enumClass) {
         return requireEnum(PascalCaseToCamelCase(enumClass.getSimpleName()), enumClass);

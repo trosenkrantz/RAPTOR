@@ -20,24 +20,24 @@ public class StateMachine {
 
     public StateMachine(final StateMachineConfiguration configuration, final Consumer<byte[]> onOutput) {
         this.configuration = configuration;
-        currentStateName = configuration.startState();
+        currentStateName = configuration.getStartState();
         this.onOutput = onOutput;
     }
 
     public void onInput(byte[] input) {
         buffer.append(new String(input, StandardCharsets.ISO_8859_1)); // Use ISO 8859-1 to be able to match on arbitrary bytes
 
-        List<Transition> currentState = configuration.states().get(currentStateName);
+        List<Transition> currentState = configuration.getStates().get(currentStateName);
         if (currentState == null) {
-            LOGGER.warning("Auto-reply state " + currentStateName + " not defined. Transitioning to start state " + configuration.startState() + ".");
-            currentState = configuration.states().get(configuration.startState());
+            LOGGER.warning("Auto-reply state " + currentStateName + " not defined. Transitioning to start state " + configuration.getStartState() + ".");
+            currentState = configuration.getStates().get(configuration.getStartState());
         }
 
         for (Transition transition : currentState) {
             Matcher matcher = Pattern.compile(transition.input(), Pattern.DOTALL).matcher(buffer); // We expect arbitrary bytes, so we use dotall mode to treat line terminators bytes as any other bytes
 
             if (matcher.matches()) {
-                onOutput.accept(BytesFormatter.intermediateEncodingToBytes(transition.output()));
+                onOutput.accept(BytesFormatter.intermediateEncodingToBytes(transition.output(), configuration.getCommandSubstitutionTimeout()));
                 if (transition.nextState() != null) {
                     currentStateName = transition.nextState();
                 }

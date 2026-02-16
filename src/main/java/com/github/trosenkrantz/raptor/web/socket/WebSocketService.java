@@ -5,6 +5,7 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.configuration.StringToStringMapSetting;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
 import com.github.trosenkrantz.raptor.tls.TlsVersion;
@@ -68,6 +69,8 @@ public class WebSocketService implements RootService {
         }
 
         configureSendStrategy(configuration);
+
+        CommandSubstitutor.configureTimeout(configuration);
     }
 
     private static void configureSendStrategy(Configuration configuration) throws IOException {
@@ -85,11 +88,13 @@ public class WebSocketService implements RootService {
         WebSocketSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
         sendStrategy.load(configuration);
 
+        int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+
         switch (configuration.requireEnum(Role.class)) {
             case CLIENT -> {
                 String uri = configuration.requireFullyEscapedString(PARAMETER_URI);
                 Map<String, String> extraHeaders = EXTRA_HEADERS_SETTING.read(configuration).orElse(new HashMap<>());
-                WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy, extraHeaders);
+                WebSocketClient client = new RaptorWebSocketClient(new URI(uri), sendStrategy, extraHeaders, commandSubstitutionTimeout);
                 if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
                     client.setSocketFactory(TlsUtility.loadSslContext(configuration).getSocketFactory());
                 }
@@ -98,7 +103,7 @@ public class WebSocketService implements RootService {
             }
             case SERVER -> {
                 int port = configuration.requireInt(PARAMETER_PORT);
-                WebSocketServer server = new RaptorWebSocketServer(new InetSocketAddress("0.0.0.0", port), sendStrategy);
+                WebSocketServer server = new RaptorWebSocketServer(new InetSocketAddress("0.0.0.0", port), sendStrategy, commandSubstitutionTimeout);
                 boolean useTls = configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE;
                 if (useTls) server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(TlsUtility.loadSslContext(configuration)));
                 LOGGER.info("Waiting for client to connect to " + (useTls ? "wss" : "ws") + "://0.0.0.0:" + port + "...");

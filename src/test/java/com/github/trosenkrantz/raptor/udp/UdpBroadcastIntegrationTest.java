@@ -33,7 +33,8 @@ public class UdpBroadcastIntegrationTest extends RaptorIntegrationTest {
                       "mode" : "broadcast",
                       "role" : "send",
                       "remotePort" : 50000,
-                      "payload" : "Hello, World!"
+                      "payload" : "Hello, World!",
+                      "commandSubstitutionTimeout": 1000
                     }
                     """);
 

@@ -15,10 +15,10 @@ class InteractiveSendStrategy implements TcpSendStrategy {
     private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
 
     @Override
-    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) {
+    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction, int commandSubstitutionTimeout) {
         Thread.ofVirtual().start(() -> {
                     try {
-                        Supplier<byte[]> supplier = () -> BytesFormatter.raptorEncodingToBytes(ConsoleIo.askForString("What to send", "Hello, World!"));
+                        Supplier<byte[]> supplier = () -> BytesFormatter.raptorEncodingToBytes(ConsoleIo.askForString("What to send", "Hello, World!"), commandSubstitutionTimeout);
 
                         OutputStream out = socket.getOutputStream();
                         byte[] whatToSend = supplier.get();

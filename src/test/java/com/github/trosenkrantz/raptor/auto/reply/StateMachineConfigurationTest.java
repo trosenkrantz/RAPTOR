@@ -16,13 +16,13 @@ class StateMachineConfigurationTest {
         StateMachineConfiguration stateMachineConfiguration = configuration.requireObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
 
         // Assert parsed values
-        Assertions.assertEquals("login", stateMachineConfiguration.startState());
-        Assertions.assertEquals(2, stateMachineConfiguration.states().size());
-        Assertions.assertEquals(1, stateMachineConfiguration.states().get("login").size());
-        Assertions.assertEquals("login\n", stateMachineConfiguration.states().get("login").getFirst().input());
-        Assertions.assertEquals("ok\n", stateMachineConfiguration.states().get("login").getFirst().output());
-        Assertions.assertEquals("active", stateMachineConfiguration.states().get("login").getFirst().nextState());
-        Assertions.assertEquals(2, stateMachineConfiguration.states().get("active").size());
+        Assertions.assertEquals("login", stateMachineConfiguration.getStartState());
+        Assertions.assertEquals(2, stateMachineConfiguration.getStates().size());
+        Assertions.assertEquals(1, stateMachineConfiguration.getStates().get("login").size());
+        Assertions.assertEquals("login\n", stateMachineConfiguration.getStates().get("login").getFirst().input());
+        Assertions.assertEquals("ok\n", stateMachineConfiguration.getStates().get("login").getFirst().output());
+        Assertions.assertEquals("active", stateMachineConfiguration.getStates().get("login").getFirst().nextState());
+        Assertions.assertEquals(2, stateMachineConfiguration.getStates().get("active").size());
     }
 
     @Test
@@ -34,12 +34,12 @@ class StateMachineConfigurationTest {
         StateMachineConfiguration stateMachineConfiguration = configuration.requireObject(AutoRepliesUtility.PARAMETER_REPLIES, StateMachineConfiguration.class);
 
         // Assert parsed values
-        Assertions.assertEquals("login", stateMachineConfiguration.startState());
-        Assertions.assertEquals(2, stateMachineConfiguration.states().size());
-        Assertions.assertEquals(1, stateMachineConfiguration.states().get("login").size());
-        Assertions.assertEquals("login\n", stateMachineConfiguration.states().get("login").getFirst().input());
-        Assertions.assertEquals("ok\n", stateMachineConfiguration.states().get("login").getFirst().output());
-        Assertions.assertEquals("active", stateMachineConfiguration.states().get("login").getFirst().nextState());
-        Assertions.assertEquals(2, stateMachineConfiguration.states().get("active").size());
+        Assertions.assertEquals("login", stateMachineConfiguration.getStartState());
+        Assertions.assertEquals(2, stateMachineConfiguration.getStates().size());
+        Assertions.assertEquals(1, stateMachineConfiguration.getStates().get("login").size());
+        Assertions.assertEquals("login\n", stateMachineConfiguration.getStates().get("login").getFirst().input());
+        Assertions.assertEquals("ok\n", stateMachineConfiguration.getStates().get("login").getFirst().output());
+        Assertions.assertEquals("active", stateMachineConfiguration.getStates().get("login").getFirst().nextState());
+        Assertions.assertEquals(2, stateMachineConfiguration.getStates().get("active").size());
     }
 }

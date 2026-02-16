@@ -23,5 +23,5 @@ public interface TcpSendStrategy {
      * @return a consumer that will be called with the socket has received data
      * @throws IOException if an I/O error occurs
      */
-    Consumer<byte[]> start(final Socket socket, final Runnable shutDownAction) throws IOException;
+    Consumer<byte[]> start(final Socket socket, final Runnable shutDownAction, final int commandSubstitutionTimeout) throws IOException;
 }

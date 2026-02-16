@@ -23,9 +23,9 @@ public class IntegerSetting extends Setting<Integer> {
     public void configure(Configuration configuration, Integer currentValue) {
         int value;
         if (currentValue == null) {
-            value = ConsoleIo.askForInt(getDescription());
+            value = ConsoleIo.askForInt(getDescription(), getValidator());
         } else {
-            value = ConsoleIo.askForInt(getDescription(), currentValue);
+            value = ConsoleIo.askForInt(getDescription(), currentValue, getValidator());
         }
 
         configuration.setInt(getParameterKey(), value);
