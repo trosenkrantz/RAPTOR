@@ -41,8 +41,7 @@ public class MixedGatewayIntegrationTest {
                         "role": "client",
                         "remoteHost": "%s",
                         "remotePort": 50000,
-                        "tlsVersion": "none",
-                        "commandSubstitutionTimeout": 1000
+                        "tlsVersion": "none"
                       },
                       "b": {
                         "endpoint": "udp",
@@ -51,7 +50,7 @@ public class MixedGatewayIntegrationTest {
                         "port": 50000
                       }
                     }
-                    """, system1.getRaptorHostname())); // TODO UDP does not require timeout, it should probably do that
+                    """, system1.getRaptorHostname()));
             gateway.expectNumberOfOutputLineContains(1, "connected", system1.getRaptorIpAddress(), "50000");
 
             // Start system2 receiver

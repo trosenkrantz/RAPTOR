@@ -1,6 +1,8 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.dockerjava.api.async.ResultCallback;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -8,16 +10,15 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.images.builder.Transferable;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Raptor extends GenericContainer<Raptor> {
     private static final long TIMEOUT_MS = 8000L;
@@ -25,6 +26,8 @@ public class Raptor extends GenericContainer<Raptor> {
 
     private final List<String> stdoutLines = new ArrayList<>();
     private final RaptorNetwork network;
+
+    private boolean shouldBeRunning = false;
 
     public Raptor(final RaptorNetwork network) {
         super("raptor:latest");
@@ -35,7 +38,7 @@ public class Raptor extends GenericContainer<Raptor> {
             cmd.withTty(true);
             cmd.withStdinOpen(true);
         });
-        withLogConsumer(outputFrame -> {
+        withLogConsumer(outputFrame -> { // TODO Can we use getLogs?
             if (outputFrame.getType() == OutputFrame.OutputType.STDOUT) {
                 String line = outputFrame.getUtf8String();
                 synchronized (this) {
@@ -43,6 +46,12 @@ public class Raptor extends GenericContainer<Raptor> {
                 }
             }
         });
+    }
+
+    @Override
+    public void start() {
+        super.start();
+        shouldBeRunning = true;
     }
 
     /**
@@ -102,7 +111,7 @@ public class Raptor extends GenericContainer<Raptor> {
                 network.getContainers().stream()
                         .filter(container -> !equals(container))
                         .map(Raptor::getOutput)
-                        .map(output ->  System.lineSeparator() + "Another RAPTOR's output:" + System.lineSeparator() + output)
+                        .map(output -> System.lineSeparator() + "Another RAPTOR's output:" + System.lineSeparator() + output)
                         .collect(Collectors.joining()));
     }
 
@@ -142,5 +151,44 @@ public class Raptor extends GenericContainer<Raptor> {
         writeLineToStdIn("./raptor");
 
         return this;
+    }
+
+    @Override
+    public void stop() {
+        try {
+            if (shouldBeRunning) { // Might be stopped already, in which case we already ran this and cannot access log files anymore
+                assertLogFiles();
+                shouldBeRunning = false;
+            }
+        } finally {
+            super.stop();
+        }
+    }
+
+    private void assertLogFiles() {
+        String stdout;
+        try {
+            stdout = execInContainer("ls", "-1", "/app/logs").getStdout().trim();
+        } catch (IOException | InterruptedException e) {
+            Assertions.fail("Failed listing log files.", e);
+            return;
+        }
+        if (stdout.isEmpty()) Assertions.fail("No log files found.");
+
+        List<String> logFilenames = stdout.lines()
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .filter(name -> !name.endsWith(".lck"))
+                .toList();
+
+        Assertions.assertFalse(logFilenames.isEmpty(), "No log files not found.");
+
+        for (String fileName : logFilenames) {
+            String content = copyFileFromContainer("/app/logs/" + fileName, inputStream -> new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+
+            Assertions.assertTrue(content.contains("INFO"), "Log file " + fileName + " has no INFO entry:" + System.lineSeparator() + content);
+            Assertions.assertFalse(content.contains("SEVERE"), "Log file " + fileName + " has a SEVERE entry:" + System.lineSeparator() + content);
+            Assertions.assertFalse(content.contains("WARNING"), "Log file " + fileName + " has a WARNING entry:" + System.lineSeparator() + content);
+        }
     }
 }

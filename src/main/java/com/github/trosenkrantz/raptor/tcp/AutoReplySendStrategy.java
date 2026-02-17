@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,13 +19,18 @@ class AutoReplySendStrategy implements TcpSendStrategy {
     private StateMachineConfiguration stateMachineConfiguration;
 
     @Override
+    public void configure(Configuration configuration) throws IOException {
+        StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.REPLIES_PATH);
+    }
+
+    @Override
     public void load(Configuration configuration) {
         // Read state machine immediately to provide early feedback
         stateMachineConfiguration = StateMachineConfiguration.fromConfiguration(configuration);
     }
 
     @Override
-    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction, int commandSubstitutionTimeout) throws IOException {
+    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) throws IOException {
         OutputStream out = socket.getOutputStream();
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
             try {

@@ -6,7 +6,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-class ConsoleFormatter extends Formatter {
+public class ConsoleFormatter extends Formatter {
     @Override
     public String format(LogRecord record) {
         StringBuilder builder = new StringBuilder();

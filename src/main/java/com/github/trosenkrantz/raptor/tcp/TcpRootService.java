@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.tcp;
 import com.github.trosenkrantz.raptor.*;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.*;
@@ -33,9 +34,7 @@ public class TcpRootService implements RootService {
         SendStrategy sendStrategy = ConsoleIo.askForOptions("What data to send to the remote system", SendStrategy.class);
         configuration.setEnum(sendStrategy);
 
-        if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
-            StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.REPLIES_PATH);
-        }
+        sendStrategy.getStrategy().configure(configuration);
     }
 
     @Override

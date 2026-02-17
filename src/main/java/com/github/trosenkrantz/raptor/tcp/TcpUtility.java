@@ -54,18 +54,14 @@ public class TcpUtility {
                 TlsUtility.configureTls(configuration, true);
             }
         }
-
-        CommandSubstitutor.configureTimeout(configuration); // TODO Test
     }
 
     public static void connectAndStartSendingAndReceiving(Configuration configuration, TcpSendStrategy sendStrategy) throws Exception {
-        int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
-
         try {
             switch (configuration.requireEnum(Role.class)) {
                 case CLIENT -> {
                     try (Socket socket = getClientSocket(configuration)) {
-                        runWithSocket(socket, sendStrategy, commandSubstitutionTimeout);
+                        runWithSocket(socket, sendStrategy);
                     }
                 }
                 case SERVER -> {
@@ -75,7 +71,7 @@ public class TcpUtility {
                         while (!shutDown) { // Open for new client when closed
                             LOGGER.info("Waiting for client to connect to port " + port + "...");
                             try {
-                                runWithSocket(socket.accept(), sendStrategy, commandSubstitutionTimeout);
+                                runWithSocket(socket.accept(), sendStrategy);
                             } catch (SocketException e) {
                                 if ("Socket closed".equals(e.getMessage())) {
                                     LOGGER.info("Socket closed normally.");
@@ -134,10 +130,10 @@ public class TcpUtility {
         }
     }
 
-    private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy, int commandSubstitutionTimeout) throws IOException {
+    private static void runWithSocket(Socket socket, TcpSendStrategy sendStrategy) throws IOException {
         LOGGER.info("Local socket at " + socket.getLocalSocketAddress() + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
 
-        Consumer<byte[]> onInput = sendStrategy.start(socket, () -> shutDown = true, commandSubstitutionTimeout);
+        Consumer<byte[]> onInput = sendStrategy.start(socket, () -> shutDown = true);
 
         InputStream in = socket.getInputStream();
         byte[] buffer = new byte[1024];

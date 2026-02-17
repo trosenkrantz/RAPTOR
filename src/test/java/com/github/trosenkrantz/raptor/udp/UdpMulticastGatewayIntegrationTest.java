@@ -45,7 +45,7 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
                         "port": 50000
                       }
                     }
-                    """); // TODO Gateway does not need timeout, it probably should, investigate
+                    """);
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
             gateway.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
 

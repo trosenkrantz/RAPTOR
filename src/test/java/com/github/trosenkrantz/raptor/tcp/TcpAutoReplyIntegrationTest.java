@@ -48,11 +48,10 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                           ]
                         },
                         "commandSubstitutionTimeout": 1000
-                      },
-                      "commandSubstitutionTimeout": 1000
+                      }
                     }
                     """);
-            server.expectNumberOfOutputLineContains(1, "Waiting for client to connect"); // TODO TCP currently have timeouts on two levels, fix
+            server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server
             client.runConfiguration(String.format("""
@@ -108,8 +107,7 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                           ]
                         },
                         "commandSubstitutionTimeout": 1000
-                      },
-                      "commandSubstitutionTimeout": 1000
+                      }
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
@@ -150,8 +148,7 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                           ]
                         },
                         "commandSubstitutionTimeout": 1000
-                      },
-                      "commandSubstitutionTimeout": 1000
+                      }
                     }
                     """);
             server.expectNumberOfOutputLineContains(1, "Updated auto-replies");

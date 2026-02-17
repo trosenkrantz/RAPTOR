@@ -1,9 +1,12 @@
 package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.UserAbortedException;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.function.Consumer;
@@ -13,9 +16,20 @@ import java.util.logging.Logger;
 
 class InteractiveSendStrategy implements TcpSendStrategy {
     private static final Logger LOGGER = Logger.getLogger(InteractiveSendStrategy.class.getName());
+    private int commandSubstitutionTimeout;
 
     @Override
-    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction, int commandSubstitutionTimeout) {
+    public void configure(Configuration configuration) throws IOException {
+        CommandSubstitutor.configureTimeout(configuration);
+    }
+
+    @Override
+    public void load(Configuration configuration) throws IOException {
+        this.commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+    }
+
+    @Override
+    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) {
         Thread.ofVirtual().start(() -> {
                     try {
                         Supplier<byte[]> supplier = () -> BytesFormatter.raptorEncodingToBytes(ConsoleIo.askForString("What to send", "Hello, World!"), commandSubstitutionTimeout);

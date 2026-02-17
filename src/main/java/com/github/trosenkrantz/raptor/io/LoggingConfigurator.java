@@ -1,5 +1,7 @@
 package com.github.trosenkrantz.raptor.io;
 
+import com.github.trosenkrantz.raptor.logging.FileFormatter;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;

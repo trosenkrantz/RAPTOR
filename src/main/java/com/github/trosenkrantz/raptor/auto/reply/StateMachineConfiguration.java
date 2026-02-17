@@ -58,6 +58,7 @@ public final class StateMachineConfiguration {
     }
 
     public static void configureSampleAutoReply(Configuration configuration, String resourcePath) throws IOException {
+        CommandSubstitutor.configureTimeout(configuration);
 
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfiguration.class.getResourceAsStream(resourcePath));
         CommandSubstitutor.configureTimeout(autoReplyConfiguration);
