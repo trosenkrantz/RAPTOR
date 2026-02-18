@@ -33,8 +33,8 @@ public class GetCommandResponder implements CommandResponder {
             return;
         }
 
-        if (requestPdu.getType() != PDU.GET) {
-            LOGGER.info("Received non-GET PDU " + requestPdu + " from " + event.getPeerAddress() + ".");
+        if (requestPdu.getType() != PDU.GET && requestPdu.getType() != PDU.SET) {
+            LOGGER.info("Received non-GET, non-SET PDU " + requestPdu + " from " + event.getPeerAddress() + ". Ignoring it.");
             return;
         }
 

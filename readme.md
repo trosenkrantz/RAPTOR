@@ -21,6 +21,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
 - SNMP:
   - Version 1 and 2c.
   - GET, SET, and TRAP operations.
+  - Agent and manager roles.
   - Arbitrary data support trough Basic Encoding Rules (BER) encoding.
 - Serial port.
 - WebSocket:
@@ -196,7 +197,7 @@ For TCP and serial port auto-replies, RAPTOR passes input to the state machine b
 ### SNMP
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
-When processing a GET request with multiple variable bindings, RAPTOR matches each IOD against the current state, to deliver independent response variables matching the corresponding request.
+When processing a GET or SET request with multiple variable bindings, RAPTOR matches each IOD against the current state, to deliver independent response variables matching the corresponding request.
 RAPTOR transitions the state machine once, based on the first matched OID with a `nextState`.
 
 If RAPTOR finds no match for an OID, it responds with Null for that variable binding.
@@ -206,13 +207,13 @@ If RAPTOR finds no match for an OID, it responds with Null for that variable bin
 
 ```json5
 {
-  "startState": "ready1",
+  "startState": "ab",
   "states": {
-    "ready1": [
+    "a": [
       {
         "input": "1.2.3.4", // For OID 1.2.3.4
         "output": "\\x02\\x01\\x2a", // Deliver type integer (\x02 in BER), length 1 byte, value 42 (\x2a in hex)
-        "nextState": "ready2" // Alternate between two states to simulate variation
+        "nextState": "b" // Alternate between two states to simulate variation
       },
       {
         "input": "1.2.3.5..+", // Use regex
@@ -220,11 +221,11 @@ If RAPTOR finds no match for an OID, it responds with Null for that variable bin
       }
       // For SNMP, RAPTOR delivers Null if it finds no match
     ],
-    "ready2": [
+    "b": [
       {
         "input": "1.2.3.4",
         "output": "\\x02\\x02\\x01\\x2c", // Integer 300
-        "nextState": "ready1" // Alternate between two states to simulate variation
+        "nextState": "a" // Alternate between two states to simulate variation
       }
     ]
   }

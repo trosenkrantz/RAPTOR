@@ -391,4 +391,53 @@ public class SnmpAutoReplyIntegrationTest extends RaptorIntegrationTest {
             manager.expectAnyOutputLineContains("Received", "20");
         }
     }
+
+    @Test
+    public void respondToSetPdu() throws IOException {
+        try (RaptorNetwork network = new RaptorNetwork();
+             Raptor agent = new Raptor(network);
+             Raptor manager = new Raptor(network)) {
+            network.startAll();
+
+            agent.runConfiguration("""
+                    {
+                      "service" : "snmp",
+                      "role" : "respond",
+                      "port" : 161,
+                      "replies" : {
+                        "startState" : "1",
+                        "states" : {
+                          "1" : [
+                            {
+                              "input" : "1.2.3.4",
+                              "output" : "\\\\x04\\\\x04ABCD"
+                            }
+                          ]
+                        },
+                        "commandSubstitutionTimeout": 1000
+                      }
+                    }
+                    """);
+            agent.expectNumberOfOutputLineContains(1, "Listening to requests"); // Wait until ready to receive
+
+            // Manager sends SET PDU
+            manager.runConfiguration(String.format("""
+                    {
+                      "service" : "snmp",
+                      "role" : "setRequest",
+                      "host" : "%s",
+                      "port" : 161,
+                      "version" : "2c",
+                      "community" : "private",
+                      "bindings": [
+                        {
+                          "oid": "1.2.3.4",
+                          "variable": "\\\\x04\\\\x05Value"
+                        }
+                      ]
+                    }
+                    """, agent.getRaptorHostname()));
+            manager.expectAnyOutputLineContains("Received", "ABCD");
+        }
+    }
 }
