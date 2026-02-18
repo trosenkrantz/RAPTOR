@@ -40,7 +40,7 @@ public class ConverterService implements RootService {
 
         String path = switch (action) {
             case ENCODING -> {
-                CommandSubstitutor.configureTimeout(configuration);
+                CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
                 yield ConsoleIo.askForString("Absolute or relative path of file to write to", "." + File.separator + "file");
             }
             case FILE -> {
@@ -63,7 +63,7 @@ public class ConverterService implements RootService {
 
                 Path path = Path.of(configuration.requireRaptorEncodedString(PARAMETER_PATH));
                 Files.createDirectories(path.getParent());
-                byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding, CommandSubstitutor.requireTimeout(configuration));
+                byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding, CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration));
                 Files.write(
                         path,
                         bytes,

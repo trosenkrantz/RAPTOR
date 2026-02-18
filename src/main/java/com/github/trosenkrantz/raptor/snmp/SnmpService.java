@@ -69,7 +69,7 @@ public class SnmpService implements RootService {
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setRaptorEncodedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 SET_REQUEST_BINDINGS_SETTING.configure(configuration);
-                CommandSubstitutor.configureTimeout(configuration);
+                CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
             }
             case RESPOND -> {
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for managers to send requests to", SnmpConstants.DEFAULT_COMMAND_RESPONDER_PORT));
@@ -82,7 +82,7 @@ public class SnmpService implements RootService {
                 configuration.setEnum(ConsoleIo.askForOptions(Version.class, Version.V2C));
                 configuration.setRaptorEncodedString(PARAMETER_COMMUNITY, ConsoleIo.askForString("Community to use", DEFAULT_COMMUNITY));
                 TRAP_BINDINGS_SETTING.configure(configuration);
-                CommandSubstitutor.configureTimeout(configuration);
+                CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
             }
             case LISTEN -> {
                 configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Local IP port to set up socket for and for agent to send traps to", SnmpConstants.DEFAULT_NOTIFICATION_RECEIVER_PORT));
@@ -103,7 +103,7 @@ public class SnmpService implements RootService {
             case SET_REQUEST -> {
                 PDU pdu = createPdu(configuration);
                 pdu.setType(PDU.SET);
-                int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+                int commandSubstitutionTimeout = CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration);
                 pdu.addAll(SET_REQUEST_BINDINGS_SETTING.readAndRequireOrDefault(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
 
                 SnmpSender.run(configuration, pdu);
@@ -116,7 +116,7 @@ public class SnmpService implements RootService {
                     pdu.setType(PDU.TRAP);
                 }
 
-                int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
+                int commandSubstitutionTimeout = CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration);
                 pdu.addAll(TRAP_BINDINGS_SETTING.readAndRequireOrDefault(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
 
                 SnmpSender.run(configuration, pdu);

@@ -3,10 +3,7 @@ package com.github.trosenkrantz.raptor.io;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -34,8 +31,6 @@ import java.util.logging.Logger;
  */
 public class BytesFormatter {
     public static final String DEFAULT_FULLY_ESCAPED_STRING = "Hello, World!";
-
-    private static final Logger LOGGER = Logger.getLogger(BytesFormatter.class.getName());
 
     public static String bytesToRaptorEncoding(byte[] input) {
         if (isText(input)) {
@@ -186,7 +181,7 @@ public class BytesFormatter {
 
                 if (end.isPresent()) {
                     String command = input.substring(start, end.get());
-                    byte[] stdout = executeCommand(command, commandSubstitutionTimeout);
+                    byte[] stdout = CommandSubstitutor.executeCommand(command, commandSubstitutionTimeout);
                     String outputString = new String(stdout, StandardCharsets.ISO_8859_1); // stdout should be RAPTOR encoding, which is ASCII, but use ISO 8859-1 to be more forgiving
                     String trimmedOutputString = outputString.replaceAll("\\r?\\n$", ""); // Many CLI commands append a newline in stdout, this is invalid in RAPTOR encoding, trimmed away to be more forgiving
                     byte[] commandBytes = raptorEncodingToBytes(trimmedOutputString, commandSubstitutionTimeout); // Convert the RAPTOR encoded stdout to bytes
@@ -234,56 +229,6 @@ public class BytesFormatter {
             if (depth == 0) return Optional.of(i);
         }
         return Optional.empty();
-    }
-
-    /**
-     * Executes a command.
-     *
-     * @param command command to execute
-     * @param timeout timeout in ms
-     * @return stdout of command, or empty if failed
-     */
-    private static byte[] executeCommand(String command, int timeout) {
-        boolean isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
-        String[] shellConfig = isWindows ? new String[]{"cmd", "/c", command} : new String[]{"sh", "-c", command};
-
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            Process process = new ProcessBuilder(shellConfig).start();
-
-            // Start capturing streams in parallel to prevent deadlock
-            Future<byte[]> stdoutFuture = executor.submit(() -> process.getInputStream().readAllBytes());
-            Future<byte[]> stderrFuture = executor.submit(() -> process.getErrorStream().readAllBytes());
-
-            try {
-                byte[] stdout = stdoutFuture.get(timeout, TimeUnit.MILLISECONDS); // Timeout to not block RAPTOR
-                byte[] stderr = stderrFuture.get(100, TimeUnit.MILLISECONDS); // Expect stderr to end at most shortly after
-
-                if (process.waitFor(100, TimeUnit.MILLISECONDS)) { // Expect process to terminate at most shortly after
-                    if (stderr.length > 0) {
-                        LOGGER.warning("Command " + command + " reported stderr: " + new String(stderr, StandardCharsets.UTF_8).trim()); // Use UTF-8 as that is usually the case for stderr, and out logging framework supports it
-                    }
-
-                    int exitCode = process.exitValue();
-                    if (exitCode != 0) {
-                        LOGGER.severe("Command " + command + " existed with code " + exitCode + ". Skipping processing its output.");
-                        return new byte[0];
-                    }
-                } else {
-                    process.destroyForcibly();
-                    LOGGER.warning("Command " + command + " did not terminate by itself within 100 ms of closing its standard streams. Killed the process.");
-                    return stdout;
-                }
-
-                return stdout;
-            } catch (TimeoutException e) {
-                process.destroyForcibly();
-                LOGGER.severe("Command " + command + " did not end its standard streams within " + timeout + " ms. Killed the process and skipping processing its output.");
-                return new byte[0];
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed command " + command + ". ", e);
-            return new byte[0];
-        }
     }
 
     private static boolean isHex(char c) {

@@ -58,10 +58,10 @@ public final class StateMachineConfiguration {
     }
 
     public static void configureSampleAutoReply(Configuration configuration, String resourcePath) throws IOException {
-        CommandSubstitutor.configureTimeout(configuration);
+        CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
 
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfiguration.class.getResourceAsStream(resourcePath));
-        CommandSubstitutor.configureTimeout(autoReplyConfiguration);
+        CommandSubstitutor.TIMEOUT_SETTING.configure(autoReplyConfiguration);
         configuration.setSubConfiguration(AutoRepliesUtility.PARAMETER_REPLIES, autoReplyConfiguration);
         ConsoleIo.writeLine("Configured sample auto-reply. To adjust: Save configuration, edit it, and re-run RAPTOR.");
     }

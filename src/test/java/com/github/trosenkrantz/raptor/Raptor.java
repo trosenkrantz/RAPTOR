@@ -1,8 +1,6 @@
 package com.github.trosenkrantz.raptor;
 
 import com.github.dockerjava.api.async.ResultCallback;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -10,21 +8,19 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.images.builder.Transferable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Raptor extends GenericContainer<Raptor> {
     private static final long TIMEOUT_MS = 8000L;
     private static final long EXPECT_INTERVAL_MS = 10L; // Same as WaitingConsumer
 
-    private final List<String> stdoutLines = new ArrayList<>();
     private final RaptorNetwork network;
 
     private boolean shouldBeRunning = false;
@@ -35,16 +31,8 @@ public class Raptor extends GenericContainer<Raptor> {
         this.network = network;
         this.network.addContainer(this);
         withCreateContainerCmdModifier(cmd -> {
-            cmd.withTty(true);
-            cmd.withStdinOpen(true);
-        });
-        withLogConsumer(outputFrame -> { // TODO Can we use getLogs?
-            if (outputFrame.getType() == OutputFrame.OutputType.STDOUT) {
-                String line = outputFrame.getUtf8String();
-                synchronized (this) {
-                    stdoutLines.add(line);
-                }
-            }
+            cmd.withTty(true); // RAPTOR needs a console
+            cmd.withStdinOpen(true); // Needed to test with stdin
         });
     }
 
@@ -86,16 +74,12 @@ public class Raptor extends GenericContainer<Raptor> {
     }
 
     public void expectOutputLines(Predicate<List<String>> predicate) {
-        List<String> capturedLines;
-
         long deadline = System.currentTimeMillis() + TIMEOUT_MS;
+        String output;
         do {
-            synchronized (this) {
-                capturedLines = new ArrayList<>(stdoutLines);
-            }
-            List<String> actualLines = capturedLines.stream().map(String::toLowerCase).toList();
+            output = getStdout(); // Capture a snapshot of stdout to report the same content for assertion fails are we check for
 
-            if (predicate.test(actualLines)) {
+            if (predicate.test(output.lines().map(String::toLowerCase).toList())) {
                 return; // Success
             }
 
@@ -106,17 +90,23 @@ public class Raptor extends GenericContainer<Raptor> {
             }
         } while (System.currentTimeMillis() < deadline);
 
-        Assertions.fail("Timeout waiting for expected outputs. Output:" + System.lineSeparator() +
-                String.join("", capturedLines) + System.lineSeparator() +
+        Assertions.fail("Timeout waiting for expected outputs. Actual output:" + System.lineSeparator() +
+                indentOutput(output) +
                 network.getContainers().stream()
                         .filter(container -> !equals(container))
-                        .map(Raptor::getOutput)
-                        .map(output -> System.lineSeparator() + "Another RAPTOR's output:" + System.lineSeparator() + output)
-                        .collect(Collectors.joining()));
+                        .map(Raptor::getStdout)
+                        .map(Raptor::indentOutput)
+                        .map(out -> System.lineSeparator() + "Another RAPTOR's output:" + System.lineSeparator() + out)
+                        .collect(Collectors.joining())
+        );
     }
 
-    public synchronized String getOutput() {
-        return String.join("", stdoutLines);
+    private static String indentOutput(String out) {
+        return out.lines().map(line -> "\t" + line).collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    private String getStdout() {
+        return getLogs(OutputFrame.OutputType.STDOUT);
     }
 
     public String getRaptorHostname() {

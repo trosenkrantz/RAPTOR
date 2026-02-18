@@ -74,7 +74,7 @@ public class UdpRootService implements RootService {
 
                 configuration.setRaptorEncodedString(UdpUtility.PARAMETER_PAYLOAD, ConsoleIo.askForString("Payload to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING));
 
-                CommandSubstitutor.configureTimeout(configuration); // TODO Test
+                CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
             }
             case RECEIVE -> {
                 if (mode == Mode.MULTICAST) {
@@ -89,7 +89,7 @@ public class UdpRootService implements RootService {
     @Override
     public void run(Configuration configuration) throws Exception {
         switch (configuration.requireEnum(Role.class)) {
-            case SEND -> runSend(configuration, BytesFormatter.raptorEncodingToBytes(configuration.requireRaptorEncodedString(UdpUtility.PARAMETER_PAYLOAD), CommandSubstitutor.requireTimeout(configuration)));
+            case SEND -> runSend(configuration, BytesFormatter.raptorEncodingToBytes(configuration.requireRaptorEncodedString(UdpUtility.PARAMETER_PAYLOAD), CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration)));
             case RECEIVE -> runReceive(configuration);
         }
     }
