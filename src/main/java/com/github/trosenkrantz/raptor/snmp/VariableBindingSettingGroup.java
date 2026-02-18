@@ -1,15 +1,12 @@
 package com.github.trosenkrantz.raptor.snmp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
-import com.github.trosenkrantz.raptor.configuration.SettingGroup;
+import com.github.trosenkrantz.raptor.configuration.Setting;
 import com.github.trosenkrantz.raptor.configuration.StringSetting;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import org.snmp4j.smi.OID;
-import org.snmp4j.smi.VariableBinding;
 
-import java.io.IOException;
+import java.util.Optional;
 
-public class VariableBindingSettingGroup implements SettingGroup<UnresolvedVariableBinding> {
+public class VariableBindingSettingGroup implements Setting<UnresolvedVariableBinding> {
     private static final StringSetting OID_SETTING = new StringSetting.Builder("o", SnmpService.PARAMETER_OID, "OID", "OID")
             .defaultValue(SnmpService.DEFAULT_OID)
             .build();
@@ -18,22 +15,27 @@ public class VariableBindingSettingGroup implements SettingGroup<UnresolvedVaria
             .build();
 
     @Override
-    public Configuration configure() {
-        Configuration configuration = Configuration.empty();
+    public Optional<UnresolvedVariableBinding> read(Configuration configuration) {
+        Optional<String> oid = OID_SETTING.read(configuration);
+        Optional<String> variable = VARIABLE_SETTING.read(configuration);
 
+        if (oid.isPresent() && variable.isPresent()) return Optional.of(new UnresolvedVariableBinding(oid.get(), variable.get()));
+        else return Optional.empty();
+    }
+
+    @Override
+    public void configure(Configuration configuration) {
         OID_SETTING.configure(configuration);
         VARIABLE_SETTING.configure(configuration);
-
-        return configuration;
     }
 
     @Override
-    public String valueToString(Configuration configuration) {
-        return OID_SETTING.valueToString(configuration) + ": " + VARIABLE_SETTING.valueToString(configuration);
+    public String valueToString(UnresolvedVariableBinding value) {
+        return OID_SETTING.valueToString(value.oid()) + ": " + VARIABLE_SETTING.valueToString(value.variable());
     }
 
     @Override
-    public UnresolvedVariableBinding readAndRequire(Configuration configuration) {
-        return new UnresolvedVariableBinding(OID_SETTING.readAndRequire(configuration), VARIABLE_SETTING.readAndRequire(configuration));
+    public UnresolvedVariableBinding readAndRequireOrDefault(Configuration configuration) {
+        return new UnresolvedVariableBinding(OID_SETTING.readAndRequireOrDefault(configuration), VARIABLE_SETTING.readAndRequireOrDefault(configuration));
     }
 }

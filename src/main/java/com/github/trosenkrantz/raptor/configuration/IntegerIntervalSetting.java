@@ -6,7 +6,7 @@ import com.github.trosenkrantz.raptor.io.Validator;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public class IntegerIntervalSetting extends Setting<IntegerInterval> {
+public class IntegerIntervalSetting extends SettingBase<IntegerInterval> {
     private static final Logger LOGGER = Logger.getLogger(IntegerIntervalSetting.class.getName());
     private final Validator<Integer> minValidator;
 
@@ -45,16 +45,16 @@ public class IntegerIntervalSetting extends Setting<IntegerInterval> {
     }
 
     @Override
-    public String valueToString(Configuration configuration) {
-        return read(configuration).map(IntegerInterval::toString).orElse(Setting.EMPTY_VALUE_TO_STRING);
+    public String valueToString(IntegerInterval value) {
+        return value.min() + " - " + value.max();
     }
 
     @Override
-    public void configure(Configuration configuration, IntegerInterval currentValue) {
+    public void configure(Configuration configuration) {
         int min, max;
-        if (currentValue != null) {
-            min = ConsoleIo.askForInt(getDescription() + ", minimum value", currentValue.min(), minValidator);
-            max = ConsoleIo.askForInt(getDescription() + ", maximum value", currentValue.max(), maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
+        if (getDefaultValue().isPresent()) {
+            min = ConsoleIo.askForInt(getDescription() + ", minimum value", getDefaultValue().get().min(), minValidator);
+            max = ConsoleIo.askForInt(getDescription() + ", maximum value", getDefaultValue().get().max(), maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
         } else {
             min = ConsoleIo.askForInt(getDescription() + ", minimum value", minValidator);
             max = ConsoleIo.askForInt(getDescription() + ", maximum value", maxEntered -> getValidator().validate(new IntegerInterval(min, maxEntered)));
@@ -64,7 +64,7 @@ public class IntegerIntervalSetting extends Setting<IntegerInterval> {
         configuration.setInt(getMaxKey(), max);
     }
 
-    public static class Builder extends Setting.Builder<IntegerInterval, Builder> {
+    public static class Builder extends SettingBase.Builder<IntegerInterval, Builder> {
         private Validator<Integer> minValidator;
 
         public Builder(String promptValue, String parameterKey, String name, String description) {

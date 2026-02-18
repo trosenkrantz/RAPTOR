@@ -52,25 +52,12 @@ public class SerialPortUtility {
 
         configuration.setInt(PARAMETER_BAUD_RATE, ConsoleIo.askForInt("Baud rate", DEFAULT_BAUD_RATE));
 
-        // TODO Test
         ConsoleIo.configureAdvancedSettings(List.of(
                 DATA_BITS_SETTING,
                 STOP_BITS_SETTING,
                 PARITY_SETTING,
                 CommandSubstitutor.TIMEOUT_SETTING
         ), configuration);
-
-//        configuration.setInt(PARAMETER_DATA_BITS, ConsoleIo.askForInt("Data bits", DEFAULT_DATA_BITS, value -> {
-//            if (value == 5 || value == 6 || value == 7 || value == 8) {
-//                return Optional.empty();
-//            } else {
-//                return Optional.of("Data bits must be 5, 6, 7, or 8.");
-//            }
-//        }));
-//
-//        configuration.setEnum(ConsoleIo.askForOptions(StopBits.class, DEFAULT_STOP_BITS));
-//
-//        configuration.setEnum(ConsoleIo.askForOptions(Parity.class, DEFAULT_PARITY));
     }
 
     /**
@@ -87,12 +74,12 @@ public class SerialPortUtility {
         SerialPort serialPort = SerialPort.getCommPort(portName);
         serialPort.setComPortParameters(
                 configuration.requireInt(PARAMETER_BAUD_RATE),
-                DATA_BITS_SETTING.readAndRequire(configuration),
-                STOP_BITS_SETTING.readAndRequire(configuration).getValue(),
-                PARITY_SETTING.readAndRequire(configuration).getValue()
+                DATA_BITS_SETTING.readAndRequireOrDefault(configuration),
+                STOP_BITS_SETTING.readAndRequireOrDefault(configuration).getValue(),
+                PARITY_SETTING.readAndRequireOrDefault(configuration).getValue()
         );
 
-        int commandSubstitutionTimeout = CommandSubstitutor.TIMEOUT_SETTING.readAndRequire(configuration); // TODO Test
+        int commandSubstitutionTimeout = CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration);
 
         if (!serialPort.isOpen()) {
             LOGGER.info("Opening port " + portName + "...");

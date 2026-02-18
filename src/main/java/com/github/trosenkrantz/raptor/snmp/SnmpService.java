@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.configuration.ObjectListSetting;
+import com.github.trosenkrantz.raptor.configuration.StringSetting;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.snmp4j.PDU;
@@ -27,7 +28,10 @@ public class SnmpService implements RootService {
     public static final String DEFAULT_COMMUNITY = "private";
     public static final String DEFAULT_VARIABLE = "\\\\x04\\\\x05Hello";
 
-    private static final ObjectListSetting<VariableBinding> GET_REQUEST_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "OIDs", "OIDs of MIB variables to request", new OidSettingGroup()).build();
+    private static final StringSetting OID_SETTING = new StringSetting.Builder("o", SnmpService.PARAMETER_OID, "OID", "OID")
+            .defaultValue(SnmpService.DEFAULT_OID)
+            .build();
+    private static final ObjectListSetting<String> GET_REQUEST_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "OIDs", "OIDs of MIB variables to request", OID_SETTING).build();
     private static final ObjectListSetting<UnresolvedVariableBinding> SET_REQUEST_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "Bindings", "MIB variables to set", new VariableBindingSettingGroup()).build();
     private static final ObjectListSetting<UnresolvedVariableBinding> TRAP_BINDINGS_SETTING = new ObjectListSetting.Builder<>("b", "bindings", "OIDs", "MIB variables to send", new VariableBindingSettingGroup()).build();
 
@@ -92,7 +96,7 @@ public class SnmpService implements RootService {
             case GET_REQUEST -> {
                 PDU pdu = createPdu(configuration);
                 pdu.setType(PDU.GET);
-                pdu.addAll(GET_REQUEST_BINDINGS_SETTING.readAndRequire(configuration));
+                pdu.addAll(GET_REQUEST_BINDINGS_SETTING.readAndRequireOrDefault(configuration).stream().map(oidString -> new VariableBinding(new OID(oidString))).toList());
 
                 SnmpSender.run(configuration, pdu);
             }
@@ -100,7 +104,7 @@ public class SnmpService implements RootService {
                 PDU pdu = createPdu(configuration);
                 pdu.setType(PDU.SET);
                 int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
-                pdu.addAll(SET_REQUEST_BINDINGS_SETTING.readAndRequire(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
+                pdu.addAll(SET_REQUEST_BINDINGS_SETTING.readAndRequireOrDefault(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
 
                 SnmpSender.run(configuration, pdu);
             }
@@ -113,7 +117,7 @@ public class SnmpService implements RootService {
                 }
 
                 int commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
-                pdu.addAll(TRAP_BINDINGS_SETTING.readAndRequire(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
+                pdu.addAll(TRAP_BINDINGS_SETTING.readAndRequireOrDefault(configuration).stream().map(binding -> binding.resolve(commandSubstitutionTimeout)).toList());
 
                 SnmpSender.run(configuration, pdu);
             }

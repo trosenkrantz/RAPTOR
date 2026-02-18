@@ -2,7 +2,7 @@ package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
 import com.github.trosenkrantz.raptor.configuration.IntegerInterval;
 import com.github.trosenkrantz.raptor.configuration.IntegerIntervalSetting;
-import com.github.trosenkrantz.raptor.configuration.Setting;
+import com.github.trosenkrantz.raptor.configuration.SettingBase;
 
 import java.util.Optional;
 import java.util.Random;
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class LatencyFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(LatencyFactory.class.getName());
 
-    public static Setting<IntegerInterval> SETTING = new IntegerIntervalSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
+    public static SettingBase<IntegerInterval> SETTING = new IntegerIntervalSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
             .minValidator(value -> {
                 if (value < 0) {
                     return Optional.of("Minimum latency must be a non-negative integer.");

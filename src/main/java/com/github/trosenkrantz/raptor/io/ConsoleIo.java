@@ -4,7 +4,7 @@ import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.PromptEnum;
 import com.github.trosenkrantz.raptor.PromptOption;
-import com.github.trosenkrantz.raptor.configuration.Setting;
+import com.github.trosenkrantz.raptor.configuration.SettingBase;
 
 import java.io.Console;
 import java.nio.file.Files;
@@ -325,16 +325,16 @@ public class ConsoleIo {
 
     /* Advanced settings */
 
-    public static void configureAdvancedSettings(List<Setting<?>> settings, Configuration configuration) {
+    public static void configureAdvancedSettings(List<SettingBase<?>> settings, Configuration configuration) {
         configureAdvancedSettings(null, settings, configuration);
     }
 
-    public static void configureAdvancedSettings(String description, List<Setting<?>> settings, Configuration configuration) {
+    public static void configureAdvancedSettings(String description, List<SettingBase<?>> settings, Configuration configuration) {
         while (true) {
             List<List<String>> rows = settings.stream().map(setting -> List.of(
                     Ansi.PROMPT.apply(setting.getPromptValue()),
                     setting.getName(),
-                    setting.valueToString(configuration)
+                    getCurrentOrDefaultValueToString(configuration, setting)
             )).toList();
 
             List<String> prefixes = new ArrayList<>();
@@ -348,12 +348,22 @@ public class ConsoleIo {
             if (answer.isEmpty()) return; // User chosen to continue
             if (answer.equals("e")) throw new UserAbortedException();
 
-            Optional<Setting<?>> result = settings.stream().filter(setting -> setting.getPromptValue().equalsIgnoreCase(answer)).findAny();
+            Optional<SettingBase<?>> result = settings.stream().filter(setting -> setting.getPromptValue().equalsIgnoreCase(answer)).findAny();
             if (result.isPresent()) {
                 result.get().configure(configuration); // And do not return to allow for additional settings afterwards
             } else {
                 writeLine("Unrecognised answer.", Ansi.ERROR);
             }
+        }
+    }
+
+    private static <T> String getCurrentOrDefaultValueToString(Configuration configuration, SettingBase<T> setting) {
+        Optional<T> read = setting.read(configuration);
+        if (read.isPresent()) return setting.valueToString(read.get());
+        else {
+            Optional<T> defaultValue = setting.getDefaultValue();
+            if (defaultValue.isPresent()) return setting.valueToString(defaultValue.get());
+            else return "N/A";
         }
     }
 

@@ -4,7 +4,7 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.util.Optional;
 
-public class DoubleSetting extends Setting<Double> {
+public class DoubleSetting extends SettingBase<Double> {
     public DoubleSetting(Builder builder) {
         super(builder);
     }
@@ -15,23 +15,23 @@ public class DoubleSetting extends Setting<Double> {
     }
 
     @Override
-    public String valueToString(Configuration configuration) {
-        return read(configuration).map(Object::toString).orElse(Setting.EMPTY_VALUE_TO_STRING);
+    public String valueToString(Double value) {
+        return value.toString();
     }
 
     @Override
-    public void configure(Configuration configuration, Double currentValue) {
+    public void configure(Configuration configuration) {
         Double value;
-        if (currentValue == null) {
+        if (getDefaultValue().isEmpty()) {
             value = ConsoleIo.askForDouble(getDescription(), getValidator());
         } else {
-            value = ConsoleIo.askForDouble(getDescription(), currentValue, getValidator());
+            value = ConsoleIo.askForDouble(getDescription(), getDefaultValue().get(), getValidator());
         }
 
         configuration.setDouble(getParameterKey(), value);
     }
 
-    public static class Builder extends Setting.Builder<Double, DoubleSetting.Builder> {
+    public static class Builder extends SettingBase.Builder<Double, DoubleSetting.Builder> {
         public Builder(String promptValue, String parameterKey, String name, String description) {
             super(promptValue, parameterKey, name, description);
         }

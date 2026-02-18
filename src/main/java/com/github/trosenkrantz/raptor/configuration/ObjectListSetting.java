@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ObjectListSetting<T> extends Setting<List<T>> {
-    private final SettingGroup<T> group;
+public class ObjectListSetting<T> extends SettingBase<List<T>> {
+    private final Setting<T> group;
 
     public ObjectListSetting(Builder<T> builder) {
         super(builder);
@@ -26,29 +26,36 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
 
         List<T> result = new ArrayList<>();
         for (Configuration itemCfg : items) {
-            result.add(group.readAndRequire(itemCfg));
+            result.add(group.readAndRequireOrDefault(itemCfg));
         }
 
         return Optional.of(result);
     }
 
-    @Override
-    public String valueToString(Configuration configuration) {
-        return configurationToString(configuration.getSubConfigurationArray(getParameterKey()));
-    }
-
     private String configurationToString(List<Configuration> itemConfigurations) {
         if (itemConfigurations.isEmpty()) {
-            return Setting.EMPTY_VALUE_TO_STRING;
+            return SettingBase.EMPTY_VALUE_TO_STRING;
         }
 
         return itemConfigurations.stream()
+                .map(group::readAndRequireOrDefault)
                 .map(group::valueToString)
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
     @Override
-    public void configure(Configuration configuration, List<T> currentValue) {
+    public String valueToString(List<T> value) {
+        if (value.isEmpty()) {
+            return SettingBase.EMPTY_VALUE_TO_STRING;
+        }
+
+        return value.stream()
+                .map(group::valueToString)
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    @Override
+    public void configure(Configuration configuration) {
         List<Configuration> currentConfigurations = new ArrayList<>();
 
         while (true) {
@@ -57,7 +64,8 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
 
             switch (answer) {
                 case "a" -> {
-                    Configuration newConfiguration = group.configure();
+                    Configuration newConfiguration = Configuration.empty();
+                    group.configure(newConfiguration);
                     currentConfigurations.add(newConfiguration);
                 }
                 case "" -> {
@@ -69,10 +77,10 @@ public class ObjectListSetting<T> extends Setting<List<T>> {
         }
     }
 
-    public static class Builder<T> extends Setting.Builder<List<T>, Builder<T>> {
-        private final SettingGroup<T> group;
+    public static class Builder<T> extends SettingBase.Builder<List<T>, Builder<T>> {
+        private final Setting<T> group;
 
-        public Builder(String promptValue, String parameterKey, String name, String description, SettingGroup<T> group) {
+        public Builder(String promptValue, String parameterKey, String name, String description, Setting<T> group) {
             super(promptValue, parameterKey, name, description);
             this.group = group;
         }

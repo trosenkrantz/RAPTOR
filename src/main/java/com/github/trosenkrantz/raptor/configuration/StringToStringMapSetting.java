@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StringToStringMapSetting extends Setting<Map<String, String>> {
+public class StringToStringMapSetting extends SettingBase<Map<String, String>> {
     private StringToStringMapSetting(Builder builder) {
         super(builder);
     }
@@ -28,12 +28,8 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
     }
 
     @Override
-    public String valueToString(Configuration configuration) {
-        return read(configuration).map(StringToStringMapSetting::valueToString).orElse(Setting.EMPTY_VALUE_TO_STRING);
-    }
-
-    private static String valueToString(Map<String, String> map) {
-        if (map.isEmpty()) return Setting.EMPTY_VALUE_TO_STRING;
+    public String valueToString(Map<String, String> map) {
+        if (map.isEmpty()) return SettingBase.EMPTY_VALUE_TO_STRING;
 
         return map.entrySet().stream().map(
                 entry -> entry.getKey() + ": " + entry.getValue()
@@ -41,7 +37,9 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
     }
 
     @Override
-    public void configure(Configuration configuration, Map<String, String> currentValue) {
+    public void configure(Configuration configuration) {
+        Map<String, String> currentValue = getDefaultValue().orElse(new HashMap<>());
+
         while (true) {
             ConsoleIo.writeLine("Configuring " + getDescription() + ". Current value: " + System.lineSeparator() + valueToString(currentValue) + System.lineSeparator() + "Type " + Ansi.PROMPT.apply("a") + " to add or modify. Type " + Ansi.PROMPT.apply("enter") + " to continue. " + ConsoleIo.getExitString() + ":");
             String answer = ConsoleIo.readLine();
@@ -65,7 +63,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
         }
     }
 
-    public static class Builder extends Setting.Builder<Map<String, String>, Builder> {
+    public static class Builder extends SettingBase.Builder<Map<String, String>, Builder> {
         public Builder(String promptValue, String parameterKey, String name, String description) {
             super(promptValue, parameterKey, name, description);
             defaultValue(new HashMap<>());

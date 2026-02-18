@@ -4,7 +4,7 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.util.Optional;
 
-public class IntegerSetting extends Setting<Integer> {
+public class IntegerSetting extends SettingBase<Integer> {
     private IntegerSetting(Builder builder) {
         super(builder);
     }
@@ -15,23 +15,23 @@ public class IntegerSetting extends Setting<Integer> {
     }
 
     @Override
-    public String valueToString(Configuration configuration) {
-        return read(configuration).map(Object::toString).orElse(Setting.EMPTY_VALUE_TO_STRING);
+    public String valueToString(Integer value) {
+        return value.toString();
     }
 
     @Override
-    public void configure(Configuration configuration, Integer currentValue) {
+    public void configure(Configuration configuration) {
         int value;
-        if (currentValue == null) {
+        if (getDefaultValue().isEmpty()) {
             value = ConsoleIo.askForInt(getDescription(), getValidator());
         } else {
-            value = ConsoleIo.askForInt(getDescription(), currentValue, getValidator());
+            value = ConsoleIo.askForInt(getDescription(), getDefaultValue().get(), getValidator());
         }
 
         configuration.setInt(getParameterKey(), value);
     }
 
-    public static class Builder extends Setting.Builder<Integer, Builder> {
+    public static class Builder extends SettingBase.Builder<Integer, Builder> {
         public Builder(String promptValue, String parameterKey, String name, String description) {
             super(promptValue, parameterKey, name, description);
         }

@@ -1,7 +1,7 @@
 package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
 import com.github.trosenkrantz.raptor.configuration.DoubleSetting;
-import com.github.trosenkrantz.raptor.configuration.Setting;
+import com.github.trosenkrantz.raptor.configuration.SettingBase;
 
 import java.util.Optional;
 import java.util.Random;
@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class CorruptionFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(CorruptionFactory.class.getName());
 
-    public static Setting<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption Rate", "Chance of bit flips, between 0 and 1")
+    public static SettingBase<Double> SETTING = new DoubleSetting.Builder("c", "corruption", "Corruption Rate", "Chance of bit flips, between 0 and 1")
             .validator(value -> {
                 if (value < 0 || value > 1) {
                     return Optional.of("Value must be between 0 and 1, inclusive.");

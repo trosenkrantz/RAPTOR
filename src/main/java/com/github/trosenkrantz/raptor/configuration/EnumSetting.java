@@ -5,7 +5,7 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.util.Optional;
 
-public class EnumSetting<T extends Enum<T> & ConfigurableEnum & PromptEnum> extends Setting<T> {
+public class EnumSetting<T extends Enum<T> & ConfigurableEnum & PromptEnum> extends SettingBase<T> {
     private final Class<T> enumClass;
 
     public EnumSetting(Builder<T> builder) {
@@ -19,23 +19,23 @@ public class EnumSetting<T extends Enum<T> & ConfigurableEnum & PromptEnum> exte
     }
 
     @Override
-    public String valueToString(Configuration configuration) {
-        return read(configuration).map(Object::toString).orElse(Setting.EMPTY_VALUE_TO_STRING);
+    public String valueToString(T value) {
+        return value.toString();
     }
 
     @Override
-    public void configure(Configuration configuration, T currentValue) {
+    public void configure(Configuration configuration) {
         T value;
-        if (currentValue == null) {
+        if (getDefaultValue().isEmpty()) {
             value = ConsoleIo.askForOptions(getDescription(), enumClass);
         } else {
-            value = ConsoleIo.askForOptions(enumClass, currentValue);
+            value = ConsoleIo.askForOptions(enumClass, getDefaultValue().get());
         }
 
         configuration.setEnum(value);
     }
 
-    public static class Builder<T extends Enum<T> & ConfigurableEnum & PromptEnum> extends Setting.Builder<T, EnumSetting.Builder<T>> {
+    public static class Builder<T extends Enum<T> & ConfigurableEnum & PromptEnum> extends SettingBase.Builder<T, EnumSetting.Builder<T>> {
         private final Class<T> enumClass;
 
         public Builder(String promptValue, String parameterKey, String name, String description, Class<T> enumClass) {
