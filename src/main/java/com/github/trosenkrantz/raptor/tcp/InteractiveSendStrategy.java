@@ -24,7 +24,7 @@ class InteractiveSendStrategy implements TcpSendStrategy {
     }
 
     @Override
-    public void load(Configuration configuration) throws IOException {
+    public void load(Configuration configuration) {
         this.commandSubstitutionTimeout = CommandSubstitutor.requireTimeout(configuration);
     }
 

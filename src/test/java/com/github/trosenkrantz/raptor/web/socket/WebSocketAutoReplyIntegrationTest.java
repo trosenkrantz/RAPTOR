@@ -48,10 +48,9 @@ public class WebSocketAutoReplyIntegrationTest extends RaptorIntegrationTest {
                           ]
                         },
                         "commandSubstitutionTimeout": 1000
-                      },
-                      "commandSubstitutionTimeout": 1000
+                      }
                     }
-                    """); // TODO Uses timeout at two levels, fix
+                    """);
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect");
 
             // Client connects to server

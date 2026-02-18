@@ -11,7 +11,7 @@ public class StringSetting extends Setting<String> {
 
     @Override
     public Optional<String> read(Configuration configuration) {
-        return configuration.getFullyEscapedString(getParameterKey());
+        return configuration.getRaptorEncodedString(getParameterKey());
     }
 
     @Override
@@ -28,7 +28,7 @@ public class StringSetting extends Setting<String> {
             value = ConsoleIo.askForString(getDescription(), currentValue);
         }
 
-        configuration.setFullyEscapedString(getParameterKey(), value);
+        configuration.setRaptorEncodedString(getParameterKey(), value);
     }
 
     public static class Builder extends Setting.Builder<String, Builder> {

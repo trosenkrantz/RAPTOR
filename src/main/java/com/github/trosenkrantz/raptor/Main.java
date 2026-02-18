@@ -58,14 +58,14 @@ public class Main {
         RootService rootService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList(), true);
 
         Configuration configuration = Configuration.empty();
-        configuration.setFullyEscapedString("service", rootService.getParameterKey());
+        configuration.setRaptorEncodedString("service", rootService.getParameterKey());
         rootService.configure(configuration);
 
         return configuration;
     }
 
     private static void run(Configuration configuration, Collection<RootService> services) throws Exception {
-        String serviceKey = configuration.requireFullyEscapedString("service");
+        String serviceKey = configuration.requireRaptorEncodedString("service");
         services.stream().filter(service -> service.getParameterKey().equals(serviceKey)).findAny().orElseThrow(() -> new IllegalArgumentException("Service " + serviceKey + " not found.")).run(configuration);
     }
 }

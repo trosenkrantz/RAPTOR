@@ -19,12 +19,10 @@ public class RaptorWebSocketClient extends WebSocketClient {
     private final WebSocketSendStrategy sendStrategy;
 
     private Consumer<byte[]> onInput;
-    private final int commandSubstitutionTimeout;
 
-    public RaptorWebSocketClient(URI serverUri, WebSocketSendStrategy sendStrategy, Map<String, String> extraHeaders, int commandSubstitutionTimeout) {
+    public RaptorWebSocketClient(URI serverUri, WebSocketSendStrategy sendStrategy, Map<String, String> extraHeaders) {
         super(serverUri, extraHeaders);
         this.sendStrategy = sendStrategy;
-        this.commandSubstitutionTimeout = commandSubstitutionTimeout;
     }
 
     @Override
@@ -35,7 +33,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakeData) {
         LOGGER.info("Local socket at " + getSocket().getLocalSocketAddress() + " connected to remote socket at " + getSocket().getRemoteSocketAddress() + ".");
-        onInput = sendStrategy.initialise(this, () -> {}, commandSubstitutionTimeout);
+        onInput = sendStrategy.initialise(this, () -> {});
     }
 
     @Override

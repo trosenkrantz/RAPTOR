@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 public interface WebSocketSendStrategy {
+    default void configure(final Configuration configuration) throws IOException {
+    }
+
     /**
      * To be called once when running the service
      *
@@ -22,5 +25,5 @@ public interface WebSocketSendStrategy {
      * @param shutDownAction action that the send strategy will call when the service should shut down, e.g., if aborted by the user
      * @return a consumer that will be called with the socket has received data
      */
-    Consumer<byte[]> initialise(final WebSocket socket, final Runnable shutDownAction, final int commandSubstitutionTimeout);
+    Consumer<byte[]> initialise(final WebSocket socket, final Runnable shutDownAction);
 }

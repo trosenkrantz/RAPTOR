@@ -23,7 +23,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
 
         Map<String, String> result = new HashMap<>();
         Configuration mapConfiguration = optionalMapConfiguration.get();
-        mapConfiguration.keys().forEach(key -> result.put(key, mapConfiguration.requireFullyEscapedString(key)));
+        mapConfiguration.keys().forEach(key -> result.put(key, mapConfiguration.requireRaptorEncodedString(key)));
         return Optional.of(result);
     }
 
@@ -54,7 +54,7 @@ public class StringToStringMapSetting extends Setting<Map<String, String>> {
                 }
                 case "" -> { // User chosen to finish configuring this setting
                     Configuration mapConfiguration = Configuration.empty();
-                    currentValue.forEach(mapConfiguration::setFullyEscapedString);
+                    currentValue.forEach(mapConfiguration::setRaptorEncodedString);
                     configuration.setSubConfiguration(getParameterKey(), mapConfiguration);
 
                     return;

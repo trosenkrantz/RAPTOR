@@ -21,8 +21,8 @@ public class SnmpSender {
 
             // Target setup
             CommunityTarget<Address> target = new CommunityTarget<>();
-            target.setCommunity(new OctetString(configuration.requireFullyEscapedString(SnmpService.PARAMETER_COMMUNITY)));
-            UdpAddress address = new UdpAddress(configuration.requireFullyEscapedString(SnmpService.PARAMETER_HOST) + "/" + configuration.requireInt(SnmpService.PARAMETER_PORT));
+            target.setCommunity(new OctetString(configuration.requireRaptorEncodedString(SnmpService.PARAMETER_COMMUNITY)));
+            UdpAddress address = new UdpAddress(configuration.requireRaptorEncodedString(SnmpService.PARAMETER_HOST) + "/" + configuration.requireInt(SnmpService.PARAMETER_PORT));
             target.setAddress(address);
             Version version = configuration.requireEnum(Version.class);
             target.setVersion(version.getSnmpValue());

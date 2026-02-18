@@ -31,7 +31,7 @@ public class UdpUtility {
     }
 
     static DatagramSocket createSocket(Configuration configuration, Class<? extends InetAddress> family) throws SocketException, UnknownHostException {
-        Optional<String> localAddress = configuration.getFullyEscapedString(PARAMETER_LOCAL_ADDRESS);
+        Optional<String> localAddress = configuration.getRaptorEncodedString(PARAMETER_LOCAL_ADDRESS);
         InetAddress bindingAddress = localAddress.isPresent() ? InetAddress.getByName(localAddress.get()) : InetAddress.getByName(IpAddressMapper.getWildcard(family));
 
         int localPort = configuration.getInt(PARAMETER_LOCAL_PORT).orElse(0); // 0 means ephemeral
@@ -56,7 +56,7 @@ public class UdpUtility {
     }
 
     public static AllReceivingMulticastSocket createReceivingMulticastSocket(Configuration configuration) throws IOException {
-        String multicastGroup = configuration.requireFullyEscapedString(PARAMETER_REMOTE_ADDRESS);
+        String multicastGroup = configuration.requireRaptorEncodedString(PARAMETER_REMOTE_ADDRESS);
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);
         if (port.isPresent()) return new AllReceivingMulticastSocket(multicastGroup, port.get());
         else return new AllReceivingMulticastSocket(multicastGroup);

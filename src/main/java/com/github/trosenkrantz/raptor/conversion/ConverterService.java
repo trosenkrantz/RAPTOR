@@ -52,7 +52,7 @@ public class ConverterService implements RootService {
             }
         };
 
-        configuration.setFullyEscapedString(PARAMETER_PATH, path);
+        configuration.setRaptorEncodedString(PARAMETER_PATH, path);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ConverterService implements RootService {
             case ENCODING -> {
                 String encoding = ConsoleIo.askForString("RAPTOR encoding to convert to file", "\\\\x00Hello\\n");
 
-                Path path = Path.of(configuration.requireFullyEscapedString(PARAMETER_PATH));
+                Path path = Path.of(configuration.requireRaptorEncodedString(PARAMETER_PATH));
                 Files.createDirectories(path.getParent());
                 byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding, CommandSubstitutor.requireTimeout(configuration));
                 Files.write(
@@ -74,7 +74,7 @@ public class ConverterService implements RootService {
                 LOGGER.info("Wrote " + bytes.length + (bytes.length == 1 ? " byte" : " bytes") + " to " + path + ".");
             }
             case FILE -> {
-                LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToRaptorEncoding(Files.readAllBytes(Paths.get(configuration.requireFullyEscapedString(PARAMETER_PATH)))));
+                LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToRaptorEncoding(Files.readAllBytes(Paths.get(configuration.requireRaptorEncodedString(PARAMETER_PATH)))));
             }
         }
     }

@@ -12,7 +12,10 @@ import com.github.trosenkrantz.raptor.io.JsonUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -172,10 +175,10 @@ public class Configuration {
     /**
      * Gets a string.
      *
-     * @param key key, must be a fully escaped string, see {@link BytesFormatter}
-     * @return the value as a fully escaped string if present, empty Optional otherwise
+     * @param key key, must be a RAPTOR encoded string, see {@link BytesFormatter}
+     * @return the value as a RAPTOR encoded string if present, empty Optional otherwise
      */
-    public Optional<String> getFullyEscapedString(String key) { // TODO Rename to RAPTOR encoding throughout class
+    public Optional<String> getRaptorEncodedString(String key) {
         JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
         if (node == null || !node.isTextual()) {
             return Optional.empty();
@@ -186,20 +189,20 @@ public class Configuration {
     /**
      * Gets a string, throwing an exception if absent.
      *
-     * @param key key, must be a fully escaped string, see {@link BytesFormatter}
-     * @return the value as a fully escaped string
+     * @param key key, must be a RAPTOR encoded escaped string, see {@link BytesFormatter}
+     * @return the value as a RAPTOR encoded string
      */
-    public String requireFullyEscapedString(String key) {
-        return getFullyEscapedString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + pathToString(key) + " not set."));
+    public String requireRaptorEncodedString(String key) {
+        return getRaptorEncodedString(key).orElseThrow(() -> new IllegalArgumentException("Parameter " + pathToString(key) + " not set."));
     }
 
     /**
      * Sets a string.
      *
-     * @param key   key, must be a fully escaped strings, see {@link BytesFormatter}
-     * @param value value, must be a fully escaped strings, see {@link BytesFormatter}
+     * @param key   key, must be a RAPTOR encoded strings, see {@link BytesFormatter}
+     * @param value value, must be a RAPTOR encoded strings, see {@link BytesFormatter}
      */
-    public void setFullyEscapedString(String key, String value) {
+    public void setRaptorEncodedString(String key, String value) {
         // Jackson escapes strings, so we convert to hex escaped strings, matching unescaped JSON, to avoid double escaping
         root.put(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key), BytesFormatter.raptorEncodingToIntermediateEncodedBytes(value));
     }
@@ -207,7 +210,7 @@ public class Configuration {
     /* Enum and Configurable */
 
     public <E extends Enum<E> & ConfigurableEnum> Optional<E> getEnum(String key, Class<E> enumClass) {
-        Optional<String> idInConfiguration = getFullyEscapedString(key);
+        Optional<String> idInConfiguration = getRaptorEncodedString(key);
         if (idInConfiguration.isEmpty()) return Optional.empty();
 
         E[] enumConstants = enumClass.getEnumConstants();
@@ -236,13 +239,13 @@ public class Configuration {
     /**
      * Gets an enum constant, throwing an exception if absent.
      *
-     * @param key       key, must be a fully escaped string, see {@link BytesFormatter}
+     * @param key       key, must be a RAPTOR encoded string, see {@link BytesFormatter}
      * @param enumClass enum class
      * @param <E>       enum type
      * @return enum constant
      */
     public <E extends Enum<E> & ConfigurableEnum> E requireEnum(String key, Class<E> enumClass) {
-        String idInConfiguration = requireFullyEscapedString(key);
+        String idInConfiguration = requireRaptorEncodedString(key);
         E[] enumConstants = enumClass.getEnumConstants();
         List<E> matchingEnumConstants = Arrays.stream(enumConstants).filter(id -> id.getConfigurationId().equals(idInConfiguration)).toList();
 
@@ -262,7 +265,7 @@ public class Configuration {
     }
 
     public void setConfigurable(String key, ConfigurableEnum value) {
-        setFullyEscapedString(key, value.getConfigurationId());
+        setRaptorEncodedString(key, value.getConfigurationId());
     }
 
 

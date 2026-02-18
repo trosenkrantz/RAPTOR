@@ -2,7 +2,6 @@ package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
@@ -38,7 +37,7 @@ public class TcpUtility {
 
         switch (role) {
             case CLIENT -> {
-                configuration.setFullyEscapedString(PARAMETER_REMOTE_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
+                configuration.setRaptorEncodedString(PARAMETER_REMOTE_HOST, ConsoleIo.askForString("Hostname / IP address of server socket to connect to", DEFAULT_HOST));
                 configuration.setInt(PARAMETER_REMOTE_PORT, ConsoleIo.askForInt("Port of server socket", DEFAULT_PORT, IpPortValidator.VALIDATOR));
                 ConsoleIo.askForOptionalInt(
                         "Port of local client socket",
@@ -112,7 +111,7 @@ public class TcpUtility {
             }
         });
 
-        String host = configuration.requireFullyEscapedString(PARAMETER_REMOTE_HOST);
+        String host = configuration.requireRaptorEncodedString(PARAMETER_REMOTE_HOST);
         int port = configuration.requireInt(PARAMETER_REMOTE_PORT);
         LOGGER.info("Connecting to server at " + host + ":" + port + "...");
         socket.connect(new InetSocketAddress(host, port));

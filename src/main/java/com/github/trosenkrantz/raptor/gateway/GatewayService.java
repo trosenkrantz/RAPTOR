@@ -54,7 +54,7 @@ public class GatewayService implements RootService {
 
         EndpointService service = ConsoleIo.askForOptions(ENDPOINT_SERVICE_OPTIONS, false);
         Configuration endpointConfiguration = Configuration.empty();
-        endpointConfiguration.setFullyEscapedString(PARAMETER_ENDPOINT, service.getParameterKey());
+        endpointConfiguration.setRaptorEncodedString(PARAMETER_ENDPOINT, service.getParameterKey());
         service.configureEndpoint(endpointConfiguration);
 
         rootConfiguration.setSubConfiguration(endpointName.toLowerCase(Locale.ROOT), endpointConfiguration);
@@ -96,7 +96,7 @@ public class GatewayService implements RootService {
     }
 
     private Endpoint createEndpoint(Configuration endpointConfiguration, Consumer<byte[]> consumer) throws IOException {
-        String endpointKey = endpointConfiguration.requireFullyEscapedString(PARAMETER_ENDPOINT);
+        String endpointKey = endpointConfiguration.requireRaptorEncodedString(PARAMETER_ENDPOINT);
         EndpointService configuredEndpointService = ENDPOINT_SERVICES.stream().filter(service -> service.getParameterKey().equals(endpointKey)).findAny().orElseThrow(() -> new IllegalArgumentException("Service " + endpointKey + " not found."));
         return configuredEndpointService.createEndpoint(endpointConfiguration, consumer, () -> shouldFinish.countDown());
     }

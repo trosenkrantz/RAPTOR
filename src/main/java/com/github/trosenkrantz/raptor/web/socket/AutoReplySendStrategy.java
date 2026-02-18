@@ -12,13 +12,18 @@ class AutoReplySendStrategy implements WebSocketSendStrategy {
     private StateMachineConfiguration stateMachineConfiguration;
 
     @Override
+    public void configure(Configuration configuration) throws IOException {
+        StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.REPLIES_PATH);
+    }
+
+    @Override
     public void load(Configuration configuration) throws IOException {
         // Read state machine immediately to provide early feedback
         stateMachineConfiguration = StateMachineConfiguration.fromConfiguration(configuration);
     }
 
     @Override
-    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction, int commandSubstitutionTimeout) {
+    public Consumer<byte[]> initialise(WebSocket socket, Runnable shutDownAction) {
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> WebSocketService.send(socket, output));
         return input -> {
             for (byte b : input) {
