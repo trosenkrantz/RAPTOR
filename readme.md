@@ -41,6 +41,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
     - Use regular expressions to match input, even for binary input.
     - Define an arbitrary state machine.
     - Update the state machine dynamically. 
+  - Command substitution
 - Arbitrary OS support through Java, shell scripts, and .cmd (Windows) scripts.
 - Support scripted and automated execution.
 - Portable application, can be run from a USB stick.
@@ -50,7 +51,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
 1. Download a RAPTOR release and unzip it.
 2. Set up Java Runtime Environment 21 or newer, either
    - Run the `download-java` shell script or the `download-java.cmd` script.
-   - Download Java (e.g. [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) or newer, extracting it to a `java` dir:
+   - Download Java manually (e.g. from [Azul Zulu](https://www.azul.com/downloads/?version=java-21-lts&package=jre#zulu)) extract it to a `java` dir:
      ```
      ├── java
      │   ├── bin
@@ -60,7 +61,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
      ├── licence
      └── ...
      ```
-   - Or install Java 21 or newer on your machine.
+   - Or install Java on your machine.
 3. Run the `raptor` shell script or `raptor.cmd` script.
 
 ## Encoding
@@ -68,12 +69,66 @@ RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters
 - Printable ASCII characters (except `"` and `\`) as-is, e.g., `abc`.
 - The escape sequences `\n`, `\r`, `\t`, `\"`, and `\\`. 
 - Escaped hex strings `\\x00` through `\\xff` (any casing).
-- A mix of the above, e.g., `\\x00Hello\n` represents the 7 bytes with hex values `00`, `48`, `65`, `6c`, `6c`, `6f`, and `0a`.
+- Command substitutions wrapped in `\\$(` and `)`.
+- A mix of the above.
+
+<details>
+<summary>Examples</summary>
+
+`abc\n\\x00` represents the following 5 bytes:
+
+| Byte index | Hex value | ASCII character |
+|------------|-----------|-----------------|
+| 0          | 61        | a               |
+| 1          | 62        | b               |
+| 2          | 63        | c               |
+| 3          | 0a        | Line feed       |
+| 4          | 00        | NUL             |
+
+`Time: \\$(date +%T)` in a UNIX environment at noon represents:
+
+| Byte index | Hex value | ASCII character |
+|------------|-----------|-----------------|
+| 0          | 54        | T               |
+| 1          | 69        | i               |
+| 2          | 6d        | m               |
+| 3          | 65        | e               |
+| 4          | 3a        | :               |
+| 5          | 20        | Space           |
+| 6          | 31        | 1               |
+| 7          | 32        | 2               |
+| 8          | 3a        | :               |
+| 9          | 30        | 0               |
+| 10         | 30        | 0               |
+| 11         | 3a        | :               |
+| 12         | 30        | 0               |
+| 13         | 30        | 0               |
+
+</details>
 
 RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste. Additionally, RAPTOR can convert between files and this encoding.
 
-## Configuration
+Because of the encodings for hex strings and command substitutions, if you in a rare case want to represent the four byte character sequences `\x00` through `\xff` or the three byte`\$(` sequence, you must hex encode the `\` as `\\x5c`.
+E.g., RAPTOR encoding `\\x5c00` to represent the four bytes `\x00`.
 
+### Command substitution
+Command substitution is a powerful tool allowing for:
+- Unbounded output, like sequence numbers.
+- Probabilistic, random, or other non-deterministic behaviour.
+- Using mathematics
+- Using commands, scripts and programs for generating outputs.
+
+RAPTOR executes commands natively on the OS, with `sh` on UNIX and `cmd` on Windows.
+You can use piping, e.g., `\\$(ls -S | head -n 1)` on UNIX and `\\$(dir | findstr txt)` on Windows.
+You can even run scripts, e.g., `\\$(./script)` on UNIX and `\\$(script.cmd)` as well as `\\$(powershell -File script.ps1)` on Windows.
+
+To prevent RAPTOR from hanging, it applies a configurable timeout for commands.
+
+RAPTOR reads the stdout of the executed process and treats it as RAPTOR encoding, allowing for advanced use-cases like recursion.
+RAPTOR then outputs the resolved stdout.
+Many commands tail their stdout with a newline, which RAPTOR ignores.
+
+## Configuration
 By default, starting RAPTOR will prompt us to configure a concurrentInstance, e.g., sending a UDP packet. When configured, we can either run the configuration immediately or save the configuration.
 
 Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` directory:
@@ -122,15 +177,11 @@ For two-way communication (inputs and outputs), we can configure RAPTOR to auto-
 RAPTOR checks for matching inputs in the order of appearance. It ignores simple line and block comments but does not use JSON5.
 
 RAPTOR listens to changes to the configuration file.
-This enables us to dynamically change all aspects of the state machine, Example use-cases:
+This enables us to dynamically change all aspects of the state machine. Example use-cases:
 
 - Experiment with different scenarios while RAPTOR keeps the connection to an unfamiliar system, by manually editing the configuration.
-- Have RAPTOR react on or produce data can cannot be hardcoded, using a custom script to update `config.json`.<br>
+- Use a custom script to update `config.json` to model complex branching where a hardcoded state machine would need too many states.<br>
   ![](https://img.plantuml.biz/plantuml/dsvg/JP2n2i9038RtUuhWf8Cl82AAE2jdkxc4QsmFhccvfA1lR-vqS0l_btm9EOfYrcLCBj5JGIV8iHyKkfWfQ9pOOT0fGqEYb5q9aVj4iBg_BHaVt797Nxu25BYtpN-NFzsQguUrn759g97x1zFBL8m9f2esTSx_JvqNqSdS4dASVzvQElSz1BRRGra5kxfP8B9Idx5UNF9zQV26Bwymc9K4EbHqlf2Vp6WxMshClg048uOXChaZSMSl-G00)
-  - Timestamp generation tied to wall clock.
-  - Unbounded output, like sequence numbers.
-  - Probabilistic, random, or other non-deterministic behaviour.
-  - Complex branching where a hardcoded state machine would need too many states.
 
 ### TCP and Serial Port
 For TCP and serial port auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
