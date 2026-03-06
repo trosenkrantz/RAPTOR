@@ -61,7 +61,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
      ├── licence
      └── ...
      ```
-   - Or install Java on your machine.
+   - Or install Java on our machine.
 3. Run the `raptor` shell script or `raptor.cmd` script.
 
 ## Encoding
@@ -108,7 +108,7 @@ RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters
 
 RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste. Additionally, RAPTOR can convert between files and this encoding.
 
-Because of the encodings for hex strings and command substitutions, if you in a rare case want to represent the four byte character sequences `\x00` through `\xff` or the three byte`\$(` sequence, you must hex encode the `\` as `\\x5c`.
+Because of the encodings for hex strings and command substitutions, if we in a rare case want to represent the four byte character sequences `\x00` through `\xff` or the three byte`\$(` sequence, we must hex encode the `\` as `\\x5c`.
 E.g., RAPTOR encoding `\\x5c00` to represent the four bytes `\x00`.
 
 ### Command substitution
@@ -119,8 +119,8 @@ Command substitution is a powerful tool allowing for:
 - Using commands, scripts and programs for generating outputs.
 
 RAPTOR executes commands natively on the OS, with `sh` on UNIX and `cmd` on Windows.
-You can use piping, e.g., `\\$(ls -S | head -n 1)` on UNIX and `\\$(dir | findstr txt)` on Windows.
-You can even run scripts, e.g., `\\$(./script)` on UNIX and `\\$(script.cmd)` as well as `\\$(powershell -File script.ps1)` on Windows.
+We can use piping, e.g., `\\$(ls -S | head -n 1)` on UNIX and `\\$(dir | findstr txt)` on Windows.
+We can even run scripts, e.g., `\\$(./script)` on UNIX and `\\$(script.cmd)` as well as `\\$(powershell -File script.ps1)` on Windows.
 
 To prevent RAPTOR from hanging, it applies a configurable timeout for commands.
 
@@ -129,9 +129,9 @@ RAPTOR then outputs the resolved stdout.
 Many commands tail their stdout with a newline, which RAPTOR ignores.
 
 ## Configuration
-By default, starting RAPTOR will prompt us to configure a concurrentInstance, e.g., sending a UDP packet. When configured, we can either run the configuration immediately or save the configuration.
+By default, starting RAPTOR will prompt us to configure a scenario, e.g., to send `Hello` as UDP unicast to `localhost`. When configured, we can either run the configuration immediately or save it.
 
-Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` directory:
+Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` dir:
 ```
 configs
 ├── tcp-server
@@ -144,10 +144,9 @@ configs
 │   └── run.cmd
 ```
 
-RAPTOR also creates `run` and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
+RAPTOR also creates `run` shell scripts and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
 
 ## Auto-Reply
-
 For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a state machine. Example:
 ```json5
 {
@@ -288,13 +287,12 @@ If RAPTOR finds no match for an OID, it responds with Null for that variable bin
 For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
 
 ## TLS
-RAPTOR is purposed for testing and analysis, not for operational usage. When using TLS, it does not verify certificates.
+RAPTOR is purposed for testing and analysis, not for operational use. When using TLS, it does not verify certificates.
 
 ## ANSI
-RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument in case our console does not support it.
+RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument if our console does not support it.
 
 ## Licence
-
 RAPTOR's source code is licenced under MIT, see [licence](licence) for more details. The release includes the following third-party libraries, which are subject to their own licences:
 
 | Name                                                                    | License                                                  |

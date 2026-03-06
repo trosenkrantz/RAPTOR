@@ -19,9 +19,10 @@ set "URL=%ZULU_BASE_URL%/%FILENAME%"
 set "TMP_FILE=%BASE_DIR%%FILENAME%"
 
 echo Downloading %FILENAME%.
-powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%URL%' -OutFile '%TMP_FILE%'"
+curl -fL -o "%TMP_FILE%" "%URL%"
 
-for /f "tokens=*" %%a in ('powershell -Command "(Get-FileHash '%TMP_FILE%' -Algorithm SHA256).Hash.ToLower()"') do set "ACTUAL_SHA256=%%a"
+for /f "tokens=*" %%a in ('certutil -hashfile "%TMP_FILE%" SHA256 ^| findstr /v ":"') do set "ACTUAL_SHA256=%%a"
+set "ACTUAL_SHA256=%ACTUAL_SHA256: =%"
 
 if not "%ACTUAL_SHA256%"=="%EXPECTED_SHA256%" (
     echo Checksum verification failed.
@@ -29,7 +30,7 @@ if not "%ACTUAL_SHA256%"=="%EXPECTED_SHA256%" (
 )
 echo Verified checksum.
 
-powershell -Command "Expand-Archive -Path '%TMP_FILE%' -DestinationPath '%BASE_DIR%' -Force"
+tar -xf "%TMP_FILE%" -C "%BASE_DIR%."
 
 rem Rename the newly created dir
 move "%BASE_DIR%%BASE_FILENAME%" "%JAVA_DIR%" >nul

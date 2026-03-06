@@ -4,8 +4,8 @@ setlocal
 set "BASE_DIR=%~dp0"
 
 rem Check if there is a JRE in the "java" directory
-if exist "%BASE_DIR%\java\bin\java.exe" (
-    set "JAVA_EXEC=%BASE_DIR%\java\bin\java.exe"
+if exist "%BASE_DIR%java\bin\java.exe" (
+    set "JAVA_EXEC=%BASE_DIR%java\bin\java.exe"
 ) else (
     rem Check if java is in the PATH
     where java >nul 2>nul
