@@ -2,7 +2,9 @@ package com.github.trosenkrantz.raptor.io;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -31,6 +33,8 @@ import java.util.logging.Logger;
  */
 public class BytesFormatter {
     public static final String DEFAULT_FULLY_ESCAPED_STRING = "Hello, World!";
+
+    private static final Logger LOGGER = Logger.getLogger(BytesFormatter.class.getName());
 
     public static String bytesToRaptorEncoding(byte[] input) {
         if (isText(input)) {
@@ -157,6 +161,7 @@ public class BytesFormatter {
         return stringBuilder.toString();
     }
 
+
     /**
      * Converts intermediate encoding to bytes.
      *
@@ -165,6 +170,20 @@ public class BytesFormatter {
      * @return convert bytes
      */
     public static byte[] intermediateEncodingToBytes(String input, int commandSubstitutionTimeout) {
+        return intermediateEncodingToBytes(input, commandSubstitutionTimeout, new ArrayList<>());
+    }
+
+    /**
+     * Converts intermediate encoding to bytes.
+     *
+     * @param inputTemplate              intermediate encoding
+     * @param commandSubstitutionTimeout timeout in ms used for command substitutions
+     * @param captureGroups              REGEX capture groups to be lookup up for command substitution
+     * @return convert bytes
+     */
+    public static byte[] intermediateEncodingToBytes(String inputTemplate, int commandSubstitutionTimeout, List<String> captureGroups) {
+        String input = expandCaptureGroups(inputTemplate, captureGroups);
+
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
         int length = input.length();
@@ -189,6 +208,8 @@ public class BytesFormatter {
 
                     i = end.get(); // Skip past the closing parenthesis
                     continue;
+                } else {
+                    LOGGER.warning("Detected command substitution encoding but no matching closing parenthesis.");
                 }
             }
 
@@ -233,5 +254,21 @@ public class BytesFormatter {
 
     private static boolean isHex(char c) {
         return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+    }
+
+    private static String expandCaptureGroups(String template, List<String> captureGroups) {
+        if (captureGroups == null || captureGroups.isEmpty()) return template;
+
+        return java.util.regex.Pattern.compile("\\\\\\{(\\d+)\\}") // Matches \{ followed by digits followed by }
+                .matcher(template)
+                .replaceAll(match -> {
+                    int index = Integer.parseInt(match.group(1));
+                    if (index < captureGroups.size()) {
+                        return captureGroups.get(index);
+                    } else {
+                        LOGGER.warning("For template " + template + " found no capture group with index " + index + ", using " + match.group(0) + " as-is.");
+                        return match.group(0); // Default to template value as-is, guess we did not intend to use a capture group
+                    }
+                });
     }
 }

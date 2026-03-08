@@ -1,9 +1,9 @@
 package com.github.trosenkrantz.raptor.io;
 
-import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.configuration.IntegerSetting;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -30,8 +30,8 @@ public class CommandSubstitutor {
     /**
      * Executes a command.
      *
-     * @param command command to execute
-     * @param timeout timeout in ms
+     * @param command       command to execute
+     * @param timeout       timeout in ms
      * @return stdout of command, or empty if failed
      */
     public static byte[] executeCommand(String command, int timeout) {
@@ -41,7 +41,7 @@ public class CommandSubstitutor {
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             Process process = new ProcessBuilder(shellConfig).start();
 
-            // Start capturing streams in parallel to prevent deadlock
+            // Capture streams in parallel to prevent deadlock
             Future<byte[]> stdoutFuture = executor.submit(() -> process.getInputStream().readAllBytes());
             Future<byte[]> stderrFuture = executor.submit(() -> process.getErrorStream().readAllBytes());
 

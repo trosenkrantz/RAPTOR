@@ -21,10 +21,12 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        Optional<Transition> transition = machine.peak("login\n".getBytes(StandardCharsets.US_ASCII));
+        PeakResult result = machine.peak("login\n".getBytes(StandardCharsets.US_ASCII));
 
-        Assertions.assertTrue(transition.isPresent());
-        Assertions.assertEquals("login\n", transition.get().input());
+        Assertions.assertTrue(result.matched());
+        Assertions.assertEquals("login\n", result.matchedTransition().input());
+        Assertions.assertEquals(1, result.captureGroups().size());
+        Assertions.assertEquals("login\n", result.captureGroups().getFirst());
     }
 
     @Test
@@ -32,16 +34,18 @@ class PeakableBufferlessStateMachineTest {
         PeakableBufferlessStateMachine machine = new PeakableBufferlessStateMachine(new StateMachineConfiguration(
                 "S1",
                 Map.of("S1", List.of(
-                        new Transition("\\x00login", "ok", null)
+                        new Transition("\\x00\\x01\\x02", "ok", null)
                 )),
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        byte[] input = new byte[]{0, 'l', 'o', 'g', 'i', 'n'};
+        byte[] input = new byte[]{0, 1, 2};
 
-        Optional<Transition> transition = machine.peak(input);
+        PeakResult result = machine.peak(input);
 
-        Assertions.assertTrue(transition.isPresent());
+        Assertions.assertTrue(result.matched());
+        Assertions.assertEquals(1, result.captureGroups().size());
+        Assertions.assertEquals("\\x00\\x01\\x02", result.captureGroups().getFirst());
     }
 
     @Test
@@ -54,11 +58,12 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        byte[] input = new byte[]{0, 1, 1, -1};
+        PeakResult result = machine.peak(new byte[]{0, 1, 1, -1});
 
-        Optional<Transition> transition = machine.peak(input);
-
-        Assertions.assertTrue(transition.isPresent());
+        Assertions.assertTrue(result.matched());
+        Assertions.assertEquals(2, result.captureGroups().size());
+        Assertions.assertEquals("\\x00\\x01\\x01\\xff", result.captureGroups().getFirst());
+        Assertions.assertEquals("\\x01", result.captureGroups().get(1));
     }
 
     @Test
@@ -71,10 +76,11 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        Optional<Transition> transition =
-                machine.peak("1.2.3.4".getBytes(StandardCharsets.US_ASCII));
+        PeakResult result = machine.peak("1.2.3.4".getBytes(StandardCharsets.US_ASCII));
 
-        Assertions.assertTrue(transition.isPresent());
+        Assertions.assertTrue(result.matched());
+        Assertions.assertEquals(1, result.captureGroups().size());
+        Assertions.assertEquals("1.2.3.4", result.captureGroups().getFirst());
     }
 
     @Test
@@ -87,13 +93,16 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        Optional<Transition> transition = machine.peak("1.2.3.4".getBytes(StandardCharsets.US_ASCII));
+        PeakResult result = machine.peak("1.2.3.4".getBytes(StandardCharsets.US_ASCII));
 
-        Assertions.assertTrue(transition.isPresent());
+        Assertions.assertTrue(result.matched());
+        Assertions.assertEquals(1, result.captureGroups().size());
+        Assertions.assertEquals("1.2.3.4", result.captureGroups().getFirst());
     }
 
     @Test
-    void returnsEmptyWhenNoMatch() {
+    void detectsWhenNoMatch() {
+        // Arrange
         PeakableBufferlessStateMachine machine = new PeakableBufferlessStateMachine(new StateMachineConfiguration(
                 "S1",
                 Map.of("S1", List.of(
@@ -102,9 +111,11 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        Optional<Transition> transition = machine.peak("logout".getBytes(StandardCharsets.US_ASCII));
+        // Act
+        PeakResult result = machine.peak("logout".getBytes(StandardCharsets.US_ASCII));
 
-        Assertions.assertTrue(transition.isEmpty());
+        // Assert
+        Assertions.assertFalse(result.matched());
     }
 
     @Test
@@ -118,13 +129,13 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        Transition t1 = machine.peak("go".getBytes(StandardCharsets.US_ASCII)).orElseThrow();
+        Transition t1 = machine.peak("go".getBytes(StandardCharsets.US_ASCII)).matchedTransition();
         machine.transition(t1);
 
-        Transition t2 = machine.peak("back".getBytes(StandardCharsets.US_ASCII)).orElseThrow();
+        Transition t2 = machine.peak("back".getBytes(StandardCharsets.US_ASCII)).matchedTransition();
         machine.transition(t2);
 
-        Transition t3 = machine.peak("go".getBytes(StandardCharsets.US_ASCII)).orElseThrow();
+        Transition t3 = machine.peak("go".getBytes(StandardCharsets.US_ASCII)).matchedTransition();
 
         Assertions.assertEquals("go", t3.input());
     }
@@ -140,7 +151,7 @@ class PeakableBufferlessStateMachineTest {
                 COMMAND_SUBSTITUTION_TIMEOUT
         ));
 
-        Transition transition = machine.peak("login".getBytes(StandardCharsets.US_ASCII)).orElseThrow();
+        Transition transition = machine.peak("login".getBytes(StandardCharsets.US_ASCII)).matchedTransition();
 
         Assertions.assertEquals("log.*", transition.input());
     }

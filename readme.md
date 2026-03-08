@@ -42,7 +42,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
     - Define an arbitrary state machine.
     - Update the state machine dynamically. 
   - Command substitution
-- Arbitrary OS support through Java, shell scripts, and .cmd (Windows) scripts.
+- Arbitrary OS support through Java, shell scripts, and Windows .cmd scripts.
 - Support scripted and automated execution.
 - Portable application, can be run from a USB stick.
 - Logging to capture data exchange.
@@ -63,6 +63,24 @@ It exchanges data with systems, either as a standalone, interactive console appl
      ```
    - Or install Java on our machine.
 3. Run the `raptor` shell script or `raptor.cmd` script.
+
+## Configuration
+By default, starting RAPTOR will prompt us to configure a scenario, e.g., to send `Hello` as UDP unicast to `localhost`. When configured, we can either run the configuration immediately or save it.
+
+Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` dir:
+```
+configs
+├── tcp-server
+│   ├── config.json
+│   ├── run
+│   └── run.cmd
+├── udp-multicast-send
+│   ├── config.json
+│   ├── run
+│   └── run.cmd
+```
+
+RAPTOR also creates `run` shell scripts and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
 
 ## Encoding
 RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters as-is. To support this, we must input to RAPTOR either:
@@ -128,24 +146,6 @@ RAPTOR reads the stdout of the executed process and treats it as RAPTOR encoding
 RAPTOR then outputs the resolved stdout.
 Many commands tail their stdout with a newline, which RAPTOR ignores.
 
-## Configuration
-By default, starting RAPTOR will prompt us to configure a scenario, e.g., to send `Hello` as UDP unicast to `localhost`. When configured, we can either run the configuration immediately or save it.
-
-Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` dir:
-```
-configs
-├── tcp-server
-│   ├── config.json
-│   ├── run
-│   └── run.cmd
-├── udp-multicast-send
-│   ├── config.json
-│   ├── run
-│   └── run.cmd
-```
-
-RAPTOR also creates `run` shell scripts and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
-
 ## Auto-Reply
 For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a state machine. Example:
 ```json5
@@ -178,8 +178,8 @@ RAPTOR checks for matching inputs in the order of appearance. It ignores simple 
 RAPTOR listens to changes to the configuration file.
 This enables us to dynamically change all aspects of the state machine. Example use-cases:
 
-- Experiment with different scenarios while RAPTOR keeps the connection to an unfamiliar system, by manually editing the configuration.
-- Use a custom script to update `config.json` to model complex branching where a hardcoded state machine would need too many states.<br>
+- Experiment with different scenarios while RAPTOR retains the connection to an unfamiliar system, by manually editing the configuration.
+- Use a custom script to update `config.json` to model complex branching that is infeasible to model with a hardcoded state machine:<br>
   ![](https://img.plantuml.biz/plantuml/dsvg/JP2n2i9038RtUuhWf8Cl82AAE2jdkxc4QsmFhccvfA1lR-vqS0l_btm9EOfYrcLCBj5JGIV8iHyKkfWfQ9pOOT0fGqEYb5q9aVj4iBg_BHaVt797Nxu25BYtpN-NFzsQguUrn759g97x1zFBL8m9f2esTSx_JvqNqSdS4dASVzvQElSz1BRRGra5kxfP8B9Idx5UNF9zQV26Bwymc9K4EbHqlf2Vp6WxMshClg048uOXChaZSMSl-G00)
 
 ### TCP and Serial Port

@@ -19,7 +19,7 @@ public class PeakableBufferlessStateMachine {
         currentStateName = configuration.getStartState();
     }
 
-    public Optional<Transition> peak(byte[] input) {
+    public PeakResult peak(byte[] input) {
         List<Transition> currentState = configuration.getStates().get(currentStateName);
         if (currentState == null) {
             LOGGER.warning("Auto-reply state " + currentStateName + " not defined. Transitioning to start state " + configuration.getStartState() + ".");
@@ -31,10 +31,10 @@ public class PeakableBufferlessStateMachine {
         for (Transition transition : currentState) {
             Matcher matcher = Pattern.compile(transition.input(), Pattern.DOTALL).matcher(instanceBuffer); // We expect arbitrary bytes, so we use dotall mode to treat line terminators bytes as any other bytes
 
-            if (matcher.matches()) return Optional.of(transition);
+            if (matcher.matches()) return new PeakResult(true, transition, AutoRepliesUtility.getCaptureGroups(matcher));
         }
 
-        return Optional.empty();
+        return new PeakResult(false, null, null);
     }
 
     public void transition(Transition transition) {

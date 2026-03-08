@@ -47,11 +47,11 @@ public class GetCommandResponder implements CommandResponder {
 
             for (VariableBinding binding : requestPdu.getVariableBindings()) {
                 OID oid = binding.getOid();
-                Optional<Transition> optionalTransition = stateMachine.peak(oid.toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
-                responsePDU.add(new VariableBinding(oid, optionalTransition.map(this::extractOutputVariable).orElse(new Null())));
+                PeakResult peakResult = stateMachine.peak(oid.toDottedString().getBytes(StandardCharsets.US_ASCII)); // OIDs are ASCII strings
+                responsePDU.add(new VariableBinding(oid, toOutputVariable(peakResult)));
 
-                if (firstTransition == null && optionalTransition.isPresent() && optionalTransition.get().nextState() != null) { // If first transition with a nextState
-                    firstTransition = optionalTransition.get();
+                if (firstTransition == null && peakResult.matched() && peakResult.matchedTransition().nextState() != null) { // If first matched transition with a nextState
+                    firstTransition = peakResult.matchedTransition();
                 }
             }
 
@@ -78,8 +78,10 @@ public class GetCommandResponder implements CommandResponder {
         }
     }
 
-    private Variable extractOutputVariable(Transition transition) {
-        byte[] berEncoding = transition.outputAsBytes(stateMachine.getConfiguration().getCommandSubstitutionTimeout());
+    private Variable toOutputVariable(PeakResult result) {
+        if (!result.matched()) return new Null();
+
+        byte[] berEncoding = result.matchedTransition().outputAsBytes(stateMachine.getConfiguration().getCommandSubstitutionTimeout(), result.captureGroups());
 
         try {
             return SnmpService.toVariable(berEncoding);
