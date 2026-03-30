@@ -57,21 +57,6 @@ public abstract class SettingBase<T> implements Setting<T> {
         return value.get();
     }
 
-//    @Override
-//    public void configure(Configuration configuration) {
-//        configure(configuration, read(configuration).or(this::getDefaultValue).orElse(null));
-//    }
-//
-//    /**
-//     * Prompts the user to configure this setting.
-//     *
-//     * @param configuration configuration to set this setting with
-//     * @param currentValue  current value if any, otherwise the default value if any, otherwise null
-//     */
-//    protected abstract void configureWithDefault(Configuration configuration, T defaultValue);
-//
-//    protected abstract void configureWithoutDefault(Configuration configuration);
-
     public static abstract class Builder<T, B extends Builder<T, B>> {
         private final String promptValue;
         private final String parameterKey;

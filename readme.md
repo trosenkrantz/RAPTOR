@@ -196,7 +196,7 @@ RAPTOR supports regex capture groups from the input to dynamically populate the 
 `\\{1}` refers to the first capture group (the first set of parentheses), \{2} to the second, etc.
 `\\{0}` represents the entire matched input string.
 
-We can use these placeholders standalone or nested inside command substitutions. Example:
+We can use these placeholders standalone or nested inside command substitutions. Example for a UNIX environment:
 
 ```json5
 [
