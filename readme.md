@@ -182,6 +182,39 @@ This enables us to dynamically change all aspects of the state machine. Example 
 - Use a custom script to update `config.json` to model complex branching that is infeasible to model with a hardcoded state machine:<br>
   ![](https://img.plantuml.biz/plantuml/dsvg/JP2n2i9038RtUuhWf8Cl82AAE2jdkxc4QsmFhccvfA1lR-vqS0l_btm9EOfYrcLCBj5JGIV8iHyKkfWfQ9pOOT0fGqEYb5q9aVj4iBg_BHaVt797Nxu25BYtpN-NFzsQguUrn759g97x1zFBL8m9f2esTSx_JvqNqSdS4dASVzvQElSz1BRRGra5kxfP8B9Idx5UNF9zQV26Bwymc9K4EbHqlf2Vp6WxMshClg048uOXChaZSMSl-G00)
 
+### Capture Groups
+
+RAPTOR supports regex capture groups from the input to dynamically populate the output. Example:
+
+```json5
+{
+  "input": "PING (.*)!", // When RAPTOR receives, e.g., "PING Test!"
+  "output": "ACK \\{1}!" // It outputs "ACK Test!" 
+}
+```
+
+`\\{1}` refers to the first capture group (the first set of parentheses), \{2} to the second, etc.
+`\\{0}` represents the entire matched input string.
+
+We can use these placeholders standalone or nested inside command substitutions. Example:
+
+```json5
+[
+  {
+    "input": "REVERSE: (.*)!",
+    "output": "\\$(echo \\{1} | rev)" // E.g., "REVERSE: Hello!" -> "olleH" 
+  },
+  {
+    "input": "ADD: (\\d+) (\\d+)!",
+    "output": "\\$(echo \\{1} + \\{2} | bc)" // E.g., "ADD: 15 27!" -> "42" 
+  },
+  {
+    "input": "CALL: (.*)!",
+    "output": "\\$(./script.sh \\{1})" // Passing captured input as argument to script 
+  }
+]
+```
+
 ### TCP and Serial Port
 For TCP and serial port auto-replies, RAPTOR passes input to the state machine byte by byte. Thus, RAPTOR behaves the same regardless of how data is buffered.
 

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
+public class AutoReplyIntegrationTest extends RaptorIntegrationTest {
     @Test
     public void updateConfiguration() throws IOException {
         try (RaptorNetwork network = new RaptorNetwork();
@@ -87,13 +87,71 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
 
     @Test
     public void commandSubstitution() throws IOException {
+        testSingleAutoReply(
+                "PROCESS!",
+                "ACK: \\\\$(echo Hello, World!)!",
+                "PROCESS!",
+                "ACK: Hello, World!!"
+        );
+    }
+
+    @Test
+    public void captureGroupZero() throws IOException {
+        testSingleAutoReply(
+                "PROCESS: .*!",
+                "ACK: \\\\{0}!",
+                "PROCESS: Hello, World!",
+                "ACK: PROCESS: Hello, World!!"
+        );
+    }
+
+    @Test
+    public void captureGroupZeroInCommandSubstitution() throws IOException {
+        testSingleAutoReply(
+                "PROCESS: .*!",
+                "REVERSED: \\\\$(echo \\\\{0} | rev)!",
+                "PROCESS: Hello, World!",
+                "REVERSED: !dlroW ,olleH :SSECORP!"
+        );
+    }
+
+    @Test
+    public void captureGroupOne() throws IOException {
+        testSingleAutoReply(
+                "PROCESS: (.*)!",
+                "ACK: \\\\{1}!",
+                "PROCESS: Hello, World!",
+                "ACK: Hello, World!"
+        );
+    }
+
+    @Test
+    public void captureGroupOneInsideCommandSubstitution() throws IOException {
+        testSingleAutoReply(
+                "PROCESS: (.*)!",
+                "REVERSED: \\\\$(echo \\\\{1} | rev)!",
+                "PROCESS: Hello, World!",
+                "REVERSED: dlroW ,olleH!"
+        );
+    }
+
+    @Test
+    public void multipleCaptureGroups() throws IOException {
+        testSingleAutoReply(
+                "PROCESS: (\\\\d+) (\\\\d+)!",
+                "RESULT: \\\\$(echo \\\\{1} + \\\\{2} | bc)!", // Adding two numbers
+                "PROCESS: 15 27!",
+                "RESULT: 42!"
+        );
+    }
+
+    public void testSingleAutoReply(String replyInput, String replyOutput, String toSend, String expectedReceived) throws IOException {
         try (RaptorNetwork network = new RaptorNetwork();
              Raptor server = new Raptor(network);
              Raptor client = new Raptor(network)) {
             network.startAll();
 
-            // Start a server that uses command substitution in its auto-reply
-            server.runConfiguration("""
+            server.runConfiguration(String.format("""
                     {
                       "service" : "tcp",
                       "role" : "server",
@@ -101,19 +159,19 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "tlsVersion" : "none",
                       "sendStrategy" : "autoReply",
                       "replies" : {
-                        "startState" : "A",
+                        "startState" : "active",
                         "states" : {
-                          "A" : [
+                          "active" : [
                             {
-                              "input" : "GET_TIME!",
-                              "output" : "TIME: \\\\$(echo 12:00:00)!"
+                              "input" : "%s",
+                              "output" : "%s"
                             }
                           ]
                         },
                         "commandSubstitutionTimeout": 1000
                       }
                     }
-                    """);
+                    """, replyInput, replyOutput));
             server.expectNumberOfOutputLineContains(1, "Waiting for client to connect", "50000");
 
             // Client connects to server
@@ -128,14 +186,14 @@ public class TcpAutoReplyIntegrationTest extends RaptorIntegrationTest {
                       "commandSubstitutionTimeout": 1000
                     }
                     """, server.getRaptorHostname()));
+
+            // Wait for mutual connection
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress(), "50000");
             client.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
 
-            // Client sends request that triggers command substitution
-            client.writeLineToStdIn("GET_TIME!");
+            client.writeLineToStdIn(toSend);
 
-            // Verify that the command substitution was resolved correctly
-            client.expectNumberOfOutputLineContains(1, "received", "text", "TIME: 12:00:00!");
+            client.expectNumberOfOutputLineContains(1, "received", expectedReceived);
         }
     }
 }
