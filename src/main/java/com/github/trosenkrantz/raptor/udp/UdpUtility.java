@@ -1,6 +1,7 @@
 package com.github.trosenkrantz.raptor.udp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
+import com.github.trosenkrantz.raptor.configuration.IntegerSetting;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CheckedPredicate;
 
@@ -23,6 +24,15 @@ public class UdpUtility {
     public static final int DEFAULT_PORT = 50000;
     public static final String DEFAULT_MULTICAST_GROUP = "224.0.2.0";
     public static final int MAX_UDP_PAYLOAD_SIZE = 65507;
+    public static final IntegerSetting TTL_SETTING = new IntegerSetting.Builder("t", "ttl", "TTL", "Time to live")
+            .defaultValue(4)
+            .validator(ttl -> {
+                if (ttl < 0 || ttl > 255) {
+                    return Optional.of("Must be between 0 and 255, both included.");
+                }
+                return Optional.empty();
+            })
+            .build();
 
     static DatagramSocket createSocket(Configuration configuration) throws SocketException {
         Optional<Integer> port = configuration.getInt(PARAMETER_LOCAL_PORT);

@@ -1,11 +1,8 @@
 package com.github.trosenkrantz.raptor.udp;
 
-import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.RootService;
-import com.github.trosenkrantz.raptor.configuration.IntegerSetting;
-import com.github.trosenkrantz.raptor.configuration.StringSetting;
+import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.*;
-import com.github.trosenkrantz.raptor.snmp.SnmpService;
 
 import java.io.IOException;
 import java.net.*;
@@ -22,16 +19,6 @@ import java.util.stream.Collectors;
 
 public class UdpRootService implements RootService {
     private static final Logger LOGGER = Logger.getLogger(UdpRootService.class.getName());
-
-    private static final IntegerSetting TTL_SETTING = new IntegerSetting.Builder("t", "ttl", "TTL", "Time to live")
-            .defaultValue(4)
-            .validator(ttl -> {
-                if (ttl < 0 || ttl > 255) {
-                    return Optional.of("Must be between 0 and 255, both included.");
-                }
-                return Optional.empty();
-            })
-            .build();
 
     @Override
     public String getPromptValue() {
@@ -65,7 +52,7 @@ public class UdpRootService implements RootService {
                     }
                     case MULTICAST -> {
                         configuration.setRaptorEncodedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("IPv4 or IPv6 multicast group to send to", UdpUtility.DEFAULT_MULTICAST_GROUP, MulticastGroupValidator.VALIDATOR));
-                        TTL_SETTING.configure(configuration);
+                        UdpUtility.TTL_SETTING.configure(configuration);
                     }
                     case BROADCAST -> {
                     }
@@ -164,7 +151,7 @@ public class UdpRootService implements RootService {
 
         try (DatagramChannel channel = DatagramChannel.open(IpAddressMapper.getProtocolFamily(group))) {
             channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-            channel.setOption(StandardSocketOptions.IP_MULTICAST_TTL, TTL_SETTING.readAndRequireOrDefault(configuration));
+            channel.setOption(StandardSocketOptions.IP_MULTICAST_TTL, UdpUtility.TTL_SETTING.readAndRequireOrDefault(configuration));
             channel.bind(new InetSocketAddress(bindAddress, localPort));
 
             List<NetworkInterface> foundInterfaces = UdpUtility.getAllMulticastCapableInterfaces(group.getClass());

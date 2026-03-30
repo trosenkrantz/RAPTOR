@@ -50,6 +50,7 @@ public class UdpMulticastEndpoint implements Endpoint {
         configuration.getInt(UdpEndpointService.PARAMETER_LOCAL_SEND_PORT).ifPresent(port -> sendConfiguration.setInt(UdpUtility.PARAMETER_LOCAL_PORT, port));
 
         sendChannel = DatagramChannel.open(IpAddressMapper.getProtocolFamily(multicastGroup));
+        sendChannel.setOption(StandardSocketOptions.IP_MULTICAST_TTL, UdpUtility.TTL_SETTING.readAndRequireOrDefault(configuration));
 
         Optional<Integer> localSendPort = sendConfiguration.getInt(UdpUtility.PARAMETER_LOCAL_PORT);
         if (localSendPort.isPresent()) {

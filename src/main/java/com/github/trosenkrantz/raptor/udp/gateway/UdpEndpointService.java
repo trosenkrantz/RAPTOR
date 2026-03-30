@@ -37,6 +37,7 @@ public class UdpEndpointService implements EndpointService {
 
         if (endpointMode == EndpointMode.MULTICAST) {
             configuration.setRaptorEncodedString(UdpUtility.PARAMETER_REMOTE_ADDRESS, ConsoleIo.askForString("Multicast group to use", UdpUtility.DEFAULT_MULTICAST_GROUP));
+            UdpUtility.TTL_SETTING.configure(configuration);
         }
 
         configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("Multicast port to send to and receive on", UdpUtility.DEFAULT_PORT, IpPortValidator.VALIDATOR));
