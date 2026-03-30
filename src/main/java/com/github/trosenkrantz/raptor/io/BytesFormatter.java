@@ -259,7 +259,7 @@ public class BytesFormatter {
     private static String expandCaptureGroups(String template, List<String> captureGroups) {
         if (captureGroups == null || captureGroups.isEmpty()) return template;
 
-        return java.util.regex.Pattern.compile("\\\\\\{(\\d+)\\}") // Matches \{ followed by digits followed by }
+        return java.util.regex.Pattern.compile("\\\\\\{(\\d+)}") // Matches \{ followed by digits followed by }
                 .matcher(template)
                 .replaceAll(match -> {
                     int index = Integer.parseInt(match.group(1));
