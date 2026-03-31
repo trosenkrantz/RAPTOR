@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 public class SerialPortUtility {
     public static final String PARAMETER_PORT = "port";
-    public static final String PARAMETER_BAUD_RATE = "baud-rate";
+    public static final String PARAMETER_BAUD_RATE = "baud-bitsPerSecond";
 
     private static final Logger LOGGER = Logger.getLogger(SerialPortUtility.class.getName());
 
@@ -50,7 +50,7 @@ public class SerialPortUtility {
         String defaultPort = portNames.isEmpty() ? DEFAULT_PORT : portNames.getFirst();
         configuration.setRaptorEncodedString(PARAMETER_PORT, ConsoleIo.askForString("port name", defaultPort));
 
-        configuration.setInt(PARAMETER_BAUD_RATE, ConsoleIo.askForInt("Baud rate", DEFAULT_BAUD_RATE));
+        configuration.setInt(PARAMETER_BAUD_RATE, ConsoleIo.askForInt("Baud bitsPerSecond", DEFAULT_BAUD_RATE));
 
         ConsoleIo.configureAdvancedSettings(List.of(
                 DATA_BITS_SETTING,

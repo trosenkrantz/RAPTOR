@@ -33,7 +33,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - UDP multicast, TCP, and serial port.
   - Mix protocols across the two systems.
   - Simulate network impairment:
-    - Latency, corruption, packet loss, and duplication.
+    - Bandwidth, latency, corruption, packet loss, and duplication.
 - Sending capabilities:
   - Interactively send text and binary data.
   - Configure auto-replying (when receiving x, then send y).

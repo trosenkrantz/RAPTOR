@@ -49,7 +49,7 @@ public class LatencyFactory implements NetworkImpairmentFactory {
     public Consumer<byte[]> create(Consumer<byte[]> consumer) {
         return payload -> {
             int calculatedLatency = getCalculatedLatency(latency.min(), latency.max());
-            LOGGER.info("Delaying message with " + calculatedLatency + " ms.");
+            LOGGER.fine("Delaying message with " + calculatedLatency + " ms.");
             ScheduledFuture<?> unused = executorService.schedule(
                     () -> {
                         try {

@@ -4,6 +4,7 @@ import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.PromptOption;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.gateway.network.impairment.*;
+import com.github.trosenkrantz.raptor.gateway.network.impairment.bandwidth.BandwidthFactory;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class GatewayService implements RootService {
     private static final String PARAMETER_A_TO_B_NAME = "A to B";
     private static final String PARAMETER_A_TO_B_KEY = "aToB";
     private static final String PARAMETER_B_TO_A_NAME = "B to A";
-    private static final String PARAMETER_B_TO_A_KEY = "BToA";
+    private static final String PARAMETER_B_TO_A_KEY = "bToA";
 
     private CountDownLatch shouldFinish;
 
@@ -64,7 +65,7 @@ public class GatewayService implements RootService {
         ConsoleIo.writeLine("---- Configuring network impairment " + directionName + " ----");
 
         Configuration directionConfiguration = Configuration.empty();
-        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING, DuplicationFactory.SETTING), directionConfiguration);
+        ConsoleIo.configureAdvancedSettings("Configure network impairment", List.of(BandwidthFactory.SETTING, LatencyFactory.SETTING, CorruptionFactory.SETTING, PacketLossFactory.SETTING, DuplicationFactory.SETTING), directionConfiguration);
 
         rootConfiguration.setSubConfiguration(directionKey, directionConfiguration);
     }
@@ -104,6 +105,7 @@ public class GatewayService implements RootService {
     private Consumer<byte[]> createNetworkImpairment(Configuration impairmentConfiguration, Endpoint toEndpoint) {
         List<NetworkImpairmentFactory> factories = new ArrayList<>();
 
+        BandwidthFactory.SETTING.read(impairmentConfiguration).ifPresent(bandwidth -> factories.add(new BandwidthFactory(bandwidth)));
         LatencyFactory.SETTING.read(impairmentConfiguration).ifPresent(latency -> factories.add(new LatencyFactory(latency)));
         CorruptionFactory.SETTING.read(impairmentConfiguration).ifPresent(corruption -> factories.add(new CorruptionFactory(corruption)));
         PacketLossFactory.SETTING.read(impairmentConfiguration).ifPresent(packetLoss -> factories.add(new PacketLossFactory(packetLoss)));
