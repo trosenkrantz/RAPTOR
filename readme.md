@@ -328,7 +328,7 @@ RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-
 ## Licence
 RAPTOR's source code is licenced under MIT, see [licence](licence) for more details. The release includes the following third-party libraries, which are subject to their own licences:
 
-| Name                                                                    | License                                                  |
+| Name                                                                    | Licence                                                  |
 |-------------------------------------------------------------------------|----------------------------------------------------------|
 | [Jackson Annotations](https://github.com/FasterXML/jackson-annotations) | [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
 | [Jackson Core](https://github.com/FasterXML/jackson-core)               | [Apache-2.0](https://opensource.org/licenses/Apache-2.0) |
