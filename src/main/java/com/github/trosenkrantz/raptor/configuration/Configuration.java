@@ -79,10 +79,6 @@ public class Configuration {
         return new Configuration(mapper, root.deepCopy(), jsonPath);
     }
 
-    public boolean hasParameter(String key) {
-        return root.has(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
-    }
-
     /**
      * Get the top level keys in this configuration.
      *

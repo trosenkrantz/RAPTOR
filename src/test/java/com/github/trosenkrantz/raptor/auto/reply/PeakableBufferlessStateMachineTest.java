@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 class PeakableBufferlessStateMachineTest {
     public static final int COMMAND_SUBSTITUTION_TIMEOUT = 1000;

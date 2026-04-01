@@ -3,8 +3,8 @@ plugins {
     id("net.ltgt.errorprone") version "4.1.0" // For lint checking
 }
 
-val distributionsDir = layout.buildDirectory.dir("distributions")
-val runtimesDir = layout.buildDirectory.dir("runtimes")
+val distributionsDir: Provider<Directory> = layout.buildDirectory.dir("distributions")
+val runtimesDir: Provider<Directory> = layout.buildDirectory.dir("runtimes")
 
 group = "com.github.trosenkrantz"
 version = "2.2.0"
@@ -13,32 +13,30 @@ repositories {
     mavenCentral()
 }
 
-configurations {
-    create("runtime") {
-        isTransitive = false // Force explicit runtime dependencies to minimise runtime
-    }
+val runtimeConfig by configurations.registering {
+    isTransitive = false
 }
 
 dependencies {
     // For JSON mapping
     implementation("tools.jackson.core:jackson-databind:3.1.1")
-    add("runtime", "tools.jackson.core:jackson-databind:3.1.1")
-    add("runtime", "tools.jackson.core:jackson-core:3.1.1")
-    add("runtime", "com.fasterxml.jackson.core:jackson-annotations:2.21") // The Jackson team decided to keep jackson-annotations under com.fasterxml and 2.x for tools.jackson and 3.x
+    add(runtimeConfig.name, "tools.jackson.core:jackson-databind:3.1.1")
+    add(runtimeConfig.name, "tools.jackson.core:jackson-core:3.1.1")
+    add(runtimeConfig.name, "com.fasterxml.jackson.core:jackson-annotations:2.21") // The Jackson team decided to keep jackson-annotations under com.fasterxml and 2.x for tools.jackson and 3.x
 
     // For SNMP
     implementation("org.snmp4j:snmp4j:3.8.2")
-    add("runtime", "org.snmp4j:snmp4j:3.8.2")
+    add(runtimeConfig.name, "org.snmp4j:snmp4j:3.8.2")
 
     // For serial port
     implementation("com.fazecast:jSerialComm:2.11.0")
-    add("runtime", "com.fazecast:jSerialComm:2.11.0")
+    add(runtimeConfig.name, "com.fazecast:jSerialComm:2.11.0")
 
     // For WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.7")
-    add("runtime", "org.java-websocket:Java-WebSocket:1.5.7")
-    add("runtime", "org.slf4j:slf4j-api:2.0.6") // Java-WebSocket use SLF4J
-    add("runtime", "org.slf4j:slf4j-jdk14:2.0.6") // Route SLF4J to java.util.logging
+    add(runtimeConfig.name, "org.java-websocket:Java-WebSocket:1.5.7")
+    add(runtimeConfig.name, "org.slf4j:slf4j-api:2.0.6") // Java-WebSocket use SLF4J
+    add(runtimeConfig.name, "org.slf4j:slf4j-jdk14:2.0.6") // Route SLF4J to java.util.logging
 
     // For testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
@@ -74,7 +72,7 @@ val distributeFiles = tasks.register<Copy>("distributeFiles") {
 }
 
 val distributeRuntime = tasks.register<Copy>("distributeRuntime") {
-    from(configurations["runtime"])
+    from(runtimeConfig)
     into(layout.buildDirectory.dir("distributions/libs"))
 }
 

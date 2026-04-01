@@ -12,7 +12,6 @@ import org.snmp4j.smi.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

@@ -24,23 +24,20 @@ public class TcpEndpoint implements Endpoint {
         // Start receiving in a separate thread to not block the main thread
         Thread.ofVirtual().start(() -> {
             try {
-                TcpUtility.connectAndStartSendingAndReceiving(configuration, new TcpSendStrategy() {
-                    @Override
-                    public Consumer<byte[]> start(Socket socket, Runnable shutDownAction) throws IOException {
-                        OutputStream out = socket.getOutputStream();
+                TcpUtility.connectAndStartSendingAndReceiving(configuration, (TcpSendStrategy) (socket, shutDownAction) -> {
+                    OutputStream out = socket.getOutputStream();
 
-                        // Now that we are connected, we can set what to do with data from the broker
-                        fromBroker.setDelegate(payload -> {
-                            try {
-                                out.write(payload);
-                                LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        });
+                    // Now that we are connected, we can set what to do with data from the broker
+                    fromBroker.setDelegate(payload -> {
+                        try {
+                            out.write(payload);
+                            LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
 
-                        return broker; // When TCP socket receives data, pass to broker
-                    }
+                    return broker; // When TCP socket receives data, pass to broker
                 });
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Failed creating TCP connection or receiving data on it.", e);

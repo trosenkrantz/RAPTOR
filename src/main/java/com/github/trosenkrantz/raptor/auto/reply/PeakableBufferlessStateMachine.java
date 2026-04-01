@@ -2,7 +2,6 @@ package com.github.trosenkrantz.raptor.auto.reply;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

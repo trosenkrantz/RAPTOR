@@ -4,7 +4,6 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
-import com.github.trosenkrantz.raptor.web.socket.WebSocketService;
 
 import java.io.IOException;
 import java.util.function.Consumer;

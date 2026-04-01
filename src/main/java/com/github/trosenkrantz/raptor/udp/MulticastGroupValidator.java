@@ -1,6 +1,5 @@
 package com.github.trosenkrantz.raptor.udp;
 
-import com.github.trosenkrantz.raptor.io.IpPortValidator;
 import com.github.trosenkrantz.raptor.io.Validator;
 
 import java.net.Inet4Address;

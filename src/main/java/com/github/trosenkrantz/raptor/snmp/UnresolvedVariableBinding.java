@@ -5,7 +5,6 @@ import org.snmp4j.smi.OID;
 import org.snmp4j.smi.VariableBinding;
 
 import java.io.IOException;
-import java.util.logging.Level;
 
 /**
  * Variable binding where the variable is defined in RAPTOR encoding, thus, not yet resolved in bytes.

@@ -5,9 +5,7 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class SerialPortRootService implements RootService {
     @Override

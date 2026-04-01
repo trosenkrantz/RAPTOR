@@ -50,7 +50,7 @@ public class EnumSetting<T extends Enum<T> & ConfigurableEnum & PromptEnum> exte
 
         @Override
         public EnumSetting<T> build() {
-            return new EnumSetting<T>(this);
+            return new EnumSetting<>(this);
         }
     }
 }

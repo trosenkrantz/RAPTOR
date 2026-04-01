@@ -1,7 +1,6 @@
 package com.github.trosenkrantz.raptor.io;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 public class IpPortValidator implements Validator<Integer> {
     public static final Validator<Integer> VALIDATOR = new IpPortValidator();
