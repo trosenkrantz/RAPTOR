@@ -16,7 +16,7 @@ jobs:
       - name: Check Out
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
       - name: Upload Package
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
