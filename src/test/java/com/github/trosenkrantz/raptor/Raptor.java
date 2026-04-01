@@ -24,6 +24,7 @@ public class Raptor extends GenericContainer<Raptor> {
     private final RaptorNetwork network;
 
     private boolean shouldBeRunning = false;
+    private PipedOutputStream stdinPipe;
 
     public Raptor(final RaptorNetwork network) {
         super("raptor:latest");
@@ -40,6 +41,21 @@ public class Raptor extends GenericContainer<Raptor> {
     public void start() {
         super.start();
         shouldBeRunning = true;
+        setupPersistentStdin();
+    }
+
+    private void setupPersistentStdin() {
+        try {
+            this.stdinPipe = new PipedOutputStream();
+            PipedInputStream in = new PipedInputStream(stdinPipe);
+
+            DockerClientFactory.instance().client().attachContainerCmd(getContainerId())
+                    .withFollowStream(true)
+                    .withStdIn(in)
+                    .exec(new ResultCallback.Adapter<>());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to setup persistent stdin", e);
+        }
     }
 
     /**
@@ -117,18 +133,12 @@ public class Raptor extends GenericContainer<Raptor> {
         return getContainerInfo().getNetworkSettings().getNetworks().get(((Network.NetworkImpl) getNetwork()).getName()).getIpAddress();
     }
 
-    public void writeLineToStdIn(String message) throws IOException {
-        try (PipedOutputStream out = new PipedOutputStream()) {
-            PipedInputStream in = new PipedInputStream(out);
-
-            DockerClientFactory.instance().client().attachContainerCmd(getContainerId())
-                    .withFollowStream(true)
-                    .withStdIn(in)
-                    .exec(new ResultCallback.Adapter<>() {
-                    });
-
-            out.write((message + "\n").getBytes(StandardCharsets.UTF_8));
-            out.flush();
+    public void writeLineToStdIn(String message) {
+        try {
+            stdinPipe.write((message + "\n").getBytes(StandardCharsets.UTF_8));
+            stdinPipe.flush();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write to stdin", e);
         }
     }
 
@@ -146,10 +156,16 @@ public class Raptor extends GenericContainer<Raptor> {
     @Override
     public void stop() {
         try {
-            if (shouldBeRunning) { // Might be stopped already, in which case we already ran this and cannot access log files anymore
+            if (shouldBeRunning) { // Might be stopped already, in which case we already ran this and cannot access log files any more
                 assertLogFiles();
                 shouldBeRunning = false;
             }
+
+            if (stdinPipe != null) {
+                stdinPipe.close();
+            }
+        } catch (IOException e) {
+            Assertions.fail("Failed to close stdin pipe.", e);
         } finally {
             super.stop();
         }

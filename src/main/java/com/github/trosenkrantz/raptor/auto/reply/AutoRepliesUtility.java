@@ -15,7 +15,7 @@ public class AutoRepliesUtility {
 
         // Group 0 (entire input) is not counted in groupCount()
         for (int i = 0; i <= matcher.groupCount(); i++) {
-            String group = matcher.group(i); // This returns in ISO 8859-1, treating a arbitrary byte as a single character
+            String group = matcher.group(i); // This returns in ISO 8859-1, treating an arbitrary byte as a single character
             byte[] groupBytes = group.getBytes(StandardCharsets.ISO_8859_1); // So we convert it to bytes
             String intermediateEncoding = BytesFormatter.bytesToIntermediateEncoding(groupBytes); // And then to intermediate encoding, e.g., \x00 for byte 0
             result.add(intermediateEncoding);
