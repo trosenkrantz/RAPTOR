@@ -21,10 +21,10 @@ configurations {
 
 dependencies {
     // For JSON mapping
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
-    add("runtime", "com.fasterxml.jackson.core:jackson-databind:2.18.0")
-    add("runtime", "com.fasterxml.jackson.core:jackson-core:2.18.0")
-    add("runtime", "com.fasterxml.jackson.core:jackson-annotations:2.18.0")
+    implementation("tools.jackson.core:jackson-databind:3.1.1")
+    add("runtime", "tools.jackson.core:jackson-databind:3.1.1")
+    add("runtime", "tools.jackson.core:jackson-core:3.1.1")
+    add("runtime", "com.fasterxml.jackson.core:jackson-annotations:2.21") // The Jackson team decided to keep jackson-annotations under com.fasterxml and 2.x for tools.jackson and 3.x
 
     // For SNMP
     implementation("org.snmp4j:snmp4j:3.8.2")

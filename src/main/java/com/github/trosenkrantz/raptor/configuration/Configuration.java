@@ -1,10 +1,12 @@
 package com.github.trosenkrantz.raptor.configuration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.core.util.Separators;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.FileWatcher;
 import com.github.trosenkrantz.raptor.io.JsonUtility;
@@ -12,10 +14,7 @@ import com.github.trosenkrantz.raptor.io.JsonUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,13 +88,9 @@ public class Configuration {
      *
      * @return keys in this configuration scope
      */
-    public List<String> keys() {
-        List<String> keys = new ArrayList<>();
-        root.fieldNames().forEachRemaining(keys::add);
-        return keys;
+    public Collection<String> keys() {
+        return root.propertyNames();
     }
-
-
 
 
     /* Sub-Configurations */
@@ -131,7 +126,7 @@ public class Configuration {
             throw new IllegalArgumentException("Sub-configuration with path " + pathToString(key) + " is not a JSON object.");
         }
 
-        return Optional.of(new Configuration(mapper, nextNode.deepCopy(), nextPath));
+        return Optional.of(new Configuration(mapper, (ObjectNode) nextNode.deepCopy(), nextPath));
     }
 
     public Configuration requireSubConfiguration(String key) {
@@ -153,7 +148,7 @@ public class Configuration {
             if (!element.isObject()) {
                 throw new IllegalArgumentException("Array element in " + pathToString(key) + " is not a JSON object.");
             }
-            result.add(new Configuration(mapper, element.deepCopy(), jsonPath));
+            result.add(new Configuration(mapper, (ObjectNode) element.deepCopy(), jsonPath));
         }
 
         return result;
@@ -312,7 +307,7 @@ public class Configuration {
 
         try {
             return mapper.treeToValue(node, clazz);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Failed to deserialize parameter " + pathToString(key) + " into " + clazz.getSimpleName() + ".", e);
         }
     }
@@ -325,7 +320,7 @@ public class Configuration {
                 JsonNode node;
                 try {
                     node = mapper.readTree(filePath.toFile());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to read configuration at " + filePath.toAbsolutePath() + ".", e);
                     return false;
                 }
@@ -359,12 +354,20 @@ public class Configuration {
     /* Other */
 
     public String toJson() {
+        // Define the spacing once
+        Separators separators = new Separators(
+                " ", ':', Separators.Spacing.AFTER, ',', Separators.Spacing.NONE, " ", ',', Separators.Spacing.NONE, " "
+        );
+
+        DefaultPrettyPrinter printer = new DefaultPrettyPrinter()
+                .withSeparators(separators)
+                .withArrayIndenter(new DefaultIndenter());
+
         try {
-            return mapper
-                    .writer()
-                    .with(new RaptorJsonPrinter())
+            return mapper.writer()
+                    .with(printer)
                     .writeValueAsString(root);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to convert configuration to JSON.", e);
         }
     }
