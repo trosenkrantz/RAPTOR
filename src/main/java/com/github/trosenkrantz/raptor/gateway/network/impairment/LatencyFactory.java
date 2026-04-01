@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class LatencyFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(LatencyFactory.class.getName());
 
-    public static SettingBase<IntegerInterval> SETTING = new IntegerIntervalSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
+    public static final SettingBase<IntegerInterval> SETTING = new IntegerIntervalSetting.Builder("l", "latency", "Latency [ms]", "Latency [ms]")
             .minValidator(value -> {
                 if (value < 0) {
                     return Optional.of("Minimum latency must be a non-negative integer.");

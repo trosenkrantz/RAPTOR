@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 public class BandwidthFactory implements NetworkImpairmentFactory {
     private static final Logger LOGGER = Logger.getLogger(BandwidthFactory.class.getName());
 
-    public static SettingBase<Bandwidth> SETTING = new BandwidthSetting.Builder("b", "bandwidth", "Bandwidth", "Queuing and delaying messages proportional to the amount of data, dropping messages if the queue is full.")
+    public static final SettingBase<Bandwidth> SETTING = new BandwidthSetting.Builder("b", "bandwidth", "Bandwidth", "Queuing and delaying messages proportional to the amount of data, dropping messages if the queue is full.")
             .build();
 
     private final long nanosPerByte;

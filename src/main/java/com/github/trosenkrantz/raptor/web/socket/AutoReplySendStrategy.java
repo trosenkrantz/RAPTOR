@@ -17,7 +17,7 @@ class AutoReplySendStrategy implements WebSocketSendStrategy {
     }
 
     @Override
-    public void load(Configuration configuration) throws IOException {
+    public void load(Configuration configuration) {
         // Read state machine immediately to provide early feedback
         stateMachineConfiguration = StateMachineConfiguration.fromConfiguration(configuration);
     }

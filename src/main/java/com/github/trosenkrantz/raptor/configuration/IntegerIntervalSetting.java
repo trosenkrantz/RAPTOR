@@ -34,10 +34,8 @@ public class IntegerIntervalSetting extends SettingBase<IntegerInterval> {
         } else {
             if (maxValue.isPresent()) {
                 LOGGER.warning(MAX_KEY + " is set but " + MIN_KEY + " is not. Ignoring both.");
-                return Optional.empty();
-            } else {
-                return Optional.empty();
             }
+            return Optional.empty();
         }
     }
 

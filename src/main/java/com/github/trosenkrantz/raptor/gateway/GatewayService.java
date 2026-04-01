@@ -42,7 +42,7 @@ public class GatewayService implements RootService {
     }
 
     @Override
-    public void configure(Configuration configuration) throws Exception {
+    public void configure(Configuration configuration) {
         configureEndpoint(configuration, "A");
         configureEndpoint(configuration, "B");
 

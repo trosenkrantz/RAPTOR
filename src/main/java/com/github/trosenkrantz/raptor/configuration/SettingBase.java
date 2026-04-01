@@ -5,7 +5,7 @@ import com.github.trosenkrantz.raptor.io.Validator;
 import java.util.Optional;
 
 public abstract class SettingBase<T> implements Setting<T> {
-    public static String EMPTY_VALUE_TO_STRING = "N/A";
+    public static final String EMPTY_VALUE_TO_STRING = "N/A";
 
     private final String promptValue;
     private final String parameterKey;

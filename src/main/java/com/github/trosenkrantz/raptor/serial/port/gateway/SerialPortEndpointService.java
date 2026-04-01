@@ -29,7 +29,7 @@ public class SerialPortEndpointService implements EndpointService {
     }
 
     @Override
-    public Endpoint createEndpoint(Configuration configuration, Consumer<byte[]> broker, Runnable onEndpointClosed) throws IOException {
+    public Endpoint createEndpoint(Configuration configuration, Consumer<byte[]> broker, Runnable onEndpointClosed) {
         return new SerialPortEndpoint(configuration, broker, onEndpointClosed);
     }
 }

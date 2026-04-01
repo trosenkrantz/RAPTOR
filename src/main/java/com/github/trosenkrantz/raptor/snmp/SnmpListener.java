@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class SnmpListener {
     private static final Logger LOGGER = Logger.getLogger(SnmpListener.class.getName());
 
-    public static void run(Configuration configuration, CommandResponder listener) throws IOException, InterruptedException {
+    public static void run(Configuration configuration, CommandResponder listener) throws IOException {
         UdpAddress address = new UdpAddress("0.0.0.0/" + configuration.requireInt(SnmpService.PARAMETER_PORT));
         try (Snmp snmp = new Snmp(new DefaultUdpTransportMapping(address))) {
             snmp.addCommandResponder(listener);

@@ -34,7 +34,7 @@ public class Configuration {
         return new Configuration(mapper, mapper.createObjectNode(), List.of());
     }
 
-    public static Configuration fromSavedFile(Path path, FileWatcher fileWatcher) throws IOException {
+    public static Configuration fromSavedFile(Path path, FileWatcher fileWatcher) {
         ObjectMapper mapper = JsonUtility.buildMapper();
         JsonNode node = mapper.readTree(path.toFile());
         if (!node.isObject()) {
@@ -46,7 +46,7 @@ public class Configuration {
         return new Configuration(mapper, (ObjectNode) node, List.of(), path, fileWatcher);
     }
 
-    public static Configuration fromStream(final InputStream inputStream) throws IOException {
+    public static Configuration fromStream(final InputStream inputStream) {
         ObjectMapper mapper = JsonUtility.buildMapper();
 
         JsonNode node = mapper.readTree(inputStream);
@@ -175,10 +175,10 @@ public class Configuration {
      */
     public Optional<String> getRaptorEncodedString(String key) {
         JsonNode node = root.get(BytesFormatter.raptorEncodingToIntermediateEncodedBytes(key));
-        if (node == null || !node.isTextual()) {
+        if (node == null || !node.isString()) {
             return Optional.empty();
         }
-        return Optional.of(BytesFormatter.intermediateEncodingToRaptorEncoded(node.asText()));
+        return Optional.of(BytesFormatter.intermediateEncodingToRaptorEncoded(node.asString()));
     }
 
     /**

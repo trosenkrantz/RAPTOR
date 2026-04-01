@@ -20,7 +20,7 @@ public class TcpEndpoint implements Endpoint {
 
     private final DelayedConsumer<byte[]> fromBroker = new DelayedConsumer<>(); // As we connect async, buffer data from broker until connected
 
-    public TcpEndpoint(final Configuration configuration, final Consumer<byte[]> broker, final Runnable onEndpointClosed) throws IOException {
+    public TcpEndpoint(final Configuration configuration, final Consumer<byte[]> broker, final Runnable onEndpointClosed) {
         // Start receiving in a separate thread to not block the main thread
         Thread.ofVirtual().start(() -> {
             try {

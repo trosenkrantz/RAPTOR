@@ -14,7 +14,6 @@ public interface SerialPortSendStrategy {
      * @param port           the serial port
      * @param shutDownAction to be called by the strategy if it wants to shut down
      * @return a consumer to be called when the serial port receives data
-     * @throws IOException if an I/O error occurs
      */
-    Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction, int commandSubstitutionTimeout) throws IOException;
+    Consumer<byte[]> start(Configuration configuration, SerialPort port, Runnable shutDownAction, int commandSubstitutionTimeout);
 }

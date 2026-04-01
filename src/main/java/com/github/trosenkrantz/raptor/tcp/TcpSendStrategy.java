@@ -14,9 +14,8 @@ public interface TcpSendStrategy {
      * To be called once when running the service
      *
      * @param configuration configuration to load
-     * @throws IOException if an I/O error occurs
      */
-    default void load(final Configuration configuration) throws IOException {
+    default void load(final Configuration configuration) {
     }
 
     /**
