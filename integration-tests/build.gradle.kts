@@ -14,6 +14,7 @@ dependencies {
     testImplementation(libs.testcontainers)
 
     testRuntimeOnly(libs.slf4j.nop) // testcontainers use SLF4J, route to NOP to ignore
+    testRuntimeOnly(libs.junit.launcher) // Declaring test framework explicitly as recommended by Gradle: https://docs.gradle.org/8.5/userguide/upgrading_version_8.html#test_framework_implementation_dependencies
 }
 
 val syncDistributions = tasks.register<Sync>("syncDistributions") {
@@ -30,7 +31,7 @@ tasks.test {
     dependsOn(buildDockerImage) // For integration tests
     useJUnitPlatform()
 
-    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors())
+    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors() / 2)
     systemProperty("concurrent.integration.test.cases", concurrentIntegrationTestCases)
 
     doFirst {
