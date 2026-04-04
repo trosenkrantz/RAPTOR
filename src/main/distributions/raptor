@@ -25,5 +25,5 @@ case "$(uname 2>/dev/null || echo unknown)" in
     ;;
 esac
 
-# Run the Java application using the current directory as the classpath
-"$JAVA_EXEC" -cp "$BASE_DIR/*$CLASS_SEPARATOR$BASE_DIR/libs/*" com.github.trosenkrantz.raptor.Main "$@"
+# Run the Java application using the libs directory as the classpath
+"$JAVA_EXEC" -cp "$BASE_DIR/libs/*" com.github.trosenkrantz.raptor.Main "$@"

@@ -38,7 +38,7 @@ Thus, we do not use it for CI.
 
 ### Parallelisation
 To reduce test execution time, we run integration tests in parallel.
-This is enabled in [junit-platform.properties](./resources/junit-platform.properties).
+This is enabled in [junit-platform.properties](resources/junit-platform.properties).
 
 The vast majority of computation time is spent in testcontainers containers on non-JUnit threads.
 Without throttling those containers, testcontainers would start containers faster than the containers than keep up with, causing flaky timeouts.

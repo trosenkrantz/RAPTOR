@@ -17,7 +17,7 @@ if exist "%BASE_DIR%java\bin\java.exe" (
     )
 )
 
-rem Run the Java application using the current directory as the classpath
-"%JAVA_EXEC%" -cp "%BASE_DIR%*;%BASE_DIR%libs\*" com.github.trosenkrantz.raptor.Main %*
+rem Run the Java application using the libs directory as the classpath
+"%JAVA_EXEC%" -cp "%BASE_DIR%libs\*" com.github.trosenkrantz.raptor.Main %*
 
 endlocal

@@ -1,69 +1,75 @@
 plugins {
-    java
-    id("net.ltgt.errorprone") version "4.1.0" // For lint checking
+    java // To be able to reference the build task
+    alias(libs.plugins.errorprone) // To be able to apply Error Prone for lint checking
 }
 
 val distributionsDir: Provider<Directory> = layout.buildDirectory.dir("distributions")
 val runtimesDir: Provider<Directory> = layout.buildDirectory.dir("runtimes")
 
-group = "com.github.trosenkrantz"
-version = "2.2.0"
+allprojects {
+    version = "2.2.0"
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+    }
+
+    plugins.withType<JavaBasePlugin> {
+        extensions.configure<JavaPluginExtension> {
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(21))
+                vendor.set(JvmVendorSpec.AZUL)
+            }
+        }
+
+        tasks.withType<Jar> {
+            manifest {
+                attributes(
+                    "Implementation-Title" to project.name,
+                    "Implementation-Version" to project.version,
+                    "Implementation-Vendor" to "RAPTOR"
+                )
+            }
+        }
+
+        // Apply the Error Prone plugin
+        pluginManager.apply(libs.plugins.errorprone.get().pluginId)
+        dependencies {
+            errorprone(libs.errorprone.core)
+        }
+
+        tasks.withType<JavaCompile>().configureEach {
+            options.compilerArgs.add("-Werror") // Converts all Java compiler warnings into errors, to accept no warnings
+        }
+    }
 }
 
 val runtimeConfig by configurations.registering {
     isTransitive = false
 }
 
+val distribution by configurations.registering {
+    isCanBeResolved = false
+    isCanBeConsumed = true
+}
+
 dependencies {
+    add(runtimeConfig.name, project(":raptor-core"))
+
     // For JSON mapping
-    implementation("tools.jackson.core:jackson-databind:3.1.1")
-    add(runtimeConfig.name, "tools.jackson.core:jackson-databind:3.1.1")
-    add(runtimeConfig.name, "tools.jackson.core:jackson-core:3.1.1")
-    add(runtimeConfig.name, "com.fasterxml.jackson.core:jackson-annotations:2.21") // The Jackson team decided to keep jackson-annotations under com.fasterxml and 2.x for tools.jackson and 3.x
+    add(runtimeConfig.name, libs.jackson.databind)
+    add(runtimeConfig.name, libs.jackson.core)
+    add(runtimeConfig.name, libs.jackson.annotations)
 
     // For SNMP
-    implementation("org.snmp4j:snmp4j:3.8.2")
-    add(runtimeConfig.name, "org.snmp4j:snmp4j:3.8.2")
+    add(runtimeConfig.name, libs.snmp4j)
 
     // For serial port
-    implementation("com.fazecast:jSerialComm:2.11.0")
-    add(runtimeConfig.name, "com.fazecast:jSerialComm:2.11.0")
+    add(runtimeConfig.name, libs.jserialcomm)
 
     // For WebSocket
-    implementation("org.java-websocket:Java-WebSocket:1.5.7")
-    add(runtimeConfig.name, "org.java-websocket:Java-WebSocket:1.5.7")
-    add(runtimeConfig.name, "org.slf4j:slf4j-api:2.0.6") // Java-WebSocket use SLF4J
-    add(runtimeConfig.name, "org.slf4j:slf4j-jdk14:2.0.6") // Route SLF4J to java.util.logging
-
-    // For testing
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testImplementation("org.testcontainers:testcontainers:2.0.3")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("org.slf4j:slf4j-nop:2.0.7") // testcontainers use SLF4J, route to NOP to ignore
-
-    // For lint checking
-    errorprone("com.google.errorprone:error_prone_core:2.36.0")
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
-    }
-}
-
-tasks.jar {
-    manifest {
-        attributes(
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version,
-            "Implementation-Vendor" to project.group
-        )
-    }
-    destinationDirectory.set(distributionsDir)
+    add(runtimeConfig.name, libs.javawebsocket)
+    add(runtimeConfig.name, libs.slf4j.api) // Java-WebSocket use SLF4J
+    add(runtimeConfig.name, libs.slf4j.jdk14) // Route SLF4J to java.util.logging
 }
 
 val distributeFiles = tasks.register<Copy>("distributeFiles") {
@@ -81,12 +87,22 @@ val distributeDocumentation = tasks.register<Copy>("distributeDocumentation") {
     into(distributionsDir)
 }
 
-tasks.assemble {
-    dependsOn(tasks.jar, distributeFiles, distributeRuntime, distributeDocumentation)
+val distribute = tasks.register("distribute") {
+    dependsOn(distributeFiles, distributeRuntime, distributeDocumentation)
+}
+
+artifacts {
+    add(distribution.name, distributionsDir) {
+        builtBy(distribute)
+    }
+}
+
+tasks.jar {
+    enabled = false // Do not produce a JAR file for this project
 }
 
 val zip = tasks.register<Zip>("zip") {
-    dependsOn(tasks.assemble)
+    dependsOn(distribute)
 
     from(distributionsDir)
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
@@ -103,7 +119,7 @@ repeat(size?.toIntOrNull() ?: 1) { index ->
     val runtimeDir = runtimesDir.get().dir("${index + 1}")
 
     val copyTask = tasks.register<Copy>("createRuntime${index + 1}") {
-        dependsOn(tasks.assemble)
+        dependsOn(distribute)
         from(distributionsDir)
         into(runtimeDir)
     }
@@ -127,7 +143,7 @@ tasks.register("run") {
 }
 
 tasks.register<Exec>("debug") {
-    dependsOn(tasks.assemble)
+    dependsOn(distribute)
     workingDir(distributionsDir)
     commandLine(
         "cmd",
@@ -135,29 +151,8 @@ tasks.register<Exec>("debug") {
         "start",
         "java",
         "-cp",
-        ".\\*;libs\\*",
+        "libs\\*",
         "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005",
         "com.github.trosenkrantz.raptor.Main"
     )
-}
-
-val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
-    dependsOn(tasks.assemble)
-    commandLine("docker", "build", "-q", "-f", "./src/main/docker/Dockerfile", "-t", "raptor:latest", ".")
-}
-
-tasks.test {
-    dependsOn(buildDockerImage) // For integration tests
-    useJUnitPlatform()
-
-    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors() / 2)
-    systemProperty("concurrent.integration.test.cases", concurrentIntegrationTestCases)
-
-    doFirst {
-        println("Running with $concurrentIntegrationTestCases concurrent test-cases for integration testing.")
-    }
-}
-
-tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.add("-Werror") // Converts all Java compiler warnings into errors, to accept no warnings
 }

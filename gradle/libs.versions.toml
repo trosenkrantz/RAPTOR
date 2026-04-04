@@ -1,0 +1,21 @@
+[versions]
+jackson-tools = "3.1.1"
+slf4j = "2.0.6"
+
+[libraries]
+jackson-databind = { group = "tools.jackson.core", name = "jackson-databind", version.ref = "jackson-tools" }
+jackson-core = { group = "tools.jackson.core", name = "jackson-core", version.ref = "jackson-tools" }
+jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version = "2.21" } # The Jackson team decided to keep jackson-annotations under com.fasterxml and 2.x for tools.jackson and 3.x
+snmp4j = { group = "org.snmp4j", name = "snmp4j", version = "3.8.2" }
+jserialcomm = { group = "com.fazecast", name = "jSerialComm", version = "2.11.0" }
+javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version = "1.5.7" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-jdk14 = { group = "org.slf4j", name = "slf4j-jdk14", version.ref = "slf4j" }
+slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version = "2.0.7" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version = "5.10.0" }
+junit-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+testcontainers = { group = "org.testcontainers", name = "testcontainers", version = "2.0.3" }
+errorprone-core = { group = "com.google.errorprone", name = "error_prone_core", version = "2.36.0" }
+
+[plugins]
+errorprone = { id = "net.ltgt.errorprone", version = "4.1.0" }
