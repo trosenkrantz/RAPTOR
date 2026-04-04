@@ -30,7 +30,7 @@ tasks.test {
     dependsOn(buildDockerImage) // For integration tests
     useJUnitPlatform()
 
-    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors() / 2)
+    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors())
     systemProperty("concurrent.integration.test.cases", concurrentIntegrationTestCases)
 
     doFirst {

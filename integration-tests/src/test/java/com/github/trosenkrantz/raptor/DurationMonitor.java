@@ -7,7 +7,7 @@ public class DurationMonitor {
 
     static {
         // Runs exactly once when the JVM (Gradle Executor) exits
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Maximum duration waiting for expected output: " + GLOBAL_MAX.get() + "ms")));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("Maximum duration waiting for expected output: " + GLOBAL_MAX.get() + " ms")));
     }
 
     public static void report(long duration) {
