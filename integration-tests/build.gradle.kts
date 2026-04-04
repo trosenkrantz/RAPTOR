@@ -2,6 +2,8 @@ plugins {
     java
 }
 
+val buildDockerImageMarkerFile = layout.buildDirectory.file("buildDockerImage-marker.txt")
+
 val distribution by configurations.registering {
     isCanBeResolved = true
     isCanBeConsumed = false
@@ -24,11 +26,23 @@ val syncDistributions = tasks.register<Sync>("syncDistributions") {
 
 val buildDockerImage = tasks.register<Exec>("buildDockerImage") {
     dependsOn(syncDistributions)
+    inputs.file("./src/main/docker/Dockerfile")
+    inputs.dir(layout.buildDirectory.dir("distributions"))
+
     commandLine("docker", "build", "-q", "-f", "./src/main/docker/Dockerfile", "-t", "raptor:latest", ".")
+
+    // Use a marker file for Configuration Cache
+    outputs.file(buildDockerImageMarkerFile)
+    doLast {
+        val file = outputs.files.singleFile // Access the file through the task's outputs to avoid serialization issues
+        file.writeText("Built at: ${System.currentTimeMillis()}")
+    }
 }
 
 tasks.test {
-    dependsOn(buildDockerImage) // For integration tests
+    dependsOn(buildDockerImage)
+    inputs.file(buildDockerImageMarkerFile)
+
     useJUnitPlatform()
 
     val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors() / 2)
