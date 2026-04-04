@@ -1,6 +1,4 @@
-# Testing
-
-## Integration Testing
+# Integration Tests
 We run automated integration tests using testcontainers.
 
 The concept is to create a Docker network and run containers in it.
@@ -36,14 +34,16 @@ socat -d -d PTY,link=/dev/ttyS1,raw TCP:<IP address or hostname of container 1>:
 We have, however, observed this way of doing socat bridging to be flaky.
 Thus, we do not use it for CI.
 
-### Parallelisation
+## Parallelisation
 To reduce test execution time, we run integration tests in parallel.
-This is enabled in [junit-platform.properties](resources/junit-platform.properties).
+This is enabled in [junit-platform.properties](src/test/resources/junit-platform.properties).
 
-The vast majority of computation time is spent in testcontainers containers on non-JUnit threads.
+The vast majority of computation time is spent in testcontainers containers in non-JUnit threads.
 Without throttling those containers, testcontainers would start containers faster than the containers than keep up with, causing flaky timeouts.
 
-As the containers run on non-JUnit threads, we cannot use JUnit's parallelisation to throttle.
+As the containers run in non-JUnit threads, we cannot use JUnit's parallelisation to throttle.
 Instead, we use a semaphore that each test-case acquires.
-See [RaptorIntegrationTest.java](./java/com/github/trosenkrantz/raptor/RaptorIntegrationTest.java).
-We have a single JUnit thread, so at most one thread is waiting for a permit at a time.
+See [RaptorIntegrationTest.java](src/test/java/com/github/trosenkrantz/raptor/RaptorIntegrationTest.java).
+We have a single JUnit thread, so at most one test-case is waiting for a permit at a time.
+
+To monitor how well we have tuned the number of permits, we print the maximum wait time with [DurationMonitor.java](src/test/java/com/github/trosenkrantz/raptor/DurationMonitor.java).

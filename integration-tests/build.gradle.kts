@@ -13,7 +13,6 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.testcontainers)
 
-//    testRuntimeOnly(libs.junit.launcher) // TODO Needed? Maybe in CI
     testRuntimeOnly(libs.slf4j.nop) // testcontainers use SLF4J, route to NOP to ignore
 }
 
@@ -37,4 +36,6 @@ tasks.test {
     doFirst {
         println("Running with $concurrentIntegrationTestCases concurrent test-cases for integration testing.")
     }
+
+    testLogging.showStandardStreams = true
 }

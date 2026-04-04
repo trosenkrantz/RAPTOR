@@ -96,6 +96,7 @@ public class Raptor extends GenericContainer<Raptor> {
             output = getStdout(); // Capture a snapshot of stdout to report the same content for assertion fails are we check for
 
             if (predicate.test(output.lines().map(String::toLowerCase).toList())) {
+                DurationMonitor.report(System.currentTimeMillis() - deadline + TIMEOUT_MS);
                 return; // Success
             }
 
