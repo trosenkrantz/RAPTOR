@@ -78,7 +78,7 @@ public class ConfigurationStorage {
         desktop.open(path.toFile());
     }
 
-    public static Optional<ReloadableConfiguration> loadConfiguration() throws IOException {
+    public static Optional<ReloadableConfiguration> loadConfiguration() {
         Path path = Path.of(CONFIGURATION_FILE_NAME);
         if (!Files.exists(path)) return Optional.empty();
 

@@ -65,10 +65,9 @@ public class SerialPortUtility {
      *
      * @param configuration configuration
      * @param sendStrategy  controls what to do when serial port receives data and what and when to send data over the serial port
-     * @throws IOException          if an I/O error occurs
      * @throws InterruptedException if the thread is interrupted
      */
-    public static void connectAndStartSendingAndReceiving(Configuration configuration, SerialPortSendStrategy sendStrategy) throws IOException, InterruptedException {
+    public static void connectAndStartSendingAndReceiving(Configuration configuration, SerialPortSendStrategy sendStrategy) throws InterruptedException {
         String portName = configuration.requireRaptorEncodedString(PARAMETER_PORT);
 
         SerialPort serialPort = SerialPort.getCommPort(portName);

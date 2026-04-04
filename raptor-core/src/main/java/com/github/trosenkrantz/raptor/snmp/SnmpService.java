@@ -91,7 +91,7 @@ public class SnmpService implements RootService {
     }
 
     @Override
-    public void run(Configuration configuration) throws IOException, InterruptedException {
+    public void run(Configuration configuration) throws IOException {
         switch (configuration.requireEnum(Role.class)) {
             case GET_REQUEST -> {
                 PDU pdu = createPdu(configuration);

@@ -57,7 +57,7 @@ public final class StateMachineConfiguration {
         LOGGER.info("Updated auto-replies due to configuration changes.");
     }
 
-    public static void configureSampleAutoReply(Configuration configuration, String resourcePath) throws IOException {
+    public static void configureSampleAutoReply(Configuration configuration, String resourcePath) {
         CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
 
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfiguration.class.getResourceAsStream(resourcePath));

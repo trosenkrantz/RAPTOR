@@ -8,7 +8,7 @@ import java.io.IOException;
 
 class StateMachineConfigurationTest {
     @Test
-    void readFromFileWithLineComment() throws IOException {
+    void readFromFileWithLineComment() {
         // Read and parse JSON file
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfigurationTest.class.getResourceAsStream("/auto-reply-with-line-comments.json"));
         Configuration configuration = Configuration.empty();
@@ -26,7 +26,7 @@ class StateMachineConfigurationTest {
     }
 
     @Test
-    void readFromFileWithManyComments() throws IOException {
+    void readFromFileWithManyComments() {
         // Read and parse JSON file
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfigurationTest.class.getResourceAsStream("/auto-reply-with-many-comments.json"));
         Configuration configuration = Configuration.empty();

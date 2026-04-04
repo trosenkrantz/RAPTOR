@@ -7,7 +7,6 @@ import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import org.java_websocket.WebSocket;
 
-import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;

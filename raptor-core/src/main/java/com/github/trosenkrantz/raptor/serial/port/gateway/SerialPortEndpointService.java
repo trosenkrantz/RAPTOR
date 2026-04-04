@@ -5,7 +5,6 @@ import com.github.trosenkrantz.raptor.gateway.Endpoint;
 import com.github.trosenkrantz.raptor.gateway.EndpointService;
 import com.github.trosenkrantz.raptor.serial.port.SerialPortUtility;
 
-import java.io.IOException;
 import java.util.function.Consumer;
 
 public class SerialPortEndpointService implements EndpointService {

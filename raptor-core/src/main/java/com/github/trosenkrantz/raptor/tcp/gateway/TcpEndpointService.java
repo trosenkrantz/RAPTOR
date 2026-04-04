@@ -30,7 +30,7 @@ public class TcpEndpointService implements EndpointService {
     }
 
     @Override
-    public Endpoint createEndpoint(Configuration configuration, Consumer<byte[]> broker, Runnable onEndpointClosed) throws IOException {
+    public Endpoint createEndpoint(Configuration configuration, Consumer<byte[]> broker, Runnable onEndpointClosed) {
         return new TcpEndpoint(configuration, broker, onEndpointClosed);
     }
 }
