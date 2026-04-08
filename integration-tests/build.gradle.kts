@@ -45,7 +45,7 @@ tasks.test {
 
     useJUnitPlatform()
 
-    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors() / 2)
+    val concurrentIntegrationTestCases = maxOf(1, Runtime.getRuntime().availableProcessors()) // TODO ?
     systemProperty("concurrent.integration.test.cases", concurrentIntegrationTestCases)
 
     doFirst {

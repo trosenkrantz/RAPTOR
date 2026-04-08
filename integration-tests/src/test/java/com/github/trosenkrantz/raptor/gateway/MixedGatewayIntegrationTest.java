@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.gateway;
 
 import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
+import com.github.trosenkrantz.raptor.UniqueIpPort;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,7 +17,8 @@ public class MixedGatewayIntegrationTest {
              Raptor gateway = new Raptor(network);
              Raptor system1 = new Raptor(network);
              Raptor system2Receiver = new Raptor(network);
-             Raptor system2Sender = new Raptor(network)) {
+             Raptor system2Sender = new Raptor(network);
+             UniqueIpPort udpPort = UniqueIpPort.claim()) {
             network.startAll();
 
             // Start system1
@@ -47,22 +49,22 @@ public class MixedGatewayIntegrationTest {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.0",
-                        "port": 50000
+                        "port": %s
                       }
                     }
-                    """, system1.getRaptorHostname()));
+                    """, system1.getRaptorHostname(), udpPort.get()));
             gateway.expectNumberOfOutputLineContains(1, "connected", system1.getRaptorIpAddress(), "50000");
 
             // Start system2 receiver
-            system2Receiver.runConfiguration("""
+            system2Receiver.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
                       "remoteAddress": "224.0.2.0",
-                      "localPort": 50000
+                      "localPort": %s
                     }
-                    """);
+                    """, udpPort.get()));
             system2Receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
 
             // System1 sends a text message
@@ -71,7 +73,7 @@ public class MixedGatewayIntegrationTest {
             system1.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
             gateway.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
             gateway.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            system2Receiver.expectNumberOfOutputLineContains(1, "received", "text", textMessage, gateway.getRaptorIpAddress(), "224.0.2.0", "50000");
+            system2Receiver.expectNumberOfOutputLineContains(1, "received", "text", textMessage, gateway.getRaptorIpAddress(), "224.0.2.0", udpPort.getString());
 
             // System2 sends a binary message
             String binaryMessage = "\\\\x00\\\\x01\\\\x02\\\\x03";
@@ -81,11 +83,11 @@ public class MixedGatewayIntegrationTest {
                       "mode": "multicast",
                       "role": "send",
                       "remoteAddress": "224.0.2.0",
-                      "remotePort": 50000,
+                      "remotePort": %s,
                       "payload": "%s",
                       "commandSubstitutionTimeout": 1000
                     }
-                    """, binaryMessage));
+                    """, udpPort.get(), binaryMessage));
             system2Sender.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
             gateway.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
             gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);

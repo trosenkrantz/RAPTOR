@@ -7,15 +7,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wraps a {@link Network} and keeps track of all containers in the network.
+ * Wraps a collection of {@link Raptor} containers for a test together to add them to a Docker {@link Network} and start the containers in parallel.
  */
 public class RaptorNetwork implements AutoCloseable {
-    private final Network innerNetwork = Network.newNetwork();
+    /**
+     * By default, the Docker bridge driver has a limit of 31 concurrent subnets.
+     * To avoid exhaustion during high-concurrency test runs, we use a shared Docker network.
+     */
+    private static final Network DOCKER_NETWORK = Network.newNetwork();
+
+    static {
+        // Runs exactly once when the JVM (Gradle Executor) exits
+        Runtime.getRuntime().addShutdownHook(new Thread(DOCKER_NETWORK::close));
+    }
+
     private final List<Raptor> containers = new ArrayList<>();
 
     public void addContainer(Raptor container) {
         containers.add(container);
-        container.withNetwork(innerNetwork);
+        container.withNetwork(DOCKER_NETWORK);
     }
 
     public List<Raptor> getContainers() {
@@ -31,6 +41,5 @@ public class RaptorNetwork implements AutoCloseable {
 
     @Override
     public void close() {
-        innerNetwork.close();
     }
 }

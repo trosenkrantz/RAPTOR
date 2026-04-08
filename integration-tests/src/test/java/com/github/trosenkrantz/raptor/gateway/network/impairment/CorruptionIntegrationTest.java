@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.gateway.network.impairment;
 
 import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
+import com.github.trosenkrantz.raptor.UniqueIpPort;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,39 +16,40 @@ class CorruptionIntegrationTest {
         try (RaptorNetwork network = new RaptorNetwork();
              Raptor receiver = new Raptor(network);
              Raptor gateway = new Raptor(network);
-             Raptor sender = new Raptor(network)) {
+             Raptor sender = new Raptor(network);
+             UniqueIpPort port = UniqueIpPort.claim()) {
             network.startAll();
 
             // Arrange
-            receiver.runConfiguration("""
+            receiver.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
                       "remoteAddress": "224.0.2.1",
-                      "localPort": 50000
+                      "localPort": %s
                     }
-                    """);
-            gateway.runConfiguration("""
+                    """, port.get()));
+            gateway.runConfiguration(String.format("""
                     {
                       "service": "gateway",
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.0",
-                        "port": 50000
+                        "port": %s
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.1",
-                        "port": 50000
+                        "port": %s
                       },
                       "aToB": {
                         "corruption": 1.0
                       }
                     }
-                    """); // Flip all bits to get a deterministic test
+                    """, port.get(), port.get())); // Flip all bits to get a deterministic test
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
             gateway.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
 
@@ -59,18 +61,18 @@ class CorruptionIntegrationTest {
                       "mode": "multicast",
                       "role": "send",
                       "remoteAddress": "224.0.2.0",
-                      "remotePort": 50000,
+                      "remotePort": %s,
                       "payload": "%s",
                       "commandSubstitutionTimeout": 1000
                     }
-                    """, originalBinaryMessage));
+                    """, port.get(), originalBinaryMessage));
 
             // Assert
             String expectedReceivedBinaryMessage = "\\\\xff\\\\xfe\\\\xfd\\\\xfc";
-            sender.expectNumberOfOutputLineContains(1, "sent", "bytes", originalBinaryMessage, "224.0.2.0", "50000");
-            gateway.expectNumberOfOutputLineContains(1, "received", "bytes", originalBinaryMessage, sender.getRaptorIpAddress(), "224.0.2.0", "50000");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", expectedReceivedBinaryMessage, "224.0.2.1", "50000");
-            receiver.expectNumberOfOutputLineContains(1, "received", "bytes", expectedReceivedBinaryMessage, gateway.getRaptorIpAddress(), "224.0.2.1", "50000");
+            sender.expectNumberOfOutputLineContains(1, "sent", "bytes", originalBinaryMessage, "224.0.2.0", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "received", "bytes", originalBinaryMessage, sender.getRaptorIpAddress(), "224.0.2.0", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", expectedReceivedBinaryMessage, "224.0.2.1", port.getString());
+            receiver.expectNumberOfOutputLineContains(1, "received", "bytes", expectedReceivedBinaryMessage, gateway.getRaptorIpAddress(), "224.0.2.1", port.getString());
         }
     }
 }

@@ -14,6 +14,8 @@ import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -65,9 +67,12 @@ public class Raptor extends GenericContainer<Raptor> {
      * @param expectedPhrases the phrases to check for
      */
     public void expectAnyOutputLineContains(String... expectedPhrases) {
-        List<String> expectedPhrases2 = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
+        List<String> expectedPhrasesLowerCase = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
 
-        expectOutputLines(actualLines -> actualLines.stream().anyMatch(lineContainsAllPhrases(expectedPhrases2)));
+        expectOutputLines(actualOutput -> {
+            if (actualOutput.lines().map(String::toLowerCase).anyMatch(lineContainsAllPhrases(expectedPhrasesLowerCase))) return new OutputTestResult(OutputTestStatus.PASSED, null);
+            else return new OutputTestResult(OutputTestStatus.PENDING, "Expected any line containing " + String.join(", ", expectedPhrases) + ".");
+        });
     }
 
     private static Predicate<String> lineContainsAllPhrases(List<String> expectedPhrases) {
@@ -81,33 +86,50 @@ public class Raptor extends GenericContainer<Raptor> {
      * @param expectedPhrases the phrases to check for
      */
     public void expectNumberOfOutputLineContains(int expectedNumber, String... expectedPhrases) {
-        List<String> expectedPhrases2 = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
+        List<String> expectedPhrasesLowerCase = Arrays.stream(expectedPhrases).map(String::toLowerCase).toList();
 
-        expectOutputLines(actualLines -> {
-            long linesMatch = actualLines.stream().filter(lineContainsAllPhrases(expectedPhrases2)).count();
-            return linesMatch == expectedNumber;
+        expectOutputLines(actualOutput -> {
+            long linesMatch = actualOutput.lines().map(String::toLowerCase).filter(lineContainsAllPhrases(expectedPhrasesLowerCase)).count();
+            if (linesMatch == expectedNumber) return new OutputTestResult(OutputTestStatus.PASSED, null);
+
+            String errorMessage = "Expected " + expectedNumber + " line" + (expectedNumber == 1 ? "" : "s") + " containing " + String.join(", ", expectedPhrases) + ", but found " + linesMatch + ".";
+            if (linesMatch < expectedNumber) return new OutputTestResult(OutputTestStatus.PENDING, errorMessage);
+            else return new OutputTestResult(OutputTestStatus.FAILED, errorMessage);
         });
     }
 
-    public void expectOutputLines(Predicate<List<String>> predicate) {
-        long deadline = System.currentTimeMillis() + TIMEOUT_MS;
+    public void expectOutputLines(OutputTester tester) {
+        long startTime = System.currentTimeMillis();
+        long deadline = startTime + TIMEOUT_MS;
         String output;
-        do {
-            output = getStdout(); // Capture a snapshot of stdout to report the same content for assertion fails are we check for
+        OutputTestResult result;
 
-            if (predicate.test(output.lines().map(String::toLowerCase).toList())) {
-                DurationMonitor.report(System.currentTimeMillis() - deadline + TIMEOUT_MS);
-                return; // Success
+        while (true) {
+            output = getStdout();
+            result = tester.test(output);
+
+            if (result.status() == OutputTestStatus.PASSED) {
+                DurationMonitor.report(System.currentTimeMillis() - startTime);
+                return;
             }
 
-            try {
-                Thread.sleep(EXPECT_INTERVAL_MS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            long currentTime = System.currentTimeMillis();
+            if (result.status() == OutputTestStatus.FAILED || currentTime >= deadline) {
+                break;
             }
-        } while (System.currentTimeMillis() < deadline);
 
-        Assertions.fail("Timeout waiting for expected outputs. Actual output:" + System.lineSeparator() +
+            long sleepTime = Math.min(EXPECT_INTERVAL_MS, deadline - currentTime);
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+
+        Assertions.fail("Timeout waiting for expected output. " + result.errorMessage() + " Actual output:" + System.lineSeparator() +
                 indentOutput(output) +
                 network.getContainers().stream()
                         .filter(container -> !equals(container))
@@ -119,7 +141,7 @@ public class Raptor extends GenericContainer<Raptor> {
     }
 
     private static String indentOutput(String out) {
-        return out.lines().map(line -> "\t" + line).collect(Collectors.joining(System.lineSeparator()));
+        return out.lines().map(line -> "  " + line).collect(Collectors.joining(System.lineSeparator()));
     }
 
     private String getStdout() {

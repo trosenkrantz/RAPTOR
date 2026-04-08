@@ -3,6 +3,7 @@ package com.github.trosenkrantz.raptor.udp;
 import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorIntegrationTest;
 import com.github.trosenkrantz.raptor.RaptorNetwork;
+import com.github.trosenkrantz.raptor.UniqueIpPort;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,57 +17,58 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
         try (RaptorNetwork network = new RaptorNetwork();
              Raptor receiver = new Raptor(network);
              Raptor gateway = new Raptor(network);
-             Raptor sender = new Raptor(network)) {
+             Raptor sender = new Raptor(network);
+             UniqueIpPort port = UniqueIpPort.claim()) {
             network.startAll();
 
             // Arrange
-            receiver.runConfiguration("""
+            receiver.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
                       "remoteAddress": "224.0.2.1",
-                      "localPort": 50000
+                      "localPort": %s
                     }
-                    """);
-            gateway.runConfiguration("""
+                    """, port.get()));
+            gateway.runConfiguration(String.format("""
                     {
                       "service": "gateway",
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.0",
-                        "port": 50000
+                        "port": %s
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.1",
-                        "port": 50000
+                        "port": %s
                       }
                     }
-                    """);
+                    """, port.get(), port.get()));
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
             gateway.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
 
             // Act
-            sender.runConfiguration("""
+            sender.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "send",
                       "remoteAddress": "224.0.2.0",
-                      "remotePort": 50000,
+                      "remotePort": %s,
                       "payload": "Hello, World!",
                       "commandSubstitutionTimeout": 1000
                     }
-                    """);
+                    """, port.get()));
 
             // Assert
-            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.0", "50000");
-            gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", "50000");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.1", "50000");
-            receiver.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway.getRaptorIpAddress(), "224.0.2.1", "50000");
+            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.0", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.1", port.getString());
+            receiver.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway.getRaptorIpAddress(), "224.0.2.1", port.getString());
         }
     }
 
@@ -82,87 +84,88 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
              Raptor receiverB = new Raptor(network);
              Raptor gateway = new Raptor(network);
              Raptor senderA = new Raptor(network);
-             Raptor senderB = new Raptor(network)) {
+             Raptor senderB = new Raptor(network);
+             UniqueIpPort port = UniqueIpPort.claim()) {
             network.startAll();
 
             // Arrange
-            receiverA.runConfiguration("""
+            receiverA.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
                       "remoteAddress": "224.0.2.1",
-                      "localPort": 50001
+                      "localPort": %s
                     }
-                    """);
-            receiverB.runConfiguration("""
+                    """, port.get()));
+            receiverB.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
                       "remoteAddress": "224.0.2.2",
-                      "localPort": 50002
+                      "localPort": %s
                     }
-                    """);
-            gateway.runConfiguration("""
+                    """, port.get()));
+            gateway.runConfiguration(String.format("""
                     {
                       "service": "gateway",
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.1",
-                        "port": 50001
+                        "port": %s
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.2",
-                        "port": 50002
+                        "port": %s
                       }
                     }
-                    """);
+                    """, port.get(), port.get()));
             receiverA.expectNumberOfOutputLineContains(1, "Waiting to receive");
             receiverB.expectNumberOfOutputLineContains(1, "Waiting to receive");
             gateway.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
 
             // Act
-            senderA.runConfiguration("""
+            senderA.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "send",
                       "remoteAddress": "224.0.2.1",
-                      "remotePort": 50001,
+                      "remotePort": %s,
                       "payload": "Hello, World! 1",
                       "commandSubstitutionTimeout": 1000
                     }
-                    """);
-            senderB.runConfiguration("""
+                    """, port.get()));
+            senderB.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "send",
                       "remoteAddress": "224.0.2.2",
-                      "remotePort": 50002,
+                      "remotePort": %s,
                       "payload": "Hello, World! 2",
                       "commandSubstitutionTimeout": 1000
                     }
-                    """);
+                    """, port.get()));
 
 
             // Assert
 
             // Sender 1 -> gateway -> Receiver 2
-            senderA.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", "224.0.2.1", "50001");
-            gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 1", senderA.getRaptorIpAddress(), "224.0.2.1", "50001");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", "224.0.2.2", "50002");
-            receiverB.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 1", gateway.getRaptorIpAddress(), "224.0.2.2", "50002");
+            senderA.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", "224.0.2.1", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 1", senderA.getRaptorIpAddress(), "224.0.2.1", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 1", "224.0.2.2", port.getString());
+            receiverB.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 1", gateway.getRaptorIpAddress(), "224.0.2.2", port.getString());
 
             // Sender 2 -> gateway -> Receiver 1
-            senderB.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", "224.0.2.2", "50002");
-            gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 2", senderB.getRaptorIpAddress(), "224.0.2.2", "50002");
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", "224.0.2.1", "50001");
-            receiverA.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 2", gateway.getRaptorIpAddress(), "224.0.2.1", "50001");
+            senderB.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", "224.0.2.2", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 2", senderB.getRaptorIpAddress(), "224.0.2.2", port.getString());
+            gateway.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World! 2", "224.0.2.1", port.getString());
+            receiverA.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World! 2", gateway.getRaptorIpAddress(), "224.0.2.1", port.getString());
         }
     }
 
@@ -175,77 +178,78 @@ public class UdpMulticastGatewayIntegrationTest extends RaptorIntegrationTest {
              Raptor receiver = new Raptor(network);
              Raptor gateway1 = new Raptor(network);
              Raptor gateway2 = new Raptor(network);
-             Raptor sender = new Raptor(network)) {
+             Raptor sender = new Raptor(network);
+             UniqueIpPort port = UniqueIpPort.claim()) {
             network.startAll();
 
             // Arrange
-            receiver.runConfiguration("""
+            receiver.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "receive",
                       "remoteAddress": "224.0.2.2",
-                      "localPort": 50000
+                      "localPort": %s
                     }
-                    """);
-            gateway1.runConfiguration("""
+                    """, port.get()));
+            gateway1.runConfiguration(String.format("""
                     {
                       "service": "gateway",
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.0",
-                        "port": 50000
+                        "port": %s
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.1",
-                        "port": 50000
+                        "port": %s
                       }
                     }
-                    """);
-            gateway2.runConfiguration("""
+                    """, port.get(), port.get()));
+            gateway2.runConfiguration(String.format("""
                     {
                       "service": "gateway",
                       "a": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.1",
-                        "port": 50000
+                        "port": %s
                       },
                       "b": {
                         "endpoint": "udp",
                         "mode": "multicast",
                         "remoteAddress": "224.0.2.2",
-                        "port": 50000
+                        "port": %s
                       }
                     }
-                    """);
+                    """, port.get(), port.get()));
             receiver.expectNumberOfOutputLineContains(1, "Waiting to receive");
             gateway1.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
             gateway2.expectNumberOfOutputLineContains(2, "Waiting to receive"); // One for each endpoint
 
             // Act
-            sender.runConfiguration("""
+            sender.runConfiguration(String.format("""
                     {
                       "service": "udp",
                       "mode": "multicast",
                       "role": "send",
                       "remoteAddress": "224.0.2.0",
-                      "remotePort": 50000,
+                      "remotePort": %s,
                       "payload": "Hello, World!",
                       "commandSubstitutionTimeout": 1000
                     }
-                    """);
+                    """, port.get()));
 
             // Assert
-            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.0", "50000");
-            gateway1.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", "50000");
-            gateway1.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.1", "50000");
-            gateway2.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway1.getRaptorIpAddress(), "224.0.2.1", "50000");
-            gateway2.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.2", "50000");
-            receiver.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway2.getRaptorIpAddress(), "224.0.2.2", "50000");
+            sender.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.0", port.getString());
+            gateway1.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", sender.getRaptorIpAddress(), "224.0.2.0", port.getString());
+            gateway1.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.1", port.getString());
+            gateway2.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway1.getRaptorIpAddress(), "224.0.2.1", port.getString());
+            gateway2.expectNumberOfOutputLineContains(1, "sent", "text", "Hello, World!", "224.0.2.2", port.getString());
+            receiver.expectNumberOfOutputLineContains(1, "received", "text", "Hello, World!", gateway2.getRaptorIpAddress(), "224.0.2.2", port.getString());
         }
     }
 }
