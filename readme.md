@@ -126,15 +126,15 @@ RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters
 
 RAPTOR outputs and logs with this encoding as well, allowing for easy copy-paste. Additionally, RAPTOR can convert between files and this encoding.
 
-Because of the encodings for hex strings and command substitutions, if we in a rare case want to represent the four byte character sequences `\x00` through `\xff` or the three byte`\$(` sequence, we must hex encode the `\` as `\\x5c`.
+Because of the encodings for hex strings and command substitutions, if we in a rare case want to represent the four characters `\x00` through `\xff` or the three characters `\$(`, we must hex encode the `\` as `\\x5c`.
 E.g., RAPTOR encoding `\\x5c00` to represent the four bytes `\x00`.
 
 ### Command substitution
 Command substitution is a powerful tool allowing for:
 - Unbounded output, like sequence numbers.
-- Probabilistic, random, or other non-deterministic behaviour.
+- Probabilistic, random, and other non-deterministic behaviour.
 - Using mathematics
-- Using commands, scripts and programs for generating outputs.
+- Using scripts and programs for generating outputs.
 
 RAPTOR executes commands natively on the OS, with `sh` on UNIX and `cmd` on Windows.
 We can use piping, e.g., `\\$(ls -S | head -n 1)` on UNIX and `\\$(dir | findstr txt)` on Windows.
@@ -142,12 +142,14 @@ We can even run scripts, e.g., `\\$(./script)` on UNIX and `\\$(script.cmd)` as 
 
 To prevent RAPTOR from hanging, it applies a configurable timeout for commands.
 
-RAPTOR reads the stdout of the executed process and treats it as RAPTOR encoding, allowing for advanced use-cases like recursion.
+RAPTOR reads the stdout of the executed process and treats it as RAPTOR encoding, allowing for advanced use-cases like recursive command substitution.
 RAPTOR then outputs the resolved stdout.
+
 Many commands tail their stdout with a newline, which RAPTOR ignores.
+E.g., `echo ABC` has stdout of four bytes, while RAPTOR resolves `\\$(echo ABC)` to only three.
 
 ## Auto-Reply
-For two-way communication (inputs and outputs), we can configure RAPTOR to auto-reply using a state machine. Example:
+For bidirectional communication (TCP, SNMP, Serial port, and WebSocket), we can configure RAPTOR to auto-reply using a state machine. Example:
 ```json5
 {
   "startState": "login",
@@ -177,9 +179,8 @@ RAPTOR checks for matching inputs in the order of appearance. It ignores simple 
 
 RAPTOR listens to changes to the configuration file.
 This enables us to dynamically change all aspects of the state machine. Example use-cases:
-
 - Experiment with different scenarios while RAPTOR retains the connection to an unfamiliar system, by manually editing the configuration.
-- Use a custom script to update `config.json` to model complex branching that is infeasible to model with a hardcoded state machine:<br>
+- Use a custom script to update the configuration to model complex branching that is infeasible to model with a hardcoded state machine:<br>
   ![](https://img.plantuml.biz/plantuml/dsvg/JP2n2i9038RtUuhWf8Cl82AAE2jdkxc4QsmFhccvfA1lR-vqS0l_btm9EOfYrcLCBj5JGIV8iHyKkfWfQ9pOOT0fGqEYb5q9aVj4iBg_BHaVt797Nxu25BYtpN-NFzsQguUrn759g97x1zFBL8m9f2esTSx_JvqNqSdS4dASVzvQElSz1BRRGra5kxfP8B9Idx5UNF9zQV26Bwymc9K4EbHqlf2Vp6WxMshClg048uOXChaZSMSl-G00)
 
 ### Capture Groups
@@ -194,7 +195,7 @@ RAPTOR supports regex capture groups from the input to dynamically populate the 
 ```
 
 `\\{1}` refers to the first capture group (the first set of parentheses), `\\{2}` to the second, etc.
-`\\{0}` represents the entire matched input string.
+`\\{0}` represents the entire matched input.
 
 We can use these placeholders standalone or nested inside command substitutions. Example for a UNIX environment:
 
@@ -280,27 +281,22 @@ For TCP and serial port auto-replies, RAPTOR passes input to the state machine b
 ### SNMP
 For SNMP auto-replies, `input` is the OID in dot notation and `output` is the BER encoding of the response variable.
 
-When processing a GET or SET request with multiple variable bindings, RAPTOR matches each IOD against the current state, to deliver independent response variables matching the corresponding request.
-RAPTOR transitions the state machine once, based on the first matched OID with a `nextState`.
-
-If RAPTOR finds no match for an OID, it responds with Null for that variable binding.
-
 <details>
 <summary>Example</summary>
 
 ```json5
 {
-  "startState": "ab",
+  "startState": "a",
   "states": {
     "a": [
       {
         "input": "1.2.3.4", // For OID 1.2.3.4
-        "output": "\\x02\\x01\\x2a", // Deliver type integer (\x02 in BER), length 1 byte, value 42 (\x2a in hex)
+        "output": "\\x02\\x01\\x2a", // Deliver integer (\x02 in BER), length 1 byte, value 42 (\x2a in hex)
         "nextState": "b" // Alternate between two states to simulate variation
       },
       {
         "input": "1.2.3.5..+", // Use regex
-        "output": "\\x04\\x05Hello" // Type octet string (\x04), length 5 bytes, value "Hello"
+        "output": "\\x04\\x05Hello" // Octet string (\x04), length 5 bytes, value "Hello"
       }
       // For SNMP, RAPTOR delivers Null if it finds no match
     ],
@@ -316,14 +312,20 @@ If RAPTOR finds no match for an OID, it responds with Null for that variable bin
 ```
 </details>
 
-### WebSocket
-For WebSocket auto-replies, `input` is the whole payload data received, either for a text or binary frame.
+When processing a GET or SET requests with multiple variable bindings, RAPTOR matches all OIDs against the same state, to deliver independent response variables matching the corresponding request.
+RAPTOR transitions the state machine once, based on the first matched OID with a `nextState`.
 
-## TLS
+If RAPTOR finds no match for an OID, it responds with `Null` for that variable binding.
+
+### WebSocket
+For WebSocket auto-replies, RAPTOR matches the whole payload of a frame against `input`.
+It does not distinguish between text and binary frames.
+
+## Security
 RAPTOR is purposed for testing and analysis, not for operational use. When using TLS, it does not verify certificates.
 
 ## ANSI
-RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument if our console does not support it.
+RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument for the case where our console does not support it.
 
 ## Licence
 RAPTOR's source code is licenced under MIT, see [licence](licence) for more details. The release includes the following third-party libraries, which are subject to their own licences:
