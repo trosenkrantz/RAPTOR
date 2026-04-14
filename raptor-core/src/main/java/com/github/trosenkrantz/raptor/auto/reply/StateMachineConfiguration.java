@@ -58,8 +58,6 @@ public final class StateMachineConfiguration {
     }
 
     public static void configureSampleAutoReply(Configuration configuration, String resourcePath) {
-        CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
-
         Configuration autoReplyConfiguration = Configuration.fromStream(StateMachineConfiguration.class.getResourceAsStream(resourcePath));
         CommandSubstitutor.TIMEOUT_SETTING.configure(autoReplyConfiguration);
         configuration.setSubConfiguration(AutoRepliesUtility.PARAMETER_REPLIES, autoReplyConfiguration);
