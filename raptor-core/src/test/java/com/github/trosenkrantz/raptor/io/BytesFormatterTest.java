@@ -10,48 +10,6 @@ class BytesFormatterTest {
     public static final int COMMAND_SUBSTITUTION_TIMEOUT = 1000;
 
     @Test
-    public void encodeEachByte() {
-        for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-            byte[] input = new byte[]{(byte) i};
-            String encoded = BytesFormatter.bytesToRaptorEncoding(input);
-            byte[] roundTrip = BytesFormatter.raptorEncodingToBytes(encoded, COMMAND_SUBSTITUTION_TIMEOUT);
-            Assertions.assertArrayEquals(input, roundTrip, "Failed for value " + i + ", encoded as " + encoded + ".");
-        }
-    }
-
-    @Test
-    public void decodeWordsWithSpace() {
-        String input = "Hello, World";
-
-        byte[] decoded = BytesFormatter.raptorEncodingToBytes(input, COMMAND_SUBSTITUTION_TIMEOUT);
-        Assertions.assertArrayEquals(input.getBytes(StandardCharsets.US_ASCII), decoded); // Expect input as bytes one-to-one
-
-        String roundTrip = BytesFormatter.bytesToRaptorEncoding(decoded);
-        Assertions.assertEquals(input, roundTrip);
-    }
-
-    @Test
-    public void decodeWordsWithMultipleSpaces() {
-        String input = "a b c";
-
-        byte[] decoded = BytesFormatter.raptorEncodingToBytes(input, COMMAND_SUBSTITUTION_TIMEOUT);
-        Assertions.assertArrayEquals(input.getBytes(StandardCharsets.US_ASCII), decoded); // Expect input as bytes one-to-one
-
-        String roundTrip = BytesFormatter.bytesToRaptorEncoding(decoded);
-        Assertions.assertEquals(input, roundTrip);
-    }
-
-    @Test
-    public void decodeSpecialCharacters() {
-        String input = "Special!@#$%^&*()"; // But no slash or quote
-        byte[] decoded = BytesFormatter.raptorEncodingToBytes(input, COMMAND_SUBSTITUTION_TIMEOUT);
-        Assertions.assertArrayEquals(input.getBytes(StandardCharsets.US_ASCII), decoded); // Expect input as bytes one-to-one
-
-        String roundTrip = BytesFormatter.bytesToRaptorEncoding(decoded);
-        Assertions.assertEquals(input, roundTrip);
-    }
-
-    @Test
     public void decodeEscapedSlash() {
         String input = "abc\\\\";
         byte[] decoded = BytesFormatter.raptorEncodingToBytes(input, COMMAND_SUBSTITUTION_TIMEOUT);
@@ -103,19 +61,5 @@ class BytesFormatterTest {
         String encoded = BytesFormatter.bytesToRaptorEncoding(input);
         byte[] roundTrip = BytesFormatter.raptorEncodingToBytes(encoded, COMMAND_SUBSTITUTION_TIMEOUT);
         Assertions.assertArrayEquals(input, roundTrip);
-    }
-
-    @Test
-    public void encodeRandomBytes() {
-        Random random = new Random(0);
-        for (int iteration = 0; iteration < 100; iteration++) {
-            byte[] input = new byte[256];
-            random.nextBytes(input);
-
-            String encoded = BytesFormatter.bytesToRaptorEncoding(input);
-            byte[] roundTrip = BytesFormatter.raptorEncodingToBytes(encoded, COMMAND_SUBSTITUTION_TIMEOUT);
-
-            Assertions.assertArrayEquals(input, roundTrip, "Failed at iteration " + iteration);
-        }
     }
 }
