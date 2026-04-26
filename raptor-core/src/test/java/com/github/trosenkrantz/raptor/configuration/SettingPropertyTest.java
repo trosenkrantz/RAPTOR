@@ -7,7 +7,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SettingPropertyTest {
-
     @Property
     void integerSettingRoundTrip(@ForAll int value) {
         Configuration config = Configuration.empty();

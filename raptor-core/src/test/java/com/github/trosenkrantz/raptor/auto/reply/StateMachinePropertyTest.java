@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.ArrayList;
 
 class StateMachinePropertyTest {
-
     public static final int COMMAND_SUBSTITUTION_TIMEOUT = 1000;
 
     @Property

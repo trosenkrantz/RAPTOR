@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PacketLossFactoryPropertyTest {
-
     @Property
     void packetLossZeroProbabilityDropsNothing(@ForAll byte[] payload) {
         PacketLossFactory factory = new PacketLossFactory(0.0, new Random());

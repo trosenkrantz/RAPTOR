@@ -5,7 +5,6 @@ import net.jqwik.api.Property;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class BytesFormatterPropertyTest {
-
     @Property
     void bytesToAndFromIntermediateEncodingAreIdentity(@ForAll byte[] input) {
         String encoded = BytesFormatter.bytesToIntermediateEncoding(input);
