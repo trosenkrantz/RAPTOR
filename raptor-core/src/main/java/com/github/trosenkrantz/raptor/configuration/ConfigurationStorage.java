@@ -82,22 +82,30 @@ public class ConfigurationStorage {
         desktop.open(path.toFile());
     }
 
+    /** Loads the default configuration file in the current directory, if it exists. */
     public static Optional<ReloadableConfiguration> loadConfiguration() {
-        return loadConfiguration(Optional.empty());
+        Path path = Path.of(CONFIGURATION_FILE_NAME);
+        if (!Files.exists(path)) return Optional.empty();
+        return Optional.of(loadFromPath(path));
     }
 
-    public static Optional<ReloadableConfiguration> loadConfiguration(Optional<Path> explicitPath) {
-        Path path = explicitPath.orElseGet(() -> Path.of(CONFIGURATION_FILE_NAME));
+    /**
+     * Loads the specified configuration file.
+     *
+     * @param path path of the configuration file
+     * @return the loaded configuration
+     * @throws IllegalArgumentException if the file does not exist
+     */
+    public static ReloadableConfiguration loadConfiguration(Path path) {
         if (!Files.exists(path)) {
-            if (explicitPath.isPresent()) {
-                throw new IllegalArgumentException("Configuration file not found: " + path.toAbsolutePath());
-            }
-            return Optional.empty();
+            throw new IllegalArgumentException("Configuration file not found: " + path.toAbsolutePath());
         }
+        return loadFromPath(path);
+    }
 
+    private static ReloadableConfiguration loadFromPath(Path path) {
         FileWatcher fileWatcher = new FileWatcher(path);
         Configuration configuration = Configuration.fromSavedFile(path, fileWatcher);
-
-        return Optional.of(new ReloadableConfiguration(configuration, fileWatcher));
+        return new ReloadableConfiguration(configuration, fileWatcher);
     }
 }

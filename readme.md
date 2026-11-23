@@ -65,7 +65,8 @@ It exchanges data with systems, either as a standalone, interactive console appl
 3. Run the `raptor` shell script or `raptor.cmd` script.
 
 ## Configuration
-By default, starting RAPTOR will prompt us to configure a scenario, e.g., to send `Hello` as UDP unicast to `localhost`. We first choose whether to run it immediately or save it. When saving, we name the configuration up front so its directory exists before the remaining prompts.
+By default, starting RAPTOR will prompt us to configure a scenario, e.g., to send `Hello` as UDP unicast to `localhost`.
+We can either run the configuration immediately or save it.
 
 Saving configurations enables us to reuse, modify, and script scenarios. RAPTOR saves configurations as a JSON file in a `configs` dir:
 ```
@@ -82,7 +83,7 @@ configs
 
 RAPTOR also creates `run` shell scripts and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
 
-File paths in a configuration are relative to that configuration's directory, so key stores and other files can be kept next to `config.json`. The generated scripts always use their own configuration, regardless of the current directory.
+File paths in a configuration are relative to that configuration's directory, so key stores and other files can be kept next to `config.json`.
 
 ## Encoding
 RAPTOR supports arbitrary bytes, yet allows inputting printable ASCII characters as-is. To support this, we must input to RAPTOR either:

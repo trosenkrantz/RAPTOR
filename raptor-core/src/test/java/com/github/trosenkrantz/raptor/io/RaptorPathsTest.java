@@ -10,7 +10,7 @@ import java.nio.file.Path;
 class RaptorPathsTest {
     @AfterEach
     void resetBase() {
-        RaptorPaths.useCurrentDirectory();
+        RaptorPaths.clearBase();
     }
 
     @Test
@@ -36,9 +36,16 @@ class RaptorPathsTest {
     }
 
     @Test
-    void usesCurrentDirectoryByDefault(@TempDir Path unused) {
+    void canUseCurrentDirectoryExplicitly() {
         RaptorPaths.useCurrentDirectory();
 
         Assertions.assertEquals(Path.of("").toAbsolutePath().normalize().resolve("file"), RaptorPaths.resolve("file"));
+    }
+
+    @Test
+    void requiresBase() {
+        RaptorPaths.clearBase();
+
+        Assertions.assertThrows(IllegalStateException.class, () -> RaptorPaths.resolve("keystore.p12"));
     }
 }

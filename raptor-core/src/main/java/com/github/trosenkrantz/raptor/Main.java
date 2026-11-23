@@ -9,6 +9,8 @@ import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.LoggingConfigurator;
 import com.github.trosenkrantz.raptor.io.RaptorPaths;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
@@ -20,32 +22,35 @@ public class Main {
     private static final String CONFIG_ARGUMENT = "--config";
 
     public static void main(String[] args) {
+        Path createdConfigurationDir = null;
         try {
             LoggingConfigurator.initialise();
             Ansi.configure(args);
 
             Collection<RootService> services = RaptorServiceFactory.createServices();
             Optional<Path> configArgument = getConfigArgument(args);
-            Optional<ReloadableConfiguration> configurationFromSavedFile = ConfigurationStorage.loadConfiguration(configArgument);
+            Optional<ReloadableConfiguration> loadedConfiguration = configArgument
+                    .map(ConfigurationStorage::loadConfiguration)
+                    .or(ConfigurationStorage::loadConfiguration);
 
-            if (configurationFromSavedFile.isPresent()) {
+            if (loadedConfiguration.isPresent()) {
                 Path configPath = configArgument.orElseGet(() -> Path.of(ConfigurationStorage.CONFIGURATION_FILE_NAME));
                 RaptorPaths.setBase(configPath.toAbsolutePath().normalize().getParent());
-                try (ReloadableConfiguration configuration = configurationFromSavedFile.get()) { // Use configuration from file
+                try (ReloadableConfiguration configuration = loadedConfiguration.get()) { // Use configuration from file
                     run(configuration.configuration(), services);
                 }
             } else {
                 SaveConfigurationOptions chosenOption = ConsoleIo.askForOptions(SaveConfigurationOptions.class);
                 Path configurationDir = null;
                 if (chosenOption == SaveConfigurationOptions.SAVE_AND_OPEN) {
-                    // Set up the configuration dir before prompting for paths, so relative paths can refer to it
                     configurationDir = ConfigurationStorage.prepareConfigurationDir(ConfigurationStorage.askForConfigurationName());
                     RaptorPaths.setBase(configurationDir);
+                    createdConfigurationDir = configurationDir;
                 } else {
                     RaptorPaths.useCurrentDirectory();
                 }
 
-                Configuration configuration = configure(services);
+                Configuration configuration = configure(services); // Create new configuration
 
                 if (chosenOption == SaveConfigurationOptions.SAVE_AND_OPEN) {
                     Path configurationFilePath = ConfigurationStorage.saveConfiguration(configuration, configurationDir);
@@ -58,7 +63,13 @@ public class Main {
 
             ConsoleIo.onExit();
         } catch (UserAbortedException ignore) {
-            // Exit immediately
+            if (createdConfigurationDir != null) {
+                try {
+                    Files.deleteIfExists(createdConfigurationDir);
+                } catch (IOException e) {
+                    LOGGER.log(Level.FINE, "Could not remove unused configuration directory.", e);
+                }
+            }
         } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Error occurred.", e);
             ConsoleIo.onExit();
