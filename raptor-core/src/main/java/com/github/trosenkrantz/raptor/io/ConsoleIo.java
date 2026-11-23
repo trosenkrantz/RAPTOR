@@ -284,7 +284,7 @@ public class ConsoleIo {
             if (defaultPath != null && answer.isEmpty()) answer = defaultPath;
 
             answer = stripQuotes(answer);
-            Path path = Path.of(answer);
+            Path path = RaptorPaths.resolve(answer);
             if (Files.exists(path)) {
                 return answer;
             } else {
@@ -313,7 +313,7 @@ public class ConsoleIo {
             if (answer.equals("e")) throw new UserAbortedException();
 
             answer = stripQuotes(answer);
-            Path path = Path.of(answer);
+            Path path = RaptorPaths.resolve(answer);
             if (Files.exists(path)) {
                 return Optional.of(answer);
             } else {

@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.tls;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.RaptorPaths;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -77,7 +78,7 @@ public class TlsUtility {
 
     private static KeyStore loadKeyStore(String path, String password) throws Exception {
         KeyStore keyStore = KeyStore.getInstance(determineKeyStoreType(path));
-        try (FileInputStream keyStoreStream = new FileInputStream(path)) {
+        try (FileInputStream keyStoreStream = new FileInputStream(RaptorPaths.resolve(path).toFile())) {
             keyStore.load(keyStoreStream, password.toCharArray());
         }
         return keyStore;

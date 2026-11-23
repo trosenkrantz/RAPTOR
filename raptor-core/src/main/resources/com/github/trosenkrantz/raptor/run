@@ -1,4 +1,4 @@
 #!/bin/sh
 
-BASE_DIR=$(dirname "$0")
-"$BASE_DIR/../../raptor"
+CONFIG_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+"$CONFIG_DIR/../../raptor" --config "$CONFIG_DIR/config.json"

@@ -5,12 +5,12 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.io.RaptorPaths;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Logger;
 
@@ -47,7 +47,7 @@ public class ConverterService implements RootService {
                 String result = ConsoleIo.askForFile("Absolute or relative path of file to convert", "." + File.separator + "file");
 
                 // Read file immediately to provide early feedback
-                ConsoleIo.writeLine("Read file with " + Files.readAllBytes(Paths.get(result)).length + " bytes.");
+                ConsoleIo.writeLine("Read file with " + Files.readAllBytes(RaptorPaths.resolve(result)).length + " bytes.");
                 yield result;
             }
         };
@@ -61,7 +61,7 @@ public class ConverterService implements RootService {
             case ENCODING -> {
                 String encoding = ConsoleIo.askForString("RAPTOR encoding to convert to file", "\\\\x00Hello\\n");
 
-                Path path = Path.of(configuration.requireRaptorEncodedString(PARAMETER_PATH));
+                Path path = RaptorPaths.resolve(configuration.requireRaptorEncodedString(PARAMETER_PATH));
                 Files.createDirectories(path.getParent());
                 byte[] bytes = BytesFormatter.raptorEncodingToBytes(encoding, CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration));
                 Files.write(
@@ -74,7 +74,7 @@ public class ConverterService implements RootService {
                 LOGGER.info("Wrote " + bytes.length + (bytes.length == 1 ? " byte" : " bytes") + " to " + path + ".");
             }
             case FILE -> {
-                LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToRaptorEncoding(Files.readAllBytes(Paths.get(configuration.requireRaptorEncodedString(PARAMETER_PATH)))));
+                LOGGER.info("In RAPTOR encoding:\n" + BytesFormatter.bytesToRaptorEncoding(Files.readAllBytes(RaptorPaths.resolve(configuration.requireRaptorEncodedString(PARAMETER_PATH)))));
             }
         }
     }

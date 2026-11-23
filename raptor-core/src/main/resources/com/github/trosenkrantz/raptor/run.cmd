@@ -1,5 +1,5 @@
 @echo off
 setlocal
 
-set "BASE_DIR=%~dp0"
-call "%BASE_DIR%\..\..\raptor.cmd"
+set "CONFIG_DIR=%~dp0"
+call "%CONFIG_DIR%\..\..\raptor.cmd" --config "%CONFIG_DIR%config.json"
