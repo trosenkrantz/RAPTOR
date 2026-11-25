@@ -10,6 +10,7 @@ import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,17 @@ public class ConsoleIo {
         String result = console.readLine();
         writeLine();
         return result;
+    }
+
+    public static String readPassword() {
+        shouldPromptUserBeforeExit = true;
+        char[] password = console.readPassword();
+        try {
+            writeLine(); // Echo is disabled, so move to the next line explicitly
+            return new String(password);
+        } finally {
+            Arrays.fill(password, '\0');
+        }
     }
 
     private static String getDefaultString(String defaultDescription) {
@@ -233,6 +245,31 @@ public class ConsoleIo {
             String answer = readLine();
             if (answer.equals("e")) throw new UserAbortedException();
             if (defaultValue != null && answer.isEmpty()) return defaultValue;
+
+            Optional<String> error = validator.validate(answer);
+            if (error.isEmpty()) {
+                return answer;
+            } else {
+                writeLine(error.get(), Ansi.ERROR);
+            }
+        }
+    }
+
+    public static String askForPassword(String description, Validator<String> validator) {
+        return askForPassword(description, null, null, validator);
+    }
+
+    public static String askForPassword(String description, String defaultPassword, String defaultDescription, Validator<String> validator) {
+        while (true) {
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(description);
+            if (defaultPassword != null) prefixes.add(getDefaultString(defaultDescription));
+            prefixes.add(getExitString());
+            write(String.join(". ", prefixes) + ": ");
+
+            String answer = readPassword();
+            if (answer.equals("e")) throw new UserAbortedException();
+            if (defaultPassword != null && answer.isEmpty()) return defaultPassword;
 
             Optional<String> error = validator.validate(answer);
             if (error.isEmpty()) {
