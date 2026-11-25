@@ -41,7 +41,7 @@ public class TlsUtility {
             keyStorePathOptional.ifPresent(keyStorePath -> {
                 configuration.setRaptorEncodedString(PARAMETER_KEY_STORE, keyStorePath);
 
-                String keyStorePassword = ConsoleIo.askForString("Password of key store", pw -> {
+                String keyStorePassword = ConsoleIo.askForPassword("Password of key store", pw -> {
                     try {
                         loadKeyStore(keyStorePath, pw); // Validate by trying to load
                         return Optional.empty();
@@ -53,7 +53,7 @@ public class TlsUtility {
 
                 configuration.setRaptorEncodedString(
                         PARAMETER_KEY_PASSWORD,
-                        ConsoleIo.askForString("Password of key", keyStorePassword, pw -> {
+                        ConsoleIo.askForPassword("Password of key", keyStorePassword, "same as key store password", pw -> {
                             try {
                                 loadKey(keyStorePath, keyStorePassword, pw, false); // Validate by trying to load
                                 return Optional.empty();
