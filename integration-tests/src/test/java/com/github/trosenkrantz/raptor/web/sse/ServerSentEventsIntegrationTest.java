@@ -20,6 +20,7 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
                       "service": "sse",
                       "role": "server",
                       "port": 50000,
+                      "sendStrategy": "interactive",
                       "commandSubstitutionTimeout": 1000,
                       "tlsVersion": "none"
                     }
@@ -61,6 +62,7 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
                       "service": "sse",
                       "role": "server",
                       "port": 50000,
+                      "sendStrategy": "interactive",
                       "commandSubstitutionTimeout": 1000,
                       "tlsVersion": "none"
                     }

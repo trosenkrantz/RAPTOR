@@ -1,12 +1,9 @@
 package com.github.trosenkrantz.raptor.web.sse;
 
 import com.github.trosenkrantz.raptor.RootService;
-import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.configuration.StringToStringMapSetting;
-import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
-import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
@@ -20,7 +17,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ServerSentEventsService implements RootService {
@@ -73,7 +69,10 @@ public class ServerSentEventsService implements RootService {
                                 DEFAULT_PORT,
                                 IpPortValidator.VALIDATOR));
 
-                CommandSubstitutor.TIMEOUT_SETTING.configure(configuration);
+                ConsoleIo.write("What data to send to the remote system? ");
+                SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
+                configuration.setEnum(sendStrategy);
+                sendStrategy.getStrategy().configure(configuration);
 
                 TlsUtility.configureTls(configuration, true);
             }
@@ -121,38 +120,17 @@ public class ServerSentEventsService implements RootService {
     }
 
     private static void runServer(Configuration configuration) throws Exception {
+        SseSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
+        sendStrategy.load(configuration);
+
         int port = configuration.requireInt(PARAMETER_PORT);
-        int commandSubstitutionTimeout =
-                CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration);
         boolean useTls = configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE;
         SSLContext sslContext = useTls ? TlsUtility.loadSslContext(configuration) : null;
 
         SseServer server = new SseServer(port, sslContext);
         LOGGER.info("Waiting for client to connect to "
                 + (useTls ? "https" : "http") + "://0.0.0.0:" + port + "/events...");
-        Thread.ofVirtual().start(() -> sendEvents(server, commandSubstitutionTimeout));
+        sendStrategy.start(server, server::close);
         server.run();
-    }
-
-    private static void sendEvents(SseServer server, int commandSubstitutionTimeout) {
-        try {
-            while (true) {
-                String answer = ConsoleIo.askForString(
-                        "Event data to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING);
-                byte[] payload = BytesFormatter.raptorEncodingToBytes(answer, commandSubstitutionTimeout);
-                try {
-                    server.send(SseEvent.format(payload));
-                } catch (IllegalArgumentException e) {
-                    ConsoleIo.writeLine(e.getMessage(), Ansi.ERROR);
-                    continue; // Reprompt instead of sending an invalid event
-                }
-                LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
-            }
-        } catch (UserAbortedException ignore) {
-            server.close();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error occurred.", e);
-            server.close();
-        }
     }
 }
