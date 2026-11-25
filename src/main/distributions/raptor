@@ -1,6 +1,13 @@
 #!/bin/sh
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
+
+# Run from the launch context directory.
+# A configuration's run script sets RAPTOR_ANCHOR_DIR; direct launches use the installation directory.
+if [ -z "${RAPTOR_ANCHOR_DIR:-}" ]; then
+    RAPTOR_ANCHOR_DIR=$BASE_DIR
+fi
+cd "$RAPTOR_ANCHOR_DIR" || exit 1
 
 # Check if there is a JRE in the "java" directory
 if [ -x "$BASE_DIR/java/bin/java" ]; then

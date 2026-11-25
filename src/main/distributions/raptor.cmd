@@ -3,6 +3,11 @@ setlocal
 
 set "BASE_DIR=%~dp0"
 
+rem Run from the launch context directory. Windows resets the working directory to System32 when a script is run as administrator.
+rem run.cmd sets RAPTOR_ANCHOR_DIR to its own config directory; direct launches use the installation directory.
+if not defined RAPTOR_ANCHOR_DIR set "RAPTOR_ANCHOR_DIR=%BASE_DIR%"
+cd /d "%RAPTOR_ANCHOR_DIR%"
+
 rem Check if there is a JRE in the "java" directory
 if exist "%BASE_DIR%java\bin\java.exe" (
     set "JAVA_EXEC=%BASE_DIR%java\bin\java.exe"

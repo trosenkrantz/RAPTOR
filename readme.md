@@ -83,6 +83,8 @@ configs
 
 RAPTOR also creates `run` shell scripts and `run.cmd` scripts that run RAPTOR with the corresponding configuration.
 
+The launchers run RAPTOR from their own directory: `raptor`/`raptor.cmd` from the installation directory, and a configuration's `run`/`run.cmd` from that configuration's directory. This keeps file paths stable regardless of the caller's current directory, and on Windows even when a script is started as administrator.
+
 File paths in a configuration are relative to that configuration's directory, so key stores and other files can be kept next to `config.json`.
 
 ## Encoding

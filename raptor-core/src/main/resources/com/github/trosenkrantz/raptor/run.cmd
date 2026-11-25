@@ -2,4 +2,9 @@
 setlocal
 
 set "CONFIG_DIR=%~dp0"
-call "%CONFIG_DIR%\..\..\raptor.cmd" --config "%CONFIG_DIR%config.json"
+if not exist "%CONFIG_DIR%config.json" (
+    echo ERROR: Configuration file not found: %CONFIG_DIR%config.json
+    exit /b 1
+)
+set "RAPTOR_ANCHOR_DIR=%CONFIG_DIR%"
+call "%CONFIG_DIR%\..\..\raptor.cmd"

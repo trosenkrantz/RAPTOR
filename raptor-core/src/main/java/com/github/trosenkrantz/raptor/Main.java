@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-    private static final String CONFIG_ARGUMENT = "--config";
 
     public static void main(String[] args) {
         Path createdConfigurationDir = null;
@@ -28,13 +27,10 @@ public class Main {
             Ansi.configure(args);
 
             Collection<RootService> services = RaptorServiceFactory.createServices();
-            Optional<Path> configArgument = getConfigArgument(args);
-            Optional<ReloadableConfiguration> loadedConfiguration = configArgument
-                    .map(ConfigurationStorage::loadConfiguration)
-                    .or(ConfigurationStorage::loadConfiguration);
+            Optional<ReloadableConfiguration> loadedConfiguration = ConfigurationStorage.loadConfiguration();
 
             if (loadedConfiguration.isPresent()) {
-                Path configPath = configArgument.orElseGet(() -> Path.of(ConfigurationStorage.CONFIGURATION_FILE_NAME));
+                Path configPath = Path.of(ConfigurationStorage.CONFIGURATION_FILE_NAME);
                 RaptorPaths.setBase(configPath.toAbsolutePath().normalize().getParent());
                 try (ReloadableConfiguration configuration = loadedConfiguration.get()) { // Use configuration from file
                     run(configuration.configuration(), services);
@@ -74,18 +70,6 @@ public class Main {
             LOGGER.log(Level.SEVERE, "Error occurred.", e);
             ConsoleIo.onExit();
         }
-    }
-
-    private static Optional<Path> getConfigArgument(String[] args) {
-        for (int i = 0; i < args.length; i++) {
-            if (CONFIG_ARGUMENT.equals(args[i])) {
-                if (i + 1 >= args.length) {
-                    throw new IllegalArgumentException("Missing path after " + CONFIG_ARGUMENT + ".");
-                }
-                return Optional.of(Path.of(args[i + 1]));
-            }
-        }
-        return Optional.empty();
     }
 
     private static Configuration configure(Collection<RootService> services) throws Exception {
