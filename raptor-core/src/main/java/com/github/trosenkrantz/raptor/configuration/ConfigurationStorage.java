@@ -17,8 +17,8 @@ public class ConfigurationStorage {
 
     private static final Logger LOGGER = Logger.getLogger(ConfigurationStorage.class.getName());
 
-    public static Path saveConfiguration(Configuration configuration) throws IOException {
-        String name = ConsoleIo.askForString("Name of configuration", value -> {
+    public static String askForConfigurationName() {
+        return ConsoleIo.askForString("Name of configuration", value -> {
             String regex = "^[A-Za-z0-9][A-Za-z0-9 _-]{0,63}$";
             if (!Pattern.matches(regex, value)) {
                 return Optional.of("Invalid name. It must have only letters (a to z, either case), digits, spaces, '-', and '_'. it must start with a letter or digit. It must have at most 64 characters.");
@@ -28,11 +28,15 @@ public class ConfigurationStorage {
             }
             return Optional.empty();
         });
+    }
 
+    public static Path prepareConfigurationDir(String name) throws IOException {
         Path configurationDirPath = getConfigurationDirPath(name);
+        Files.createDirectories(configurationDirPath);
+        return configurationDirPath;
+    }
 
-        Files.createDirectories(configurationDirPath); // Create parent dirs
-
+    public static Path saveConfiguration(Configuration configuration, Path configurationDirPath) throws IOException {
         Path configurationFilePath = Files.writeString(configurationDirPath.resolve(CONFIGURATION_FILE_NAME), configuration.toJson());
         ConsoleIo.writeLine("Saved configuration to: " + configurationFilePath.toAbsolutePath());
 
@@ -78,13 +82,30 @@ public class ConfigurationStorage {
         desktop.open(path.toFile());
     }
 
+    /** Loads the default configuration file in the current directory, if it exists. */
     public static Optional<ReloadableConfiguration> loadConfiguration() {
         Path path = Path.of(CONFIGURATION_FILE_NAME);
         if (!Files.exists(path)) return Optional.empty();
+        return Optional.of(loadFromPath(path));
+    }
 
+    /**
+     * Loads the specified configuration file.
+     *
+     * @param path path of the configuration file
+     * @return the loaded configuration
+     * @throws IllegalArgumentException if the file does not exist
+     */
+    public static ReloadableConfiguration loadConfiguration(Path path) {
+        if (!Files.exists(path)) {
+            throw new IllegalArgumentException("Configuration file not found: " + path.toAbsolutePath());
+        }
+        return loadFromPath(path);
+    }
+
+    private static ReloadableConfiguration loadFromPath(Path path) {
         FileWatcher fileWatcher = new FileWatcher(path);
         Configuration configuration = Configuration.fromSavedFile(path, fileWatcher);
-
-        return Optional.of(new ReloadableConfiguration(configuration, fileWatcher));
+        return new ReloadableConfiguration(configuration, fileWatcher);
     }
 }
