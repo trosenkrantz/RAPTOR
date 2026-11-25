@@ -106,9 +106,15 @@ public class ServerSentEventsService implements RootService {
                 .GET();
         extraHeaders.forEach(requestBuilder::setHeader);
 
-        HttpResponse.BodyHandler<Void> bodyHandler = HttpResponse.BodyHandlers.fromSubscriber(
-                new SseEventSubscriber(payload ->
-                        LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(payload))));
+        HttpResponse.BodyHandler<Void> bodyHandler = responseInfo -> {
+            if (responseInfo.statusCode() == 200) {
+                LOGGER.info("Connected to server at " + uri + ".");
+            } else {
+                LOGGER.warning("Server responded with HTTP " + responseInfo.statusCode() + ".");
+            }
+            return new SseEventSubscriber(payload ->
+                    LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(payload)));
+        };
 
         LOGGER.info("Connecting to server at " + uri + "...");
         clientBuilder.build().sendAsync(requestBuilder.build(), bodyHandler).join();

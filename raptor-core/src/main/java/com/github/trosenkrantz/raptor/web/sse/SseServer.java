@@ -102,13 +102,14 @@ class SseServer {
         Subscriber(Socket socket) throws IOException {
             this.socket = socket;
             this.out = socket.getOutputStream();
-            LOGGER.info("Local socket at " + socket.getLocalSocketAddress()
-                    + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
 
             accepted = acceptRequest();
             if (accepted) {
                 out.write(OK_HEADERS.getBytes(StandardCharsets.US_ASCII));
                 out.flush();
+                // Log only once the subscriber is ready to receive events
+                LOGGER.info("Local socket at " + socket.getLocalSocketAddress()
+                        + " connected to remote socket at " + socket.getRemoteSocketAddress() + ".");
             } else {
                 close();
             }

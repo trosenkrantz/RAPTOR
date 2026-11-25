@@ -35,6 +35,7 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
                     }
                     """, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(1, "connected", client.getRaptorIpAddress());
+            client.expectNumberOfOutputLineContains(1, "connected to server at");
 
             String textMessage = "Hello, World!";
             server.writeLineToStdIn(textMessage);
@@ -77,6 +78,8 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
             client1.runConfiguration(String.format(clientConfiguration, server.getRaptorHostname()));
             client2.runConfiguration(String.format(clientConfiguration, server.getRaptorHostname()));
             server.expectNumberOfOutputLineContains(2, "connected");
+            client1.expectNumberOfOutputLineContains(1, "connected to server at");
+            client2.expectNumberOfOutputLineContains(1, "connected to server at");
 
             String textMessage = "Hello, subscribers!";
             server.writeLineToStdIn(textMessage);
