@@ -8,8 +8,6 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import java.io.File;
-import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.SecureRandom;
@@ -70,18 +68,14 @@ public class TlsUtility {
 
     private static Optional<String> configureKeyStorePath(boolean requireKeyStore) {
         if (requireKeyStore) {
-            return Optional.of(ConsoleIo.askForFile("Absolute or relate path to key store (PKCS #12 or JKS)", "." + File.separator + "KeyStore.p12"));
+            return Optional.of(ConsoleIo.askForFile("Absolute or relative path to key store", "key-store.p12"));
         } else {
-            return ConsoleIo.askForOptionalFile("Absolute or relate path to key store (PKCS #12 or JKS)", "no key store");
+            return ConsoleIo.askForOptionalFile("Absolute or relative path to key store", "no key store");
         }
     }
 
     private static KeyStore loadKeyStore(String path, String password) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance(determineKeyStoreType(path));
-        try (FileInputStream keyStoreStream = new FileInputStream(RaptorPaths.resolve(path).toFile())) {
-            keyStore.load(keyStoreStream, password.toCharArray());
-        }
-        return keyStore;
+        return KeyStore.getInstance(RaptorPaths.resolve(path).toFile(), password.toCharArray());
     }
 
     private static KeyManagerFactory loadKey(String path, String keyStorePassword, String keyPassword, boolean logCerts) throws Exception {
@@ -131,14 +125,5 @@ public class TlsUtility {
         sslContext.init(keyManagers, new TrustManager[]{new AllTrustingTrustManager()}, new SecureRandom());
 
         return sslContext;
-    }
-
-    private static String determineKeyStoreType(String keyStorePath) {
-        String keyStorePathLowerCase = keyStorePath.toLowerCase(Locale.ROOT);
-        if (keyStorePathLowerCase.endsWith(".p12") || keyStorePathLowerCase.endsWith(".pfx")) {
-            return "PKCS12";
-        } else {
-            return "JKS";
-        }
     }
 }
