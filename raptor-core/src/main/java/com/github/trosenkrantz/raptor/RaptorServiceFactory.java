@@ -6,6 +6,7 @@ import com.github.trosenkrantz.raptor.serial.port.SerialPortRootService;
 import com.github.trosenkrantz.raptor.snmp.SnmpService;
 import com.github.trosenkrantz.raptor.tcp.TcpRootService;
 import com.github.trosenkrantz.raptor.udp.UdpRootService;
+import com.github.trosenkrantz.raptor.web.sse.ServerSentEventsService;
 import com.github.trosenkrantz.raptor.web.socket.WebSocketService;
 
 import java.util.Collection;
@@ -19,6 +20,7 @@ public class RaptorServiceFactory {
                 new SerialPortRootService(),
                 new SnmpService(),
                 new WebSocketService(),
+                new ServerSentEventsService(),
                 new GatewayService(),
                 new ConverterService()
         );

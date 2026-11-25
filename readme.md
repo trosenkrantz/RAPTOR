@@ -29,6 +29,10 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Server:
     - Multiple concurrent client connections.
   - With and without TLS (`wss://` and `ws://`).
+- Server-Sent Events:
+  - Client and server.
+  - Server can have multiple concurrent subscribers.
+  - With and without TLS (`https://` and `http://`).
 - Gateway between two systems, forwarding traffic:
   - UDP multicast, TCP, and serial port.
   - Mix protocols across the two systems.
@@ -323,6 +327,10 @@ If RAPTOR finds no match for an OID, it responds with `Null` for that variable b
 ### WebSocket
 For WebSocket auto-replies, RAPTOR matches the whole payload of a frame against `input`.
 It does not distinguish between text and binary frames.
+
+### Server-Sent Events
+Server-Sent Events do not support auto-replies, as events only travel from the server to the client.
+Event data is RAPTOR-encoded user input that must be valid UTF-8 and cannot contain a carriage return; line feeds are sent as multiple `data:` fields.
 
 ## Security
 RAPTOR is purposed for testing and analysis, not for operational use. When using TLS, it does not verify certificates.
