@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 import java.io.ByteArrayOutputStream;
 import java.net.http.HttpResponse;

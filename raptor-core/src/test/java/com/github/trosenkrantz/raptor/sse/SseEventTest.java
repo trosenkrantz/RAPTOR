@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

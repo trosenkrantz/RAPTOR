@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
@@ -25,7 +25,7 @@ public class ServerSentEventsService implements RootService {
     private static final String PARAMETER_PORT = "port";
 
     private static final int DEFAULT_PORT = 50000;
-    private static final String DEFAULT_URI = "http://localhost:" + DEFAULT_PORT + "/events";
+    private static final String DEFAULT_PATH = "/events";
 
     public static final StringToStringMapSetting EXTRA_HEADERS_SETTING = new StringToStringMapSetting.Builder(
             "h", "headers", "Extra HTTP headers", "Extra HTTP headers to include in the SSE request")
@@ -53,21 +53,16 @@ public class ServerSentEventsService implements RootService {
 
         switch (role) {
             case CLIENT -> {
-                configuration.setRaptorEncodedString(
-                        PARAMETER_URI,
-                        ConsoleIo.askForString("URI of SSE endpoint to connect", DEFAULT_URI));
+                TlsUtility.configureTls(configuration, false);
+                TlsVersion tlsVersion = configuration.requireEnum(TlsVersion.class);
+                String scheme = tlsVersion == TlsVersion.NONE ? "http" : "https";
+                String defaultUri = scheme + "://localhost:" + DEFAULT_PORT + DEFAULT_PATH;
+                configuration.setRaptorEncodedString(PARAMETER_URI, ConsoleIo.askForString("URI of SSE endpoint to connect", defaultUri));
 
                 EXTRA_HEADERS_SETTING.configure(configuration);
-
-                TlsUtility.configureTls(configuration, false);
             }
             case SERVER -> {
-                configuration.setInt(
-                        PARAMETER_PORT,
-                        ConsoleIo.askForInt(
-                                "IP port of local server socket to create",
-                                DEFAULT_PORT,
-                                IpPortValidator.VALIDATOR));
+                configuration.setInt(PARAMETER_PORT, ConsoleIo.askForInt("IP port of local server socket to create", DEFAULT_PORT, IpPortValidator.VALIDATOR));
 
                 ConsoleIo.write("What data to send to the remote system? ");
                 SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
@@ -87,20 +82,30 @@ public class ServerSentEventsService implements RootService {
         }
     }
 
+    static void validateUriScheme(URI uri, TlsVersion tlsVersion) {
+        boolean useTls = tlsVersion != TlsVersion.NONE;
+        String expectedScheme = useTls ? "https" : "http";
+        if (!expectedScheme.equalsIgnoreCase(uri.getScheme())) {
+            throw new IllegalArgumentException("URI scheme must be " + expectedScheme + ":// when TLS version is " + tlsVersion.getConfigurationId() + ": " + uri);
+        }
+    }
+
     private static void runClient(Configuration configuration) throws Exception {
-        String uri = configuration.requireRaptorEncodedString(PARAMETER_URI);
+        URI uri = new URI(configuration.requireRaptorEncodedString(PARAMETER_URI));
+        TlsVersion tlsVersion = configuration.requireEnum(TlsVersion.class);
+        validateUriScheme(uri, tlsVersion);
         Map<String, String> extraHeaders = EXTRA_HEADERS_SETTING.read(configuration).orElse(new HashMap<>());
 
         HttpClient.Builder clientBuilder = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1);
-        if (configuration.requireEnum(TlsVersion.class) != TlsVersion.NONE) {
+                .version(HttpClient.Version.HTTP_1_1); // The bundled SSE server speaks HTTP/1.1 only
+        if (tlsVersion != TlsVersion.NONE) {
             clientBuilder.sslContext(TlsUtility.loadSslContext(configuration));
             SSLParameters sslParameters = new SSLParameters();
             sslParameters.setEndpointIdentificationAlgorithm(null); // Accept self-signed certificates
             clientBuilder.sslParameters(sslParameters);
         }
 
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(new URI(uri))
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri)
                 .header("Accept", "text/event-stream")
                 .GET();
         extraHeaders.forEach(requestBuilder::setHeader);
@@ -111,8 +116,7 @@ public class ServerSentEventsService implements RootService {
             } else {
                 LOGGER.warning("Server responded with HTTP " + responseInfo.statusCode() + ".");
             }
-            return new SseEventSubscriber(payload ->
-                    LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(payload)));
+            return new SseEventSubscriber(payload -> LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(payload)));
         };
 
         LOGGER.info("Connecting to server at " + uri + "...");
@@ -128,8 +132,7 @@ public class ServerSentEventsService implements RootService {
         SSLContext sslContext = useTls ? TlsUtility.loadSslContext(configuration) : null;
 
         SseServer server = new SseServer(port, sslContext);
-        LOGGER.info("Waiting for client to connect to "
-                + (useTls ? "https" : "http") + "://0.0.0.0:" + port + "/events...");
+        LOGGER.info("Waiting for client to connect to " + (useTls ? "https" : "http") + "://0.0.0.0:" + port + DEFAULT_PATH + "...");
         sendStrategy.start(server, server::close);
         server.run();
     }

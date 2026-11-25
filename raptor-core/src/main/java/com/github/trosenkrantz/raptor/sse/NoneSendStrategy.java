@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 class NoneSendStrategy implements SseSendStrategy {
     @Override

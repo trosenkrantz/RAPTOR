@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 import com.github.trosenkrantz.raptor.Raptor;
 import com.github.trosenkrantz.raptor.RaptorIntegrationTest;

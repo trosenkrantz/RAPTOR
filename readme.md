@@ -328,10 +328,6 @@ If RAPTOR finds no match for an OID, it responds with `Null` for that variable b
 For WebSocket auto-replies, RAPTOR matches the whole payload of a frame against `input`.
 It does not distinguish between text and binary frames.
 
-### Server-Sent Events
-The SSE server supports `none` and `interactive` send strategies; it does not support auto-replies, as events only travel from the server to the client.
-Event data is RAPTOR-encoded user input that must be valid UTF-8 and cannot contain a carriage return; line feeds are sent as multiple `data:` fields.
-
 ## Security
 RAPTOR is purposed for testing and analysis, not for operational use. When using TLS, it does not verify certificates.
 

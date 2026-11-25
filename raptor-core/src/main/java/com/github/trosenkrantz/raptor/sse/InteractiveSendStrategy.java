@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 import com.github.trosenkrantz.raptor.UserAbortedException;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
@@ -22,8 +22,7 @@ class InteractiveSendStrategy implements SseSendStrategy {
 
     @Override
     public void load(Configuration configuration) {
-        this.commandSubstitutionTimeout =
-                CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration);
+        this.commandSubstitutionTimeout = CommandSubstitutor.TIMEOUT_SETTING.readAndRequireOrDefault(configuration);
     }
 
     @Override
@@ -31,8 +30,7 @@ class InteractiveSendStrategy implements SseSendStrategy {
         Thread.ofVirtual().start(() -> {
             try {
                 while (true) {
-                    String answer = ConsoleIo.askForString(
-                            "Event data to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING);
+                    String answer = ConsoleIo.askForString("Event data to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING);
                     byte[] payload = BytesFormatter.raptorEncodingToBytes(answer, commandSubstitutionTimeout);
                     try {
                         server.send(SseEvent.format(payload));

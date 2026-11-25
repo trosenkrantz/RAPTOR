@@ -1,4 +1,4 @@
-package com.github.trosenkrantz.raptor.web.sse;
+package com.github.trosenkrantz.raptor.sse;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -8,9 +8,8 @@ import java.nio.charset.StandardCharsets;
 /**
  * Converts payload bytes to the text-only SSE wire format.
  *
- * <p>SSE data fields must be valid UTF-8 and cannot contain a carriage return, as that would
- * terminate the field. Line feeds are preserved by splitting the payload into multiple
- * {@code data:} fields, which SSE clients join back together with line feeds.</p>
+ * <p>SSE data fields must be valid UTF-8 and cannot contain a carriage return, as that would terminate the field.
+ * Line feeds are preserved by splitting the payload into multiple {@code data:} fields, which SSE clients join back together with line feeds.</p>
  */
 final class SseEvent {
     private SseEvent() {
