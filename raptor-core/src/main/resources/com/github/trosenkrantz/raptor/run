@@ -1,4 +1,10 @@
 #!/bin/sh
 
-CONFIG_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
-"$CONFIG_DIR/../../raptor" --config "$CONFIG_DIR/config.json"
+CONFIG_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
+if [ ! -f "$CONFIG_DIR/config.json" ]; then
+    echo "ERROR: Configuration file not found: $CONFIG_DIR/config.json" >&2
+    exit 1
+fi
+RAPTOR_ANCHOR_DIR=$CONFIG_DIR
+export RAPTOR_ANCHOR_DIR
+"$CONFIG_DIR/../../raptor"

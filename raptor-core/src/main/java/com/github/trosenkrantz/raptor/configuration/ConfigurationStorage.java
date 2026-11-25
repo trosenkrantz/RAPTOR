@@ -89,20 +89,6 @@ public class ConfigurationStorage {
         return Optional.of(loadFromPath(path));
     }
 
-    /**
-     * Loads the specified configuration file.
-     *
-     * @param path path of the configuration file
-     * @return the loaded configuration
-     * @throws IllegalArgumentException if the file does not exist
-     */
-    public static ReloadableConfiguration loadConfiguration(Path path) {
-        if (!Files.exists(path)) {
-            throw new IllegalArgumentException("Configuration file not found: " + path.toAbsolutePath());
-        }
-        return loadFromPath(path);
-    }
-
     private static ReloadableConfiguration loadFromPath(Path path) {
         FileWatcher fileWatcher = new FileWatcher(path);
         Configuration configuration = Configuration.fromSavedFile(path, fileWatcher);
