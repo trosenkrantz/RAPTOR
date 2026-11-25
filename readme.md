@@ -29,6 +29,10 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Server:
     - Multiple concurrent client connections.
   - With and without TLS (`wss://` and `ws://`).
+- Server-Sent Events:
+  - Client and server.
+  - Server can have multiple concurrent subscribers.
+  - With and without TLS (`https://` and `http://`).
 - Gateway between two systems, forwarding traffic:
   - UDP multicast, TCP, and serial port.
   - Mix protocols across the two systems.
