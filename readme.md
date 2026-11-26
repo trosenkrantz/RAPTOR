@@ -38,6 +38,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Mix protocols across the two systems.
   - Simulate network impairment:
     - Bandwidth, latency, corruption, packet loss, and duplication.
+- Logging to capture data exchange.
 - Sending capabilities:
   - Interactively send text and binary data.
   - Configure auto-replying (when receiving x, then send y).
@@ -50,7 +51,6 @@ It exchanges data with systems, either as a standalone, interactive console appl
 - Arbitrary OS support through Java, shell scripts, and Windows .cmd scripts.
 - Support scripted and automated execution.
 - Portable application, can be run from a USB stick.
-- Logging to capture data exchange.
 
 ## Getting Started
 1. Download a RAPTOR release and unzip it.
@@ -345,7 +345,7 @@ Other services emit no metadata.
 Replay sends each captured payload as one chunk and preserves the relative gaps between payloads.
 RAPTOR trims leading silence before the first captured payload.
 In server roles, each connected client gets its own replay cursor.
-Service-specific metadata is interpreted by the target service and unrelated metadata is ignored.
+RAPTOR interprets service-specific metadata for the target service and ignores unrelated metadata.
 Target validation still applies; for example, SSE rejects invalid UTF-8 data and carriage returns.
 
 ## Security
@@ -353,7 +353,7 @@ RAPTOR is purposed for testing and analysis, not for operational use.
 When using TLS, it does not verify certificates.
 
 Replay decodes log payloads literally.
-Command substitutions, e.g., `\\$(...)`, are never executed when reading a log, so a captured or edited log cannot run commands on the replaying host.
+RAPTOR never executes command substitutions, e.g., `\\$(...)`, when reading a log, so a captured or edited log cannot run commands on the replaying host.
 Captured output from an interactive command substitution is replayed as the bytes that were recorded, not by running the command again.
 
 ## ANSI

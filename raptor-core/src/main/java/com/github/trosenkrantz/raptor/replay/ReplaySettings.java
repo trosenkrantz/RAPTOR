@@ -48,7 +48,8 @@ public final class ReplaySettings {
         ReplayMode mode = MODE_SETTING.readAndRequireOrDefault(configuration);
 
         ReplayTimeline timeline = ReplayTimeline.fromLogFile(path, direction, speed);
-        LOGGER.info("Loaded " + timeline.size() + " " + direction.getConfigurationId() + " replay events from " + path + ".");
+        String eventWord = timeline.size() == 1 ? "event" : "events";
+        LOGGER.info("Loaded " + timeline.size() + " " + direction.getConfigurationId() + " replay " + eventWord + " from " + path + ".");
         return new LoadedReplay(timeline, mode);
     }
 }

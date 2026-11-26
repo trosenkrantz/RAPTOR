@@ -64,7 +64,7 @@ public class RecordReplayIntegrationTest extends RaptorIntegrationTest {
                       "replayDirection": "sent"
                     }
                     """, server.getRaptorHostname()));
-            replay.expectNumberOfOutputLineContains(1, "Loaded 1 sent replay events");
+            replay.expectNumberOfOutputLineContains(1, "Loaded 1 sent replay event from");
             server.expectNumberOfOutputLineContains(2, "received", message);
         }
     }
@@ -195,7 +195,7 @@ public class RecordReplayIntegrationTest extends RaptorIntegrationTest {
     }
 
     private static void useCapturedLog(Raptor source, String expectedCaptureLine, Raptor target) {
-        long deadline = System.currentTimeMillis() + 5000;
+        long deadline = System.currentTimeMillis() + Raptor.TIMEOUT_MS;
         String log = null;
         while (log == null && System.currentTimeMillis() < deadline) {
             for (String content : source.readLogFiles()) {
@@ -206,7 +206,7 @@ public class RecordReplayIntegrationTest extends RaptorIntegrationTest {
             }
             if (log == null) {
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(Raptor.EXPECT_INTERVAL_MS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
