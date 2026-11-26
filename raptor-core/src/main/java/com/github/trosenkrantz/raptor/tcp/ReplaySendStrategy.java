@@ -2,6 +2,7 @@ package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.logging.CaptureLogger;
+import com.github.trosenkrantz.raptor.replay.LoadedReplay;
 import com.github.trosenkrantz.raptor.replay.ReplaySession;
 import com.github.trosenkrantz.raptor.replay.ReplaySettings;
 
@@ -11,7 +12,7 @@ import java.net.Socket;
 import java.util.function.Consumer;
 
 class ReplaySendStrategy implements TcpSendStrategy {
-    private ReplaySettings.Loaded replay;
+    private LoadedReplay replay;
 
     @Override
     public void configure(Configuration configuration) {

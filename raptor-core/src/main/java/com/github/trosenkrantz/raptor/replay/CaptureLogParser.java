@@ -3,11 +3,13 @@ package com.github.trosenkrantz.raptor.replay;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.logging.CaptureDirection;
 import com.github.trosenkrantz.raptor.logging.CaptureLogger;
+import com.github.trosenkrantz.raptor.logging.FileFormatter;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -28,15 +30,16 @@ public final class CaptureLogParser {
 
         LocalDateTime timestamp;
         try {
-            timestamp = LocalDateTime.parse(prefix.group(1), CaptureLogger.TIMESTAMP_FORMATTER);
+            timestamp = LocalDateTime.parse(prefix.group(1), FileFormatter.TIMESTAMP_FORMATTER);
         } catch (DateTimeParseException e) {
             return Optional.empty();
         }
 
         String message = prefix.group(2);
-        CaptureDirection direction = readDirection(message);
-        if (direction == null) return Optional.empty();
-        message = message.substring(direction.getLogWord().length()).stripLeading();
+        Optional<CaptureDirection> direction = readDirection(message);
+        if (direction.isEmpty()) return Optional.empty();
+        CaptureDirection capturedDirection = direction.get();
+        message = message.substring(capturedDirection.getLogWord().length()).stripLeading();
 
         Map<String, String> metadata = new LinkedHashMap<>();
         if (message.startsWith("[")) {
@@ -49,15 +52,15 @@ public final class CaptureLogParser {
         if (encodedData.isEmpty()) return Optional.empty();
 
         byte[] data = BytesFormatter.raptorEncodingToBytesLiteral(encodedData.get());
-        return Optional.of(new CapturedEvent(timestamp, direction, data, metadata));
+        return Optional.of(new CapturedEvent(timestamp, capturedDirection, data, metadata));
     }
 
-    private static CaptureDirection readDirection(String message) {
+    private static Optional<CaptureDirection> readDirection(String message) {
         for (CaptureDirection direction : CaptureDirection.values()) {
             String word = direction.getLogWord();
-            if (message.startsWith(word + " ")) return direction;
+            if (message.startsWith(word + " ")) return Optional.of(direction);
         }
-        return null;
+        return Optional.empty();
     }
 
     private static int findMatchingBracket(String message) {
@@ -108,8 +111,8 @@ public final class CaptureLogParser {
         return true;
     }
 
-    private static java.util.List<String> splitOutsideQuotes(String text, char delimiter) {
-        java.util.List<String> parts = new java.util.ArrayList<>();
+    private static List<String> splitOutsideQuotes(String text, char delimiter) {
+        List<String> parts = new java.util.ArrayList<>();
         int start = 0;
         boolean inQuote = false;
         boolean escaped = false;

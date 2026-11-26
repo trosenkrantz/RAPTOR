@@ -194,30 +194,31 @@ public class Raptor extends GenericContainer<Raptor> {
         }
     }
 
-    private void assertLogFiles() {
+    public List<String> readLogFiles() {
         String stdout;
         try {
             stdout = execInContainer("ls", "-1", "/app/logs").getStdout().trim();
         } catch (IOException | InterruptedException e) {
             Assertions.fail("Failed listing log files.", e);
-            return;
+            return List.of();
         }
-        if (stdout.isEmpty()) Assertions.fail("No log files found.");
 
-        List<String> logFilenames = stdout.lines()
+        return stdout.lines()
                 .map(String::trim)
                 .filter(name -> !name.isEmpty())
                 .filter(name -> !name.endsWith(".lck"))
+                .map(fileName -> copyFileFromContainer("/app/logs/" + fileName, inputStream -> new String(inputStream.readAllBytes(), StandardCharsets.UTF_8)))
                 .toList();
+    }
 
-        Assertions.assertFalse(logFilenames.isEmpty(), "No log files not found.");
+    private void assertLogFiles() {
+        List<String> logFiles = readLogFiles();
+        Assertions.assertFalse(logFiles.isEmpty(), "No log files found.");
 
-        for (String fileName : logFilenames) {
-            String content = copyFileFromContainer("/app/logs/" + fileName, inputStream -> new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
-
-            Assertions.assertTrue(content.contains("INFO"), "Log file " + fileName + " has no INFO entry:" + System.lineSeparator() + content);
-            Assertions.assertFalse(content.contains("SEVERE"), "Log file " + fileName + " has a SEVERE entry:" + System.lineSeparator() + content);
-            Assertions.assertFalse(content.contains("WARNING"), "Log file " + fileName + " has a WARNING entry:" + System.lineSeparator() + content);
+        for (String content : logFiles) {
+            Assertions.assertTrue(content.contains("INFO"), "Log file has no INFO entry:" + System.lineSeparator() + content);
+            Assertions.assertFalse(content.contains("SEVERE"), "Log file has a SEVERE entry:" + System.lineSeparator() + content);
+            Assertions.assertFalse(content.contains("WARNING"), "Log file has a WARNING entry:" + System.lineSeparator() + content);
         }
     }
 }

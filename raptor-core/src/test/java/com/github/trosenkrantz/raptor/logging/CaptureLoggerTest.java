@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -22,13 +21,13 @@ class CaptureLoggerTest {
     }
 
     @Test
-    void formatsMetadataInDocumentedOrder() {
+    void formatsMetadataAlphabetically() {
         Map<String, String> metadata = new LinkedHashMap<>();
         metadata.put("event", "update");
         metadata.put("id", "42");
 
         Assertions.assertEquals(
-                "Sent [id=\"42\",event=\"update\"] \"abc\"",
+                "Sent [event=\"update\",id=\"42\"] \"abc\"",
                 CaptureLogger.format(CaptureDirection.SENT, "abc".getBytes(StandardCharsets.UTF_8), metadata)
         );
     }
@@ -54,14 +53,6 @@ class CaptureLoggerTest {
                         "x".getBytes(StandardCharsets.UTF_8),
                         Map.of("id", "a,b\"c")
                 )
-        );
-    }
-
-    @Test
-    void timestampFormatterIncludesMilliseconds() {
-        Assertions.assertEquals(
-                "2026-01-02T03:04:05.006",
-                LocalDateTime.of(2026, 1, 2, 3, 4, 5, 6_000_000).format(CaptureLogger.TIMESTAMP_FORMATTER)
         );
     }
 }

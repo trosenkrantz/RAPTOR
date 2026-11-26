@@ -4,15 +4,18 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 public class FileFormatter extends Formatter {
+    public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
     @Override
     public String format(LogRecord record) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(LocalDateTime.ofInstant(record.getInstant(), ZoneId.systemDefault()).format(CaptureLogger.TIMESTAMP_FORMATTER));
+        builder.append(LocalDateTime.ofInstant(record.getInstant(), ZoneId.systemDefault()).format(TIMESTAMP_FORMATTER));
 
         // Pad level, 7 characters is the max length (WARNING)
         String level = record.getLevel().getName();

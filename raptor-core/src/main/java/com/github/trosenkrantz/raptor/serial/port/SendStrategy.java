@@ -10,7 +10,7 @@ public enum SendStrategy implements PromptEnum, ConfigurableEnum {
     NONE("n", "Do [n]ot send", "none"),
     INTERACTIVE("i", "Prompt over console [i]nteractively", "interactive"),
     AUTO_REPLY("a", "Configure an [a]uto-reply", "autoReply"),
-    REPLAY("p", "Replay a [p]laylog", "replay");
+    REPLAY("p", "Re[p]lay a log", "replay");
 
     private static final Map<SendStrategy, SerialPortSendStrategy> STRATEGY_MAP = new EnumMap<>(SendStrategy.class);
     static {

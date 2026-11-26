@@ -3,9 +3,6 @@ package com.github.trosenkrantz.raptor.logging;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 
 import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -16,8 +13,6 @@ import java.util.logging.Logger;
  * <p>Format: {@code Received [key="value",...] "raptor-encoded-data"}. Metadata is optional and sorted by key.</p>
  */
 public final class CaptureLogger {
-    public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-
     private static final Logger LOGGER = Logger.getLogger(CaptureLogger.class.getName());
 
     private CaptureLogger() {
@@ -46,11 +41,11 @@ public final class CaptureLogger {
     /** Formats a capture message without the timestamp and log level prefix. */
     public static String format(CaptureDirection direction, byte[] data, Map<String, String> metadata) {
         StringBuilder message = new StringBuilder(direction.getLogWord());
-        Map<String, String> orderedMetadata = orderMetadata(metadata);
-        if (!orderedMetadata.isEmpty()) {
+        Map<String, String> sortedMetadata = new TreeMap<>(metadata);
+        if (!sortedMetadata.isEmpty()) {
             message.append(" [");
             boolean first = true;
-            for (Map.Entry<String, String> entry : orderedMetadata.entrySet()) {
+            for (Map.Entry<String, String> entry : sortedMetadata.entrySet()) {
                 if (!first) message.append(',');
                 first = false;
                 message.append(validateKey(entry.getKey()))
@@ -65,18 +60,6 @@ public final class CaptureLogger {
                 .append(BytesFormatter.bytesToRaptorEncoding(data))
                 .append('"')
                 .toString();
-    }
-
-    /** Keeps the documented metadata order, with any additional keys sorted last. */
-    private static Map<String, String> orderMetadata(Map<String, String> metadata) {
-        Map<String, String> ordered = new LinkedHashMap<>();
-        for (String key : List.of("id", "event", "frame")) {
-            if (metadata.containsKey(key)) ordered.put(key, metadata.get(key));
-        }
-        new TreeMap<>(metadata).forEach((key, value) -> {
-            if (!ordered.containsKey(key)) ordered.put(key, value);
-        });
-        return ordered;
     }
 
     private static String validateKey(String key) {
