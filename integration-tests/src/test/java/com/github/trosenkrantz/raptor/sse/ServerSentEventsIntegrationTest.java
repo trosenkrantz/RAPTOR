@@ -40,7 +40,7 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
 
             String textMessage = "Hello, World!";
             sendEvent(server, textMessage, "", "");
-            server.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
+            server.expectNumberOfOutputLineContains(1, "sent", textMessage);
             client.expectNumberOfOutputLineContains(1, "received", textMessage);
 
             String newLineMessage = "\\n"; // RAPTOR encoding for a line feed

@@ -94,8 +94,8 @@ public class ServerSentEventsService implements RootService {
 
     private static void logReceivedEvent(SseEvent event) {
         List<String> fields = new ArrayList<>();
-        if (event.id() != null) fields.add("id '" + event.id() + "'");
-        if (event.event() != null) fields.add("event '" + event.event() + "'");
+        event.id().ifPresent(id -> fields.add("id '" + id + "'"));
+        event.event().ifPresent(name -> fields.add("event '" + name + "'"));
         String description = fields.isEmpty() ? "Received" : "Received " + String.join(", ", fields);
         LOGGER.info(description + (fields.isEmpty() ? " " : ": ") + BytesFormatter.bytesToRaptorEncoding(event.data()));
     }

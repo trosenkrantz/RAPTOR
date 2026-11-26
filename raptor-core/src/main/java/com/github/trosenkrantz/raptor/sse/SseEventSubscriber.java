@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Flow;
@@ -80,8 +81,8 @@ class SseEventSubscriber implements HttpResponse.BodySubscriber<Void> {
 
     private void dispatchEvent(byte[] eventBytes) {
         String text = new String(eventBytes, StandardCharsets.UTF_8).replace("\r\n", "\n");
-        String id = null;
-        String event = null;
+        Optional<String> id = Optional.empty();
+        Optional<String> event = Optional.empty();
         StringBuilder data = new StringBuilder();
         int dataLines = 0;
         for (String line : text.split("\n", -1)) {
@@ -90,9 +91,9 @@ class SseEventSubscriber implements HttpResponse.BodySubscriber<Void> {
                 if (dataLines++ > 0) data.append('\n');
                 data.append(value);
             } else if (line.startsWith("id:")) {
-                id = fieldValue(line, "id");
+                id = Optional.of(fieldValue(line, "id"));
             } else if (line.startsWith("event:")) {
-                event = fieldValue(line, "event");
+                event = Optional.of(fieldValue(line, "event"));
             }
         }
         if (dataLines > 0) {

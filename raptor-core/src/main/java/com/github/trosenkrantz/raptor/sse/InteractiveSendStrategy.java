@@ -7,6 +7,7 @@ import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,15 +35,15 @@ class InteractiveSendStrategy implements SseSendStrategy {
                     String idAnswer = ConsoleIo.askForString("Event id to send (type enter for absent)");
                     String eventAnswer = ConsoleIo.askForString("Event event to send (type enter for absent)");
                     byte[] data = BytesFormatter.raptorEncodingToBytes(dataAnswer, commandSubstitutionTimeout);
-                    String id = decodeOptionalField("id", idAnswer);
-                    String event = decodeOptionalField("event", eventAnswer);
+                    Optional<String> id = decodeOptionalField("id", idAnswer);
+                    Optional<String> event = decodeOptionalField("event", eventAnswer);
                     try {
                         server.send(SseEvent.format(data, id, event));
                     } catch (IllegalArgumentException e) {
                         ConsoleIo.writeLine(e.getMessage(), Ansi.ERROR);
                         continue; // Reprompt instead of sending an invalid event
                     }
-                    LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(data));
+                    LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncoding(data));
                 }
             } catch (UserAbortedException ignore) {
                 shutDownAction.run();
@@ -53,8 +54,8 @@ class InteractiveSendStrategy implements SseSendStrategy {
         });
     }
 
-    private String decodeOptionalField(String name, String answer) {
-        if (answer.isEmpty()) return null;
-        return SseEvent.decodeField(name, BytesFormatter.raptorEncodingToBytes(answer, commandSubstitutionTimeout));
+    private Optional<String> decodeOptionalField(String name, String answer) {
+        if (answer.isEmpty()) return Optional.empty();
+        return Optional.of(SseEvent.decodeField(name, BytesFormatter.raptorEncodingToBytes(answer, commandSubstitutionTimeout)));
     }
 }
