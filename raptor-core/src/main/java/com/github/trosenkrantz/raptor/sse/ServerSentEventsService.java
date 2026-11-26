@@ -3,9 +3,9 @@ package com.github.trosenkrantz.raptor.sse;
 import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.configuration.StringToStringMapSetting;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
 import com.github.trosenkrantz.raptor.tls.TlsVersion;
 
@@ -15,9 +15,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -93,11 +91,10 @@ public class ServerSentEventsService implements RootService {
     }
 
     private static void logReceivedEvent(SseEvent event) {
-        List<String> fields = new ArrayList<>();
-        event.id().ifPresent(id -> fields.add("id '" + id + "'"));
-        event.event().ifPresent(name -> fields.add("event '" + name + "'"));
-        String description = fields.isEmpty() ? "Received" : "Received " + String.join(", ", fields);
-        LOGGER.info(description + (fields.isEmpty() ? " " : ": ") + BytesFormatter.bytesToRaptorEncoding(event.data()));
+        Map<String, String> metadata = new HashMap<>();
+        event.id().ifPresent(id -> metadata.put("id", id));
+        event.event().ifPresent(name -> metadata.put("event", name));
+        CaptureLogger.received(event.data(), metadata);
     }
 
     private static void runClient(Configuration configuration) throws Exception {

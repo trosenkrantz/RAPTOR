@@ -9,13 +9,13 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 public class FileFormatter extends Formatter {
-    private static final DateTimeFormatter TIME_FORMATTER_RECORD = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    public static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     @Override
     public String format(LogRecord record) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(LocalDateTime.ofInstant(record.getInstant(), ZoneId.systemDefault()).format(TIME_FORMATTER_RECORD));
+        builder.append(LocalDateTime.ofInstant(record.getInstant(), ZoneId.systemDefault()).format(TIMESTAMP_FORMATTER));
 
         // Pad level, 7 characters is the max length (WARNING)
         String level = record.getLevel().getName();

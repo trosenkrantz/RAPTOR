@@ -71,15 +71,15 @@ public class WebSocketAutoReplyIntegrationTest extends RaptorIntegrationTest {
 
             // Client makes server trigger reply while keeping state
             client.writeLineToStdIn("invalid command!");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "UNKNOWN_COMMAND!");
+            client.expectNumberOfOutputLineContains(1, "received", "frame=\"text\"", "UNKNOWN_COMMAND!");
 
             // Client makes server transition state
             client.writeLineToStdIn("AUTH user pass!");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "AUTH_OK!");
+            client.expectNumberOfOutputLineContains(1, "received", "frame=\"text\"", "AUTH_OK!");
 
             // Client makes server trigger reply in new state
             client.writeLineToStdIn("STATUS!");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "STATUS:OK!");
+            client.expectNumberOfOutputLineContains(1, "received", "frame=\"text\"", "STATUS:OK!");
         }
     }
 }

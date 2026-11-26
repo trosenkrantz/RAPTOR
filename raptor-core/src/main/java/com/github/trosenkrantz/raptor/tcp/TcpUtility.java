@@ -1,9 +1,9 @@
 package com.github.trosenkrantz.raptor.tcp;
 
 import com.github.trosenkrantz.raptor.configuration.Configuration;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 import com.github.trosenkrantz.raptor.io.IpPortValidator;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
 import com.github.trosenkrantz.raptor.tls.TlsVersion;
 
@@ -140,7 +140,7 @@ public class TcpUtility {
         while ((readLength = in.read(buffer)) != -1) {
             byte[] bytesRead = new byte[readLength];
             System.arraycopy(buffer, 0, bytesRead, 0, readLength);
-            LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(bytesRead));
+            CaptureLogger.received(bytesRead);
             onInput.accept(bytesRead);
         }
 

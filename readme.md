@@ -29,7 +29,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Server:
     - Multiple concurrent client connections.
   - With and without TLS (`wss://` and `ws://`).
-- Server-Sent Events:
+- Server-Sent Events (SSE):
   - Client and server.
   - Server can have multiple concurrent subscribers.
   - With and without TLS (`https://` and `http://`).
@@ -38,6 +38,7 @@ It exchanges data with systems, either as a standalone, interactive console appl
   - Mix protocols across the two systems.
   - Simulate network impairment:
     - Bandwidth, latency, corruption, packet loss, and duplication.
+- Logging to capture data exchange.
 - Sending capabilities:
   - Interactively send text and binary data.
   - Configure auto-replying (when receiving x, then send y).
@@ -46,10 +47,10 @@ It exchanges data with systems, either as a standalone, interactive console appl
     - Define an arbitrary state machine.
     - Update the state machine dynamically. 
   - Command substitution
+  - Replay captured traffic from a log file.
 - Arbitrary OS support through Java, shell scripts, and Windows .cmd scripts.
 - Support scripted and automated execution.
 - Portable application, can be run from a USB stick.
-- Logging to capture data exchange.
 
 ## Getting Started
 1. Download a RAPTOR release and unzip it.
@@ -328,8 +329,32 @@ If RAPTOR finds no match for an OID, it responds with `Null` for that variable b
 For WebSocket auto-replies, RAPTOR matches the whole payload of a frame against `input`.
 It does not distinguish between text and binary frames.
 
+## Record and Replay
+RAPTOR writes a timestamped log file to the `logs` directory at startup.
+Every payload exchange is logged as a single, reversible line, for example:
+```
+2026-01-02T03:04:05.006 [INFO   ] Received "Hello, World!"
+2026-01-02T03:04:07.500 [INFO   ] Received [id="42",event="update"] "abc"
+2026-01-02T03:04:08.000 [INFO   ] Sent [frame="binary"] "\\x00"
+```
+A capture line starts with `Received` or `Sent`, optionally followed by comma-separated metadata in brackets.
+It ends with the quoted RAPTOR-encoded payload.
+`id` and `event` are SSE fields, and `frame` records whether a WebSocket frame was `text` or `binary`.
+Other services emit no metadata.
+
+Replay sends each captured payload as one chunk and preserves the relative gaps between payloads.
+RAPTOR trims leading silence before the first captured payload.
+In server roles, each connected client gets its own replay cursor.
+RAPTOR interprets service-specific metadata for the target service and ignores unrelated metadata.
+Target validation still applies; for example, SSE rejects invalid UTF-8 data and carriage returns.
+
 ## Security
-RAPTOR is purposed for testing and analysis, not for operational use. When using TLS, it does not verify certificates.
+RAPTOR is purposed for testing and analysis, not for operational use.
+When using TLS, it does not verify certificates.
+
+Replay decodes log payloads literally.
+RAPTOR never executes command substitutions, e.g., `\\$(...)`, when reading a log, so a captured or edited log cannot run commands on the replaying host.
+Captured output from an interactive command substitution is replayed as the bytes that were recorded, not by running the command again.
 
 ## ANSI
 RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument for the case where our console does not support it.

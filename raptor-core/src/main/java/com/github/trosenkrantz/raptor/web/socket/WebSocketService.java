@@ -5,6 +5,7 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.configuration.StringToStringMapSetting;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 import com.github.trosenkrantz.raptor.tls.TlsUtility;
 import com.github.trosenkrantz.raptor.tls.TlsVersion;
 import org.java_websocket.WebSocket;
@@ -15,6 +16,9 @@ import org.java_websocket.server.WebSocketServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,12 +109,35 @@ public class WebSocketService implements RootService {
     }
 
     public static void send(WebSocket socket, byte[] userAnswerAsBytes) {
-        if (BytesFormatter.isText(userAnswerAsBytes)) { // Has only printable and control characters
-            socket.send(new String(userAnswerAsBytes, StandardCharsets.US_ASCII)); // Send as text frame, using ASCII as we just checked this is ASCII text
-            LOGGER.info("Sent text: " + BytesFormatter.bytesToRaptorEncodedText(userAnswerAsBytes));
+        sendFrame(socket, userAnswerAsBytes, BytesFormatter.isText(userAnswerAsBytes));
+    }
+
+    /** Sends a frame with an explicit text/binary choice. */
+    public static void sendFrame(WebSocket socket, byte[] data, boolean text) {
+        sendFrame(socket, data, text, Map.of());
+    }
+
+    /** Sends a frame with an explicit text/binary choice and additional capture metadata. */
+    public static void sendFrame(WebSocket socket, byte[] data, boolean text, Map<String, String> metadata) {
+        if (text) {
+            socket.send(decodeUtf8(data));
         } else {
-            socket.send(userAnswerAsBytes); // Send as binary frame
-            LOGGER.info("Sent bytes: " + BytesFormatter.bytesToRaptorEncodedBytes(userAnswerAsBytes));
+            socket.send(data);
+        }
+        Map<String, String> allMetadata = new java.util.LinkedHashMap<>(metadata);
+        allMetadata.put("frame", text ? "text" : "binary");
+        CaptureLogger.sent(data, allMetadata);
+    }
+
+    private static String decodeUtf8(byte[] data) {
+        try {
+            return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(data))
+                    .toString();
+        } catch (CharacterCodingException e) {
+            throw new IllegalArgumentException("WebSocket text frames require valid UTF-8 data.", e);
         }
     }
 }

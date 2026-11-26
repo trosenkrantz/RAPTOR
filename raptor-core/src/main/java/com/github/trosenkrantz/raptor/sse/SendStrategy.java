@@ -8,12 +8,14 @@ import java.util.Map;
 
 public enum SendStrategy implements PromptEnum, ConfigurableEnum {
     NONE("n", "Do [n]ot send", "none"),
-    INTERACTIVE("i", "Prompt over console [i]nteractively", "interactive");
+    INTERACTIVE("i", "Prompt over console [i]nteractively", "interactive"),
+    REPLAY("p", "Re[p]lay a log", "replay");
 
     private static final Map<SendStrategy, SseSendStrategy> STRATEGY_MAP = new EnumMap<>(SendStrategy.class);
     static {
         STRATEGY_MAP.put(NONE, new NoneSendStrategy());
         STRATEGY_MAP.put(INTERACTIVE, new InteractiveSendStrategy());
+        STRATEGY_MAP.put(REPLAY, new ReplaySendStrategy());
     }
 
     private final String promptValue;

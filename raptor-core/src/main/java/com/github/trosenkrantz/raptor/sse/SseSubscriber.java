@@ -41,6 +41,10 @@ final class SseSubscriber implements Runnable {
         return accepted;
     }
 
+    boolean isClosed() {
+        return socket.isClosed();
+    }
+
     void start() {
         if (!accepted) return;
         try {

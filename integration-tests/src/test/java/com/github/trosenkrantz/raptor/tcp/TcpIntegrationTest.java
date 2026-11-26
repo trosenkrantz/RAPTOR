@@ -140,14 +140,14 @@ public class TcpIntegrationTest extends RaptorIntegrationTest {
             // Server sends a message to the client
             String textMessage = "Hello, World!";
             server.writeLineToStdIn(textMessage);
-            server.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            client.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
+            server.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            client.expectNumberOfOutputLineContains(1, "received", textMessage);
 
             // Client sends a message to the server
             String binaryMessage = "\\\\x00\\\\x01\\\\x02\\\\x03";
             client.writeLineToStdIn(binaryMessage);
-            client.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            server.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
+            client.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            server.expectNumberOfOutputLineContains(1, "received", binaryMessage);
         }
     }
 }

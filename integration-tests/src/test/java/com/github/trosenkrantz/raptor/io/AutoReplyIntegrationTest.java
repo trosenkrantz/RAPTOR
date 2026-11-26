@@ -54,7 +54,7 @@ public class AutoReplyIntegrationTest extends RaptorIntegrationTest {
             client.expectNumberOfOutputLineContains(1, "connected", server.getRaptorIpAddress(), "50000");
 
             client.writeLineToStdIn("Input 1");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "Output 1");
+            client.expectNumberOfOutputLineContains(1, "received", "Output 1");
 
             server.setConfiguration("""
                     {
@@ -81,7 +81,7 @@ public class AutoReplyIntegrationTest extends RaptorIntegrationTest {
 
             // Client makes server transition state
             client.writeLineToStdIn("Input 1");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "Output 2");
+            client.expectNumberOfOutputLineContains(1, "received", "Output 2");
         }
     }
 

@@ -75,18 +75,18 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
             // System1 sends a text message
             String textMessage = "Hello, World!";
             system1.writeLineToStdIn(textMessage);
-            system1.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            gateway.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            system2.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
+            system1.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            gateway.expectNumberOfOutputLineContains(1, "received", textMessage);
+            gateway.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            system2.expectNumberOfOutputLineContains(1, "received", textMessage);
 
             // System2 sends a binary message
             String binaryMessage = "\\\\x00\\\\x01\\\\x02\\\\x03";
             system2.writeLineToStdIn(binaryMessage);
-            system2.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            gateway.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
-            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            system1.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
+            system2.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            gateway.expectNumberOfOutputLineContains(1, "received", binaryMessage);
+            gateway.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            system1.expectNumberOfOutputLineContains(1, "received", binaryMessage);
         }
     }
 
@@ -157,18 +157,18 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
             // System1 sends a text message
             String textMessage = "Hello, World!";
             system1.writeLineToStdIn(textMessage);
-            system1.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            gateway.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            system2.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
+            system1.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            gateway.expectNumberOfOutputLineContains(1, "received", textMessage);
+            gateway.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            system2.expectNumberOfOutputLineContains(1, "received", textMessage);
 
             // System2 sends a binary message
             String binaryMessage = "\\\\x00\\\\x01\\\\x02\\\\x03";
             system2.writeLineToStdIn(binaryMessage);
-            system2.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            gateway.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
-            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            system1.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
+            system2.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            gateway.expectNumberOfOutputLineContains(1, "received", binaryMessage);
+            gateway.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            system1.expectNumberOfOutputLineContains(1, "received", binaryMessage);
         }
     }
 
@@ -262,22 +262,22 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
             // System1 sends a text message
             String textMessage = "Hello, World!";
             system1.writeLineToStdIn(textMessage);
-            system1.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            gateway1.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
-            gateway1.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            gateway2.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
-            gateway2.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            system2.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
+            system1.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            gateway1.expectNumberOfOutputLineContains(1, "received", textMessage);
+            gateway1.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            gateway2.expectNumberOfOutputLineContains(1, "received", textMessage);
+            gateway2.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            system2.expectNumberOfOutputLineContains(1, "received", textMessage);
 
             // System2 sends a binary message
             String binaryMessage = "\\\\x00\\\\x01\\\\x02\\\\x03";
             system2.writeLineToStdIn(binaryMessage);
-            system2.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            gateway1.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
-            gateway1.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            gateway2.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
-            gateway2.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            system1.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
+            system2.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            gateway1.expectNumberOfOutputLineContains(1, "received", binaryMessage);
+            gateway1.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            gateway2.expectNumberOfOutputLineContains(1, "received", binaryMessage);
+            gateway2.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            system1.expectNumberOfOutputLineContains(1, "received", binaryMessage);
         }
     }
 
@@ -343,15 +343,15 @@ public class TcpGatewayIntegrationTest extends RaptorIntegrationTest {
 
             // Client makes server trigger reply while keeping state
             client.writeLineToStdIn("invalid command!");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "UNKNOWN_COMMAND!");
+            client.expectNumberOfOutputLineContains(1, "received", "UNKNOWN_COMMAND!");
 
             // Client makes server transition state
             client.writeLineToStdIn("AUTH user pass!");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "AUTH_OK!");
+            client.expectNumberOfOutputLineContains(1, "received", "AUTH_OK!");
 
             // Client makes server trigger reply in new state
             client.writeLineToStdIn("STATUS!");
-            client.expectNumberOfOutputLineContains(1, "received", "text", "STATUS:OK!");
+            client.expectNumberOfOutputLineContains(1, "received", "STATUS:OK!");
         }
     }
 }

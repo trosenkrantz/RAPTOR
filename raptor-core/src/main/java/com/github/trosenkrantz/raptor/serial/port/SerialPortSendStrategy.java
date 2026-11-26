@@ -6,6 +6,13 @@ import com.github.trosenkrantz.raptor.configuration.Configuration;
 import java.util.function.Consumer;
 
 public interface SerialPortSendStrategy {
+    default void configure(Configuration configuration) throws Exception {
+    }
+
+    /** To be called once when running the service. */
+    default void load(Configuration configuration) {
+    }
+
     /**
      * This is called when the serial port is opened.
      *

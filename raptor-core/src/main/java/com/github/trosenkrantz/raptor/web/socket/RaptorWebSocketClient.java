@@ -1,6 +1,6 @@
 package com.github.trosenkrantz.raptor.web.socket;
 
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -39,7 +39,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         byte[] input = message.getBytes(StandardCharsets.UTF_8); // WebSockets use UTF-8 for text frames
-        LOGGER.info("Received text: " + BytesFormatter.bytesToRaptorEncodedText(input));
+        CaptureLogger.received(input, Map.of("frame", "text"));
         onInput.accept(input);
     }
 
@@ -47,7 +47,7 @@ public class RaptorWebSocketClient extends WebSocketClient {
     public void onMessage(ByteBuffer message) {
         byte[] input = new byte[message.remaining()];
         message.get(input);
-        LOGGER.info("Received bytes: " + BytesFormatter.bytesToRaptorEncodedBytes(input));
+        CaptureLogger.received(input, Map.of("frame", "binary"));
         onInput.accept(input);
     }
 
