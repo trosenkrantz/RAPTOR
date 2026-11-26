@@ -18,7 +18,7 @@ class SseServerTest {
     void streamsEventsToSubscribers() throws Exception {
         SseServer server = new SseServer(0, null);
         Thread.ofVirtual().start(server::run);
-        LinkedBlockingQueue<byte[]> receivedEvents = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<SseEvent> receivedEvents = new LinkedBlockingQueue<>();
         CountDownLatch connected = new CountDownLatch(1);
 
         try {
@@ -39,10 +39,19 @@ class SseServerTest {
             Assertions.assertEquals(1, server.getSubscriberCount(), "Client did not subscribe.");
 
             server.send(SseEvent.format("Hello, World!".getBytes(StandardCharsets.UTF_8)));
-            server.send(SseEvent.format("a\nb".getBytes(StandardCharsets.UTF_8)));
+            server.send(SseEvent.format("a\nb".getBytes(StandardCharsets.UTF_8), "42", "update"));
 
-            Assertions.assertArrayEquals("Hello, World!".getBytes(StandardCharsets.UTF_8), receivedEvents.poll(5, TimeUnit.SECONDS));
-            Assertions.assertArrayEquals("a\nb".getBytes(StandardCharsets.UTF_8), receivedEvents.poll(5, TimeUnit.SECONDS));
+            SseEvent first = receivedEvents.poll(5, TimeUnit.SECONDS);
+            Assertions.assertNotNull(first);
+            Assertions.assertArrayEquals("Hello, World!".getBytes(StandardCharsets.UTF_8), first.data());
+            Assertions.assertNull(first.id());
+            Assertions.assertNull(first.event());
+
+            SseEvent second = receivedEvents.poll(5, TimeUnit.SECONDS);
+            Assertions.assertNotNull(second);
+            Assertions.assertArrayEquals("a\nb".getBytes(StandardCharsets.UTF_8), second.data());
+            Assertions.assertEquals("42", second.id());
+            Assertions.assertEquals("update", second.event());
 
             server.close();
             Assertions.assertEquals(200, responseFuture.join().statusCode());

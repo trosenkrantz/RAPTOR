@@ -45,4 +45,25 @@ class SseEventTest {
                 IllegalArgumentException.class,
                 () -> SseEvent.format(new byte[]{(byte) 0xFF}));
     }
+
+    @Test
+    void formatsIdAndEventFields() {
+        Assertions.assertEquals(
+                "id: 42\nevent: update\ndata: Hello\n\n",
+                SseEvent.format("Hello".getBytes(StandardCharsets.UTF_8), "42", "update"));
+    }
+
+    @Test
+    void rejectsLineFeedInId() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> SseEvent.format("Hello".getBytes(StandardCharsets.UTF_8), "42\n43", "update"));
+    }
+
+    @Test
+    void rejectsNulInEvent() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> SseEvent.format("Hello".getBytes(StandardCharsets.UTF_8), "42", "update\0"));
+    }
 }

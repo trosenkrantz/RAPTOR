@@ -15,7 +15,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -90,6 +92,14 @@ public class ServerSentEventsService implements RootService {
         }
     }
 
+    private static void logReceivedEvent(SseEvent event) {
+        List<String> fields = new ArrayList<>();
+        if (event.id() != null) fields.add("id '" + event.id() + "'");
+        if (event.event() != null) fields.add("event '" + event.event() + "'");
+        String description = fields.isEmpty() ? "Received" : "Received " + String.join(", ", fields);
+        LOGGER.info(description + (fields.isEmpty() ? " " : ": ") + BytesFormatter.bytesToRaptorEncoding(event.data()));
+    }
+
     private static void runClient(Configuration configuration) throws Exception {
         URI uri = new URI(configuration.requireRaptorEncodedString(PARAMETER_URI));
         TlsVersion tlsVersion = configuration.requireEnum(TlsVersion.class);
@@ -116,7 +126,7 @@ public class ServerSentEventsService implements RootService {
             } else {
                 LOGGER.warning("Server responded with HTTP " + responseInfo.statusCode() + ".");
             }
-            return new SseEventSubscriber(payload -> LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(payload)));
+            return new SseEventSubscriber(ServerSentEventsService::logReceivedEvent);
         };
 
         LOGGER.info("Connecting to server at " + uri + "...");

@@ -39,13 +39,17 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
             client.expectNumberOfOutputLineContains(1, "connected to server at");
 
             String textMessage = "Hello, World!";
-            server.writeLineToStdIn(textMessage);
+            sendEvent(server, textMessage, "", "");
             server.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            client.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
+            client.expectNumberOfOutputLineContains(1, "received", textMessage);
 
             String newLineMessage = "\\n"; // RAPTOR encoding for a line feed
-            server.writeLineToStdIn(newLineMessage);
-            client.expectNumberOfOutputLineContains(1, "received", "text", "\\n");
+            sendEvent(server, newLineMessage, "", "");
+            client.expectNumberOfOutputLineContains(1, "received", "\\n");
+
+            String metadataMessage = "With metadata";
+            sendEvent(server, metadataMessage, "42", "update");
+            client.expectNumberOfOutputLineContains(1, "received", "id '42'", "event 'update'", metadataMessage);
         }
     }
 
@@ -84,9 +88,15 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
             client2.expectNumberOfOutputLineContains(1, "connected to server at");
 
             String textMessage = "Hello, subscribers!";
-            server.writeLineToStdIn(textMessage);
-            client1.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
-            client2.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
+            sendEvent(server, textMessage, "", "");
+            client1.expectNumberOfOutputLineContains(1, "received", textMessage);
+            client2.expectNumberOfOutputLineContains(1, "received", textMessage);
         }
+    }
+
+    private static void sendEvent(Raptor server, String data, String id, String event) {
+        server.writeLineToStdIn(data);
+        server.writeLineToStdIn(id);
+        server.writeLineToStdIn(event);
     }
 }
