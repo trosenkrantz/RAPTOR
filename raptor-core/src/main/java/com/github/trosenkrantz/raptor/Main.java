@@ -36,7 +36,7 @@ public class Main {
                     run(configuration.configuration(), services);
                 }
             } else {
-                SaveConfigurationOptions chosenOption = ConsoleIo.askForOptions(SaveConfigurationOptions.class);
+                SaveConfigurationOptions chosenOption = ConsoleIo.askForOptions(SaveConfigurationOptions.class, true);
                 Path configurationDir = null;
                 if (chosenOption == SaveConfigurationOptions.SAVE_AND_OPEN) {
                     configurationDir = ConfigurationStorage.prepareConfigurationDir(ConfigurationStorage.askForConfigurationName());
@@ -73,7 +73,7 @@ public class Main {
     }
 
     private static Configuration configure(Collection<RootService> services) throws Exception {
-        RootService rootService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList(), true);
+        RootService rootService = ConsoleIo.askForOptions(services.stream().map(service -> new PromptOption<>(service.getPromptValue(), service.getDescription(), service)).toList(), false);
 
         Configuration configuration = Configuration.empty();
         configuration.setRaptorEncodedString("service", rootService.getParameterKey());

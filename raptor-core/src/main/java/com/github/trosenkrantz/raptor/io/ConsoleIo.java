@@ -80,6 +80,10 @@ public class ConsoleIo {
         return askForOptions(null, enumClass);
     }
 
+    public static <T extends Enum<T> & PromptEnum> T askForOptions(Class<T> enumClass, boolean showAbout) {
+        return askForOptions(null, getPromptOptions(enumClass), null, showAbout);
+    }
+
     public static <T extends Enum<T> & PromptEnum> T askForOptions(String description, Class<T> enumClass) {
         return askForOptions(description, getPromptOptions(enumClass), null, false);
     }
@@ -94,8 +98,9 @@ public class ConsoleIo {
 
     public static <T> T askForOptions(String description, List<PromptOption<T>> options, PromptOption<T> defaultValue, boolean showAbout) {
         while (true) {
-            List<List<String>> rows = options.stream().map(option -> List.of(Ansi.PROMPT.apply(option.promptValue()), option.description())).collect(Collectors.toList());
+            List<List<String>> rows = new ArrayList<>();
             if (showAbout) rows.add(List.of(Ansi.PROMPT.apply("a"), Ansi.LESS_IMPORTANT.apply("About")));
+            options.stream().map(option -> List.of(Ansi.PROMPT.apply(option.promptValue()), option.description())).forEach(rows::add);
             rows.add(List.of(Ansi.PROMPT.apply("e"), Ansi.LESS_IMPORTANT.apply("Exit")));
 
             List<String> prefixes = new ArrayList<>();
