@@ -7,6 +7,7 @@ import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,15 +31,19 @@ class InteractiveSendStrategy implements SseSendStrategy {
         Thread.ofVirtual().start(() -> {
             try {
                 while (true) {
-                    String answer = ConsoleIo.askForString("Event data to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING);
-                    byte[] payload = BytesFormatter.raptorEncodingToBytes(answer, commandSubstitutionTimeout);
+                    String dataAnswer = ConsoleIo.askForString("Event data to send", BytesFormatter.DEFAULT_FULLY_ESCAPED_STRING);
+                    String idAnswer = ConsoleIo.askForString("Event id to send (type enter for absent)");
+                    String eventAnswer = ConsoleIo.askForString("Event event to send (type enter for absent)");
+                    byte[] data = BytesFormatter.raptorEncodingToBytes(dataAnswer, commandSubstitutionTimeout);
+                    Optional<String> id = decodeOptionalField("id", idAnswer);
+                    Optional<String> event = decodeOptionalField("event", eventAnswer);
                     try {
-                        server.send(SseEvent.format(payload));
+                        server.send(SseEvent.format(data, id, event));
                     } catch (IllegalArgumentException e) {
                         ConsoleIo.writeLine(e.getMessage(), Ansi.ERROR);
                         continue; // Reprompt instead of sending an invalid event
                     }
-                    LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
+                    LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncoding(data));
                 }
             } catch (UserAbortedException ignore) {
                 shutDownAction.run();
@@ -47,5 +52,10 @@ class InteractiveSendStrategy implements SseSendStrategy {
                 shutDownAction.run();
             }
         });
+    }
+
+    private Optional<String> decodeOptionalField(String name, String answer) {
+        if (answer.isEmpty()) return Optional.empty();
+        return Optional.of(SseEvent.decodeField(name, BytesFormatter.raptorEncodingToBytes(answer, commandSubstitutionTimeout)));
     }
 }

@@ -6,21 +6,20 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Flow;
 import java.util.function.Consumer;
 
-/**
- * HTTP response subscriber that dispatches each complete Server-Sent Event as its data bytes.
- */
+/** HTTP response subscriber that dispatches each complete Server-Sent Event. */
 class SseEventSubscriber implements HttpResponse.BodySubscriber<Void> {
-    private final Consumer<byte[]> onEvent;
+    private final Consumer<SseEvent> onEvent;
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     private final CompletableFuture<Void> result = new CompletableFuture<>();
     private Flow.Subscription subscription;
 
-    SseEventSubscriber(Consumer<byte[]> onEvent) {
+    SseEventSubscriber(Consumer<SseEvent> onEvent) {
         this.onEvent = onEvent;
     }
 
@@ -82,18 +81,29 @@ class SseEventSubscriber implements HttpResponse.BodySubscriber<Void> {
 
     private void dispatchEvent(byte[] eventBytes) {
         String text = new String(eventBytes, StandardCharsets.UTF_8).replace("\r\n", "\n");
+        Optional<String> id = Optional.empty();
+        Optional<String> event = Optional.empty();
         StringBuilder data = new StringBuilder();
         int dataLines = 0;
         for (String line : text.split("\n", -1)) {
             if (line.startsWith("data:")) {
-                String value = line.substring("data:".length());
-                if (value.startsWith(" ")) value = value.substring(1);
+                String value = fieldValue(line, "data");
                 if (dataLines++ > 0) data.append('\n');
                 data.append(value);
+            } else if (line.startsWith("id:")) {
+                id = Optional.of(fieldValue(line, "id"));
+            } else if (line.startsWith("event:")) {
+                event = Optional.of(fieldValue(line, "event"));
             }
         }
         if (dataLines > 0) {
-            onEvent.accept(data.toString().getBytes(StandardCharsets.UTF_8));
+            onEvent.accept(new SseEvent(id, event, data.toString().getBytes(StandardCharsets.UTF_8)));
         }
+    }
+
+    private static String fieldValue(String line, String field) {
+        String value = line.substring(field.length() + 1);
+        if (value.startsWith(" ")) value = value.substring(1);
+        return value;
     }
 }
