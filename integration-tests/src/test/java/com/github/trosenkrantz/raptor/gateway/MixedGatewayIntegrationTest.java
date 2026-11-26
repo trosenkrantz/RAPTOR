@@ -70,9 +70,9 @@ public class MixedGatewayIntegrationTest {
             // System1 sends a text message
             String textMessage = "Hello, World!";
             system1.writeLineToStdIn(textMessage);
-            system1.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
-            gateway.expectNumberOfOutputLineContains(1, "received", "text", textMessage);
-            gateway.expectNumberOfOutputLineContains(1, "sent", "text", textMessage);
+            system1.expectNumberOfOutputLineContains(1, "sent", textMessage);
+            gateway.expectNumberOfOutputLineContains(1, "received", textMessage);
+            gateway.expectNumberOfOutputLineContains(1, "sent", textMessage);
             system2Receiver.expectNumberOfOutputLineContains(1, "received", "text", textMessage, gateway.getRaptorIpAddress(), "224.0.2.0", udpPort.getString());
 
             // System2 sends a binary message
@@ -90,8 +90,8 @@ public class MixedGatewayIntegrationTest {
                     """, udpPort.get(), binaryMessage));
             system2Sender.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
             gateway.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
-            gateway.expectNumberOfOutputLineContains(1, "sent", "bytes", binaryMessage);
-            system1.expectNumberOfOutputLineContains(1, "received", "bytes", binaryMessage);
+            gateway.expectNumberOfOutputLineContains(1, "sent", binaryMessage);
+            system1.expectNumberOfOutputLineContains(1, "received", binaryMessage);
         }
     }
 }

@@ -135,6 +135,31 @@ public class BytesFormatter {
         return intermediateEncodingToBytes(raptorEncodingToIntermediateEncodedBytes(input), commandSubstitutionTimeout);
     }
 
+    /**
+     * Decodes RAPTOR encoding literally, without executing command substitutions.
+     * Use this for input from files, logs, and other untrusted sources.
+     */
+    public static byte[] raptorEncodingToBytesLiteral(String input) {
+        return intermediateEncodingToBytesLiteral(raptorEncodingToIntermediateEncodedBytes(input));
+    }
+
+    private static byte[] intermediateEncodingToBytesLiteral(String input) {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+
+        int length = input.length();
+        for (int i = 0; i < length; i++) {
+            if (isIntermediateHexEncoding(input, i)) {
+                byteStream.write(Integer.parseInt(input.substring(i + 2, i + 4), 16));
+                i += 3;
+                continue;
+            }
+
+            byteStream.write((byte) input.charAt(i));
+        }
+
+        return byteStream.toByteArray();
+    }
+
     public static String raptorEncodingToIntermediateEncodedBytes(String input) {
         StringBuilder stringBuilder = new StringBuilder();
 

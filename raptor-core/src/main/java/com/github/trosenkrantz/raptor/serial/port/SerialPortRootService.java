@@ -5,8 +5,6 @@ import com.github.trosenkrantz.raptor.RootService;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
-import java.io.IOException;
-
 public class SerialPortRootService implements RootService {
     @Override
     public String getPromptValue() {
@@ -29,19 +27,22 @@ public class SerialPortRootService implements RootService {
         configureSendStrategy(configuration);
     }
 
-    private static void configureSendStrategy(Configuration configuration) throws IOException {
+    private static void configureSendStrategy(Configuration configuration) throws Exception {
         ConsoleIo.write("What data to send to the remote system? ");
         SendStrategy sendStrategy = ConsoleIo.askForOptions(SendStrategy.class);
         configuration.setEnum(sendStrategy);
 
         if (sendStrategy.equals(SendStrategy.AUTO_REPLY)) {
             StateMachineConfiguration.configureSampleAutoReply(configuration, StateMachineConfiguration.REPLIES_PATH);
+        } else {
+            sendStrategy.getStrategy().configure(configuration);
         }
     }
 
     @Override
     public void run(Configuration configuration) throws Exception {
         SerialPortSendStrategy sendStrategy = configuration.requireEnum(SendStrategy.class).getStrategy();
+        sendStrategy.load(configuration);
         SerialPortUtility.connectAndStartSendingAndReceiving(configuration, sendStrategy);
     }
 }

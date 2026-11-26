@@ -5,6 +5,7 @@ import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 
 import java.io.OutputStream;
 import java.net.Socket;
@@ -37,7 +38,7 @@ class InteractiveSendStrategy implements TcpSendStrategy {
                         byte[] whatToSend = supplier.get();
                         while (!socket.isInputShutdown()) {
                             out.write(whatToSend);
-                            LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(whatToSend));
+                            CaptureLogger.sent(whatToSend);
 
                             whatToSend = supplier.get();
                         }

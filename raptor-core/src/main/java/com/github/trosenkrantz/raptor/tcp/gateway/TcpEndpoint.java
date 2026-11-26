@@ -3,7 +3,7 @@ package com.github.trosenkrantz.raptor.tcp.gateway;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.gateway.DelayedConsumer;
 import com.github.trosenkrantz.raptor.gateway.Endpoint;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 import com.github.trosenkrantz.raptor.tcp.TcpSendStrategy;
 import com.github.trosenkrantz.raptor.tcp.TcpUtility;
 
@@ -30,7 +30,7 @@ public class TcpEndpoint implements Endpoint {
                     fromBroker.setDelegate(payload -> {
                         try {
                             out.write(payload);
-                            LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
+                            CaptureLogger.sent(payload);
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }

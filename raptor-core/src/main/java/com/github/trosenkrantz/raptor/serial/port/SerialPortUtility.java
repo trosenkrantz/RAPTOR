@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.configuration.EnumSetting;
 import com.github.trosenkrantz.raptor.configuration.IntegerSetting;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
 
@@ -122,6 +122,6 @@ public class SerialPortUtility {
             return;
         }
 
-        LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(payload));
+        CaptureLogger.sent(payload);
     }
 }

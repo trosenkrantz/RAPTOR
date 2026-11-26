@@ -62,4 +62,27 @@ class BytesFormatterTest {
         byte[] roundTrip = BytesFormatter.raptorEncodingToBytes(encoded, COMMAND_SUBSTITUTION_TIMEOUT);
         Assertions.assertArrayEquals(input, roundTrip);
     }
+
+    @Test
+    public void literalDecoderRoundTripsText() {
+        byte[] input = "Hello, World!\n\"quoted\"\\".getBytes(StandardCharsets.UTF_8);
+        String encoded = BytesFormatter.bytesToRaptorEncoding(input);
+
+        Assertions.assertArrayEquals(input, BytesFormatter.raptorEncodingToBytesLiteral(encoded));
+    }
+
+    @Test
+    public void literalDecoderRoundTripsArbitraryBytes() {
+        byte[] input = new byte[]{0, 1, 2, 0x7f, (byte) 0x80, (byte) 0xff};
+        String encoded = BytesFormatter.bytesToRaptorEncoding(input);
+
+        Assertions.assertArrayEquals(input, BytesFormatter.raptorEncodingToBytesLiteral(encoded));
+    }
+
+    @Test
+    public void literalDecoderDoesNotExecuteCommandSubstitution() {
+        byte[] decoded = BytesFormatter.raptorEncodingToBytesLiteral("\\$(echo hi)");
+
+        Assertions.assertArrayEquals("\\$(echo hi)".getBytes(StandardCharsets.UTF_8), decoded);
+    }
 }

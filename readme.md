@@ -328,8 +328,36 @@ If RAPTOR finds no match for an OID, it responds with `Null` for that variable b
 For WebSocket auto-replies, RAPTOR matches the whole payload of a frame against `input`.
 It does not distinguish between text and binary frames.
 
+## Record and Replay
+RAPTOR writes a timestamped log file to the `logs` directory at startup. Every payload exchange is logged as a single, reversible line, for example:
+```
+2026-01-02T03:04:05.006 [INFO   ] Received "Hello, World!"
+2026-01-02T03:04:07.500 [INFO   ] Received [id="42",event="update"] "abc"
+2026-01-02T03:04:08.000 [INFO   ] Sent [frame="binary"] "\\x00"
+```
+A capture line starts with `Received` or `Sent`, optionally followed by comma-separated metadata in brackets, and ends with the quoted RAPTOR-encoded payload. `id` and `event` are SSE fields, and `frame` records whether a WebSocket frame was `text` or `binary`. Other services emit no metadata.
+
+We can replay a log with the `replay` send strategy, which is available for TCP, Server-Sent Events, WebSocket, and Serial Port:
+```json5
+{
+  "service": "tcp",
+  "role": "client",
+  "remoteHost": "localhost",
+  "remotePort": 50000,
+  "tlsVersion": "none",
+  "sendStrategy": "replay",
+  "replayLogFile": "../logs/2026-01-02T03-04-05.log", // Relative to the configuration file
+  "replayDirection": "received", // Or "sent"
+  "replaySpeed": 1.0, // 2.0 replays twice as fast, 0.5 half as fast
+  "replayMode": "once" // Or "loop"
+}
+```
+Replay sends each captured payload as one chunk and preserves the relative gaps between payloads. Leading silence before the first captured payload is trimmed. In server roles, each connected client gets its own replay cursor. Service-specific metadata is interpreted by the target service and unrelated metadata is ignored; target validation still applies, e.g., SSE rejects invalid UTF-8 data and carriage returns.
+
 ## Security
 RAPTOR is purposed for testing and analysis, not for operational use. When using TLS, it does not verify certificates.
+
+Replay decodes log payloads literally. Command substitutions, e.g., `\\$(...)`, are never executed when reading a log, so a captured or edited log cannot run commands on the replaying host. Captured output from an interactive command substitution is replayed as the bytes that were recorded, not by running the command again.
 
 ## ANSI
 RAPTOR uses ANSI escape codes to colour outputs. We can disable it with a `--no-ansi` argument for the case where our console does not support it.

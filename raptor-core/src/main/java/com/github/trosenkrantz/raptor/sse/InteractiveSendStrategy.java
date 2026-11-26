@@ -6,7 +6,10 @@ import com.github.trosenkrantz.raptor.io.Ansi;
 import com.github.trosenkrantz.raptor.io.BytesFormatter;
 import com.github.trosenkrantz.raptor.io.CommandSubstitutor;
 import com.github.trosenkrantz.raptor.io.ConsoleIo;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +46,10 @@ class InteractiveSendStrategy implements SseSendStrategy {
                         ConsoleIo.writeLine(e.getMessage(), Ansi.ERROR);
                         continue; // Reprompt instead of sending an invalid event
                     }
-                    LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncoding(data));
+                    Map<String, String> metadata = new HashMap<>();
+                    id.ifPresent(value -> metadata.put("id", value));
+                    event.ifPresent(value -> metadata.put("event", value));
+                    CaptureLogger.sent(data, metadata);
                 }
             } catch (UserAbortedException ignore) {
                 shutDownAction.run();

@@ -9,13 +9,15 @@ import java.util.Map;
 public enum SendStrategy implements PromptEnum, ConfigurableEnum {
     NONE("n", "Do [n]ot send", "none"),
     INTERACTIVE("i", "Prompt over console [i]nteractively", "interactive"),
-    AUTO_REPLY("a", "Configure an [a]uto-reply", "autoReply");
+    AUTO_REPLY("a", "Configure an [a]uto-reply", "autoReply"),
+    REPLAY("p", "Replay a [p]laylog", "replay");
 
     private static final Map<SendStrategy, WebSocketSendStrategy> STRATEGY_MAP = new EnumMap<>(SendStrategy.class);
     static {
         STRATEGY_MAP.put(NONE, new NoneSendStrategy());
         STRATEGY_MAP.put(INTERACTIVE, new InteractiveSendStrategy());
         STRATEGY_MAP.put(AUTO_REPLY, new AutoReplySendStrategy());
+        STRATEGY_MAP.put(REPLAY, new ReplaySendStrategy());
     }
 
     private final String promptValue;

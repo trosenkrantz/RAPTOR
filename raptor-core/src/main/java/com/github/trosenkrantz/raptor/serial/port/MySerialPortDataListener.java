@@ -3,7 +3,7 @@ package com.github.trosenkrantz.raptor.serial.port;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -27,7 +27,7 @@ class MySerialPortDataListener implements SerialPortDataListener {
         switch (event.getEventType()) {
             case SerialPort.LISTENING_EVENT_DATA_RECEIVED:
                 byte[] data = event.getReceivedData();
-                LOGGER.info("Received " + BytesFormatter.bytesToRaptorEncodingWithType(data));
+                CaptureLogger.received(data);
                 onReceivedData.accept(data);
                 break;
             case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED:

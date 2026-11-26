@@ -7,8 +7,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +21,7 @@ class SseServer {
 
     private final ServerSocket serverSocket;
     private final Set<SseSubscriber> subscribers = ConcurrentHashMap.newKeySet();
+    private final List<Consumer<SseSubscriber>> subscriberListeners = new CopyOnWriteArrayList<>();
     private volatile boolean running = true;
 
     SseServer(int port, SSLContext sslContext) throws IOException {
@@ -39,6 +43,7 @@ class SseServer {
                 if (subscriber.isAccepted()) {
                     subscribers.add(subscriber);
                     subscriber.start(); // Send headers only after registration, so events cannot overtake them
+                    subscriberListeners.forEach(listener -> listener.accept(subscriber));
                     Thread.ofVirtual().start(subscriber);
                 }
             } catch (SocketException e) {
@@ -61,6 +66,11 @@ class SseServer {
 
     int getSubscriberCount() {
         return subscribers.size();
+    }
+
+    /** Registers a callback that is invoked once for each accepted subscriber. */
+    void onSubscriberConnected(Consumer<SseSubscriber> listener) {
+        subscriberListeners.add(listener);
     }
 
     void removeSubscriber(SseSubscriber subscriber) {

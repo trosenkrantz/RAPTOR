@@ -3,18 +3,15 @@ package com.github.trosenkrantz.raptor.tcp;
 import com.github.trosenkrantz.raptor.configuration.Configuration;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachine;
 import com.github.trosenkrantz.raptor.auto.reply.StateMachineConfiguration;
-import com.github.trosenkrantz.raptor.io.BytesFormatter;
+import com.github.trosenkrantz.raptor.logging.CaptureLogger;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.Socket;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 class AutoReplySendStrategy implements TcpSendStrategy {
-    private static final Logger LOGGER = Logger.getLogger(AutoReplySendStrategy.class.getName());
-
     private StateMachineConfiguration stateMachineConfiguration;
 
     @Override
@@ -34,7 +31,7 @@ class AutoReplySendStrategy implements TcpSendStrategy {
         StateMachine stateMachine = new StateMachine(stateMachineConfiguration, output -> {
             try {
                 out.write(output);
-                LOGGER.info("Sent " + BytesFormatter.bytesToRaptorEncodingWithType(output));
+                CaptureLogger.sent(output);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

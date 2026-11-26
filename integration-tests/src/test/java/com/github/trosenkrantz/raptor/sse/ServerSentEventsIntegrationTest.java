@@ -49,7 +49,7 @@ public class ServerSentEventsIntegrationTest extends RaptorIntegrationTest {
 
             String metadataMessage = "With metadata";
             sendEvent(server, metadataMessage, "42", "update");
-            client.expectNumberOfOutputLineContains(1, "received", "id '42'", "event 'update'", metadataMessage);
+            client.expectNumberOfOutputLineContains(1, "received", "id=\"42\"", "event=\"update\"", metadataMessage);
         }
     }
 
