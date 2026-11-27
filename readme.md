@@ -350,7 +350,7 @@ Target validation still applies; for example, SSE rejects invalid UTF-8 data and
 
 ## Security
 RAPTOR is purposed for testing and analysis, not for operational use.
-When using TLS, it does not verify certificates.
+When using TLS, it does not verify certificate chains or hostnames.
 
 Replay decodes log payloads literally.
 RAPTOR never executes command substitutions, e.g., `\\$(...)`, when reading a log, so a captured or edited log cannot run commands on the replaying host.

@@ -37,8 +37,22 @@ class SseServer {
     /** Accepts subscribers until the server is closed. */
     void run() {
         while (running) {
+            Socket socket;
             try {
-                Socket socket = serverSocket.accept();
+                socket = serverSocket.accept();
+            } catch (SocketException e) {
+                if (running) {
+                    LOGGER.log(Level.SEVERE, "Error accepting connection.", e);
+                } else {
+                    LOGGER.info("Server closed normally.");
+                }
+                return;
+            } catch (IOException e) {
+                if (running) LOGGER.log(Level.SEVERE, "Error accepting connection.", e);
+                return;
+            }
+
+            try {
                 SseSubscriber subscriber = new SseSubscriber(this, socket);
                 if (subscriber.isAccepted()) {
                     subscribers.add(subscriber);
@@ -46,17 +60,18 @@ class SseServer {
                     subscriberListeners.forEach(listener -> listener.accept(subscriber));
                     Thread.ofVirtual().start(subscriber);
                 }
-            } catch (SocketException e) {
-                if (running) {
-                    LOGGER.log(Level.SEVERE, "Error accepting connection.", e);
-                    return;
-                }
-                LOGGER.info("Server closed normally.");
-                return;
             } catch (IOException e) {
-                if (running) LOGGER.log(Level.SEVERE, "Error accepting connection.", e);
-                return;
+                LOGGER.log(Level.WARNING, "Error handling connection from " + socket.getRemoteSocketAddress() + ".", e);
+                closeQuietly(socket);
             }
+        }
+    }
+
+    private static void closeQuietly(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "Failed closing socket at " + socket.getRemoteSocketAddress() + ".", e);
         }
     }
 

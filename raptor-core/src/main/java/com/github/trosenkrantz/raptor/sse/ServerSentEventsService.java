@@ -10,7 +10,6 @@ import com.github.trosenkrantz.raptor.tls.TlsUtility;
 import com.github.trosenkrantz.raptor.tls.TlsVersion;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -107,9 +106,6 @@ public class ServerSentEventsService implements RootService {
                 .version(HttpClient.Version.HTTP_1_1); // The bundled SSE server speaks HTTP/1.1 only
         if (tlsVersion != TlsVersion.NONE) {
             clientBuilder.sslContext(TlsUtility.loadSslContext(configuration));
-            SSLParameters sslParameters = new SSLParameters();
-            sslParameters.setEndpointIdentificationAlgorithm(null); // Accept self-signed certificates
-            clientBuilder.sslParameters(sslParameters);
         }
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri)

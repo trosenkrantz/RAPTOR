@@ -1,8 +1,11 @@
 package com.github.trosenkrantz.raptor.sse;
 
+import com.github.trosenkrantz.raptor.tls.TlsTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -53,6 +56,47 @@ class SseServerTest {
             Assertions.assertArrayEquals("a\nb".getBytes(StandardCharsets.UTF_8), second.data());
             Assertions.assertEquals(Optional.of("42"), second.id());
             Assertions.assertEquals(Optional.of("update"), second.event());
+
+            server.close();
+            Assertions.assertEquals(200, responseFuture.join().statusCode());
+        } finally {
+            server.close();
+        }
+    }
+
+    @Test
+    void keepsAcceptingClientsAfterFailedHandshake() throws Exception {
+        SseServer server = new SseServer(0, TlsTestSupport.sslContext());
+        Thread.ofVirtual().start(server::run);
+        LinkedBlockingQueue<SseEvent> receivedEvents = new LinkedBlockingQueue<>();
+        CountDownLatch connected = new CountDownLatch(1);
+
+        try {
+            try (Socket abruptlyDisconnectedClient = new Socket(InetAddress.getLoopbackAddress(), server.getPort())) {
+                // Closing without completing the TLS handshake makes the server fail while reading the request.
+            }
+
+            HttpClient client = HttpClient.newBuilder()
+                    .version(HttpClient.Version.HTTP_1_1)
+                    .sslContext(TlsTestSupport.sslContext())
+                    .build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create("https://localhost:" + server.getPort() + "/events"))
+                    .header("Accept", "text/event-stream")
+                    .GET()
+                    .build();
+            HttpResponse.BodyHandler<Void> bodyHandler = responseInfo -> {
+                connected.countDown();
+                return new SseEventSubscriber(receivedEvents::add);
+            };
+            CompletableFuture<HttpResponse<Void>> responseFuture = client.sendAsync(request, bodyHandler);
+
+            Assertions.assertTrue(connected.await(5, TimeUnit.SECONDS), "Client did not connect after the failed handshake.");
+            Assertions.assertEquals(1, server.getSubscriberCount(), "Server did not accept the next client.");
+
+            server.send(SseEvent.format("Still accepting clients".getBytes(StandardCharsets.UTF_8)));
+            SseEvent event = receivedEvents.poll(5, TimeUnit.SECONDS);
+            Assertions.assertNotNull(event);
+            Assertions.assertArrayEquals("Still accepting clients".getBytes(StandardCharsets.UTF_8), event.data());
 
             server.close();
             Assertions.assertEquals(200, responseFuture.join().statusCode());
